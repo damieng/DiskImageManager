@@ -73,16 +73,12 @@ object frmOptions: TfrmOptions
       Top = 5
       Width = 296
       Height = 321
-      ActivePage = tabSectors
+      ActivePage = tabMain
       Align = alClient
       HotTrack = True
       TabOrder = 0
       object tabMain: TTabSheet
         Caption = 'Main'
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object lblFontMainLabel: TLabel
           Left = 8
           Top = 16
