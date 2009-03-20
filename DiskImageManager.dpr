@@ -3,9 +3,9 @@ program DiskImageManager;
 uses
   Forms,
   DskImage in 'DskImage.pas',
+  Utils in 'Utils.pas',
   About in 'About.pas' {frmAbout},
   Options in 'Options.pas' {frmOptions},
-  Utils in 'Utils.pas',
   New in 'New.pas' {frmNew},
   SectorProperties in 'SectorProperties.pas' {frmSector},
   Main in 'Main.pas' {frmMain};

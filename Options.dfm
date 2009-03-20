@@ -59,7 +59,7 @@ object frmOptions: TfrmOptions
       OnClick = btnResetClick
     end
   end
-  object pnlSheet: TPanel
+  object pnlTabs: TPanel
     Left = 0
     Top = 0
     Width = 306
@@ -68,30 +68,37 @@ object frmOptions: TfrmOptions
     BevelOuter = bvNone
     BorderWidth = 5
     TabOrder = 1
+    ExplicitWidth = 298
+    ExplicitHeight = 323
     object pagOptions: TPageControl
       Left = 5
       Top = 5
       Width = 296
       Height = 321
-      ActivePage = tabMain
+      ActivePage = tabSectors
       Align = alClient
-      HotTrack = True
       TabOrder = 0
+      ExplicitLeft = 1
+      ExplicitTop = 1
       object tabMain: TTabSheet
         Caption = 'Main'
         object lblFontMainLabel: TLabel
           Left = 8
           Top = 16
-          Width = 26
+          Width = 22
           Height = 13
-          Caption = 'Font:'
+          Caption = 'Font'
         end
-        object lblFontMain: TLabel
+        object edtFontMain: TEdit
           Left = 72
-          Top = 16
+          Top = 13
           Width = 177
-          Height = 13
-          AutoSize = False
+          Height = 19
+          BevelKind = bkSoft
+          BorderStyle = bsNone
+          Color = clBtnFace
+          ReadOnly = True
+          TabOrder = 3
         end
         object btnFontMain: TButton
           Left = 256
@@ -125,30 +132,34 @@ object frmOptions: TfrmOptions
         object lblFontSectorLabel: TLabel
           Left = 8
           Top = 16
-          Width = 26
+          Width = 22
           Height = 13
-          Caption = 'Font:'
-        end
-        object lblFontSector: TLabel
-          Left = 72
-          Top = 16
-          Width = 177
-          Height = 13
-          AutoSize = False
+          Caption = 'Font'
         end
         object lblBytesLabel: TLabel
           Left = 8
           Top = 48
-          Width = 51
+          Width = 47
           Height = 13
-          Caption = 'Bytes/line:'
+          Caption = 'Bytes/line'
         end
         object lblNonDisplayLabel: TLabel
           Left = 8
           Top = 80
-          Width = 60
+          Width = 56
           Height = 13
-          Caption = 'Non-display:'
+          Caption = 'Non-display'
+        end
+        object edtFontSector: TEdit
+          Left = 72
+          Top = 13
+          Width = 177
+          Height = 19
+          BevelKind = bkSoft
+          BorderStyle = bsNone
+          Color = clBtnFace
+          ReadOnly = True
+          TabOrder = 5
         end
         object btnFontSector: TButton
           Left = 256
@@ -191,7 +202,7 @@ object frmOptions: TfrmOptions
         end
         object chkWarnSectorChange: TCheckBox
           Left = 7
-          Top = 104
+          Top = 106
           Width = 273
           Height = 17
           Caption = 'Warn before changing data or FDC flags'
@@ -199,12 +210,8 @@ object frmOptions: TfrmOptions
         end
       end
       object tabDiskMap: TTabSheet
-        Caption = 'Disk Map'
+        Caption = 'Disk map'
         ImageIndex = 2
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object DiskMap: TSpinDiskMap
           Left = 6
           Top = 136
@@ -219,37 +226,41 @@ object frmOptions: TfrmOptions
         object lblFontMapLabel: TLabel
           Left = 8
           Top = 16
-          Width = 26
+          Width = 22
           Height = 13
-          Caption = 'Font:'
-        end
-        object lblFontMap: TLabel
-          Left = 72
-          Top = 16
-          Width = 177
-          Height = 13
-          AutoSize = False
+          Caption = 'Font'
         end
         object lblBackColorLabel: TLabel
           Left = 8
           Top = 40
-          Width = 58
+          Width = 54
           Height = 13
-          Caption = 'Back colour:'
+          Caption = 'Back colour'
         end
         object lblGridColorLabel: TLabel
           Left = 160
           Top = 40
-          Width = 55
+          Width = 51
           Height = 13
-          Caption = 'Grid colour:'
+          Caption = 'Grid colour'
         end
         object lblTrackMarksLabel: TLabel
           Left = 8
           Top = 96
-          Width = 61
+          Width = 57
           Height = 13
-          Caption = 'Track marks:'
+          Caption = 'Track marks'
+        end
+        object edtFontMap: TEdit
+          Left = 72
+          Top = 13
+          Width = 177
+          Height = 19
+          BevelKind = bkSoft
+          BorderStyle = bsNone
+          Color = clBtnFace
+          ReadOnly = True
+          TabOrder = 6
         end
         object btnFontMap: TButton
           Left = 256
@@ -314,20 +325,16 @@ object frmOptions: TfrmOptions
       object tabSaving: TTabSheet
         Caption = 'Saving'
         ImageIndex = 3
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object lblMapSave: TLabel
           Left = 8
-          Top = 96
+          Top = 80
           Width = 64
           Height = 13
           Caption = 'Disk map files'
         end
         object lblBy: TLabel
           Left = 160
-          Top = 96
+          Top = 80
           Width = 12
           Height = 13
           Caption = 'by'
@@ -350,7 +357,7 @@ object frmOptions: TfrmOptions
         end
         object edtMapX: TEdit
           Left = 88
-          Top = 92
+          Top = 76
           Width = 49
           Height = 21
           TabOrder = 2
@@ -358,7 +365,7 @@ object frmOptions: TfrmOptions
         end
         object edtMapY: TEdit
           Left = 184
-          Top = 92
+          Top = 76
           Width = 49
           Height = 21
           TabOrder = 3
@@ -366,7 +373,7 @@ object frmOptions: TfrmOptions
         end
         object udMapX: TUpDown
           Left = 137
-          Top = 92
+          Top = 76
           Width = 15
           Height = 21
           Associate = edtMapX
@@ -378,7 +385,7 @@ object frmOptions: TfrmOptions
         end
         object udMapY: TUpDown
           Left = 233
-          Top = 92
+          Top = 76
           Width = 15
           Height = 21
           Associate = edtMapY

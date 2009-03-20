@@ -174,7 +174,7 @@ begin
   for Idx := 1 to ParamCount do
   begin
     FileName := ParamStr(Idx);
-    If FileExists(FileName) then LoadImage(FileName);
+    if ExtractFileExt(FileName) = '.dsk' then if FileExists(FileName) then LoadImage(FileName);
   end;
 end;
 
@@ -908,7 +908,7 @@ begin
   S := 'SectorView';
   UnknownASCII := Reg.ReadString(S,'UnknownASCII','?');
   BytesPerLine := Reg.ReadInteger(S,'BytesPerLine',8);
-  SectorFont := FontFromDescription(Reg.ReadString(S,'Font','Lucida Console,7pt,,'));
+  SectorFont := FontFromDescription(Reg.ReadString(S,'Font','Consolas,8pt,,'));
   WarnSectorChange := Reg.ReadBool(S,'WarnSectorChange',True);
 
   S := 'Workspace';

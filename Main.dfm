@@ -806,11 +806,11 @@ object frmMain: TfrmMain
     Left = 304
     Top = 72
     object itmSaveMapAs: TMenuItem
-      Caption = 'Save &As...'
+      Caption = 'Save &as...'
       OnClick = itmSaveMapAsClick
     end
     object itmDarkBlankSectorsPop: TMenuItem
-      Caption = '&Dark Blank Sectors'
+      Caption = '&Dark blank sectors'
       OnClick = itmDarkBlankSectorsPopClick
     end
   end
@@ -830,7 +830,7 @@ object frmMain: TfrmMain
       Caption = '-'
     end
     object itmSectorResetFDC: TMenuItem
-      Caption = 'Reset FDC Flags'
+      Caption = 'Reset FDC flags'
       OnClick = itmSectorResetFDCClick
     end
     object itmSectorBlankData: TMenuItem

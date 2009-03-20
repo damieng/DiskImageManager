@@ -15,7 +15,6 @@ uses
 type
   TfrmOptions = class(TForm)
     pnlButtons: TPanel;
-    pnlSheet: TPanel;
     pagOptions: TPageControl;
     tabMain: TTabSheet;
     btnOK: TButton;
@@ -24,16 +23,16 @@ type
     tabDiskMap: TTabSheet;
     lblFontMainLabel: TLabel;
     dlgFont: TFontDialog;
-    lblFontMain: TLabel;
+    edtFontMain: TEdit;
     btnFontMain: TButton;
     DiskMap: TSpinDiskMap;
     lblFontMapLabel: TLabel;
-    lblFontMap: TLabel;
+    edtFontMap: TEdit;
     btnFontMap: TButton;
     lblBackColorLabel: TLabel;
     lblGridColorLabel: TLabel;
     lblFontSectorLabel: TLabel;
-    lblFontSector: TLabel;
+    edtFontSector: TEdit;
     btnFontSector: TButton;
     lblTrackMarksLabel: TLabel;
     udTrackMarks: TUpDown;
@@ -59,6 +58,7 @@ type
     udMapX: TUpDown;
     udMapY: TUpDown;
     chkWarnSectorChange: TCheckBox;
+    pnlTabs: TPanel;
     procedure cbxBackChange(Sender: TObject);
     procedure cbxGridChange(Sender: TObject);
     procedure btnFontMainClick(Sender: TObject);
@@ -103,7 +103,7 @@ begin
      if Execute then
      begin
         MainFont := Font;
-        lblFontMain.Caption := FontDescription(MainFont);
+        edtFontMain.Text := FontDescription(MainFont);
      end;
   end;
 end;
@@ -117,7 +117,7 @@ begin
      if Execute then
      begin
         MapFont := Font;
-        lblFontMap.Caption := FontDescription(MapFont);
+        edtFontMap.Text := FontDescription(MapFont);
         DiskMap.Font := MapFont;
      end;
   end;
@@ -132,7 +132,7 @@ begin
      if Execute then
      begin
         SectorFont := Font;
-        lblFontSector.Caption := FontDescription(SectorFont);
+        edtFontSector.Text := FontDescription(SectorFont);
      end;
   end;
 end;
@@ -149,9 +149,9 @@ begin
   MainFont := FontCopy(frmMain.Font);
   SectorFont := FontCopy(frmMain.SectorFont);
   MapFont := FontCopy(frmMain.DiskMap.Font);
-  lblFontMain.Caption := FontDescription(MainFont);
-  lblFontSector.Caption := FontDescription(SectorFont);
-  lblFontMap.Caption := FontDescription(MapFont);
+  edtFontMain.Text := FontDescription(MainFont);
+  edtFontSector.Text := FontDescription(SectorFont);
+  edtFontMap.Text := FontDescription(MapFont);
   chkRestoreWindow.Checked := frmMain.RestoreWindow;
   chkRestoreWorkspace.Checked := frmMain.RestoreWorkspace;
   udBytes.Position := frmMain.BytesPerLine;

@@ -348,7 +348,7 @@ object frmNew: TfrmNew
           Width = 137
           Height = 21
           Style = csDropDownList
-          ItemHeight = 0
+          ItemHeight = 13
           TabOrder = 0
           OnChange = cboSidesChange
         end
@@ -718,7 +718,7 @@ object frmNew: TfrmNew
           Width = 161
           Height = 21
           Style = csDropDownList
-          ItemHeight = 0
+          ItemHeight = 13
           TabOrder = 0
           OnChange = cboBootMachineChange
           Items.Strings = (

@@ -70,7 +70,7 @@ type
     procedure UpdateFill;
     procedure UpdatePad;
   public
-    constructor Create(AOwner: TComponent; Sector: TDSKSector);
+    constructor Create(AOwner: TComponent; Sector: TDSKSector); reintroduce;
     procedure Refresh;
   end;
 
