@@ -179,7 +179,7 @@ object frmAbout: TfrmAbout
   object lblWeb: TLabel
     Left = 8
     Top = 75
-    Width = 143
+    Width = 239
     Height = 13
     Cursor = crHandPoint
     Hint = 'http://www.damieng.com/spectrum/disk-manager'

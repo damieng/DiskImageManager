@@ -86,7 +86,7 @@ uses main;
 constructor TfrmSector.Create(AOwner: TComponent; Sector: TDSKSector);
 begin
 	inherited Create(AOwner);
-  udSize.Max := MaxSectorSize;
+  //udSize.Max := MaxSectorSize;
   FSector := Sector;
   Refresh;
   Show;

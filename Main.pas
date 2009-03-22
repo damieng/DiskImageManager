@@ -9,13 +9,14 @@ unit Main;
 interface
 
 uses
-  DiskMap, DskImage, Utils, About, Options, SectorProperties,
+  DiskMap, DskImage, Utils, About, Options, SectorProperties, FormatAnalysis,
   Classes, Graphics, Registry, SysUtils, Forms, Dialogs, Menus, ComCtrls,
   ExtCtrls, ImgList, Controls, Messages, Windows, ShellApi, Clipbrd, StrUtils;
 
 type
   // Must match the imagelist, put sides last
-  ItemType = (itDisk, itSpecification, itTracksAll, itTrack, itFiles, itSector, itAnalyse, itSides, itSide0, itSide1, itDiskCorrupt);
+  ItemType = (itDisk, itSpecification, itTracksAll, itTrack, itFiles, itSector,
+  	itAnalyse, itSides, itSide0, itSide1, itDiskCorrupt, itMessages);
 
   TfrmMain = class(TForm)
     mnuMain: TMainMenu;
@@ -113,6 +114,7 @@ type
     BytesPerLine: Integer;
     UnknownASCII: String;
     SaveMapX, SaveMapY: Integer;
+
     procedure AddWorkspaceImage(Image: TDSKImage);
     procedure LoadSettings;
     procedure SaveSettings;
@@ -238,12 +240,14 @@ begin
                     AddTree(TrackNode, SysUtils.Format('Sector %d',[EIdx]),Ord(itSector),Sector[EIdx]);
            end;
      end;
-     // Add file view
      //FileNode := AddTree(ImageNode,'Files',Ord(itFiles),Image.Disk.FileSystem);
+     if Image.Messages.Count > 0 then
+     	AddTree(ImageNode,'Messages',Ord(itMessages),Image.Messages);
   end;
   tvwMain.Items.EndUpdate;
 
   ImageNode.Expanded := True;
+  tvwMain.Selected := imageNode;
 end;
 
 function TfrmMain.AddTree(Parent: TTreeNode; Text: String; ImageIdx: Integer; NodeObject: TObject): TTreeNode;
@@ -331,18 +335,21 @@ begin
            pnlListLabel.Caption := AnsiReplaceStr(GetTitle(tvwMain.Selected), '&', '&&');
    				 lvwMain.Visible := not (ItemType(ImageIndex)=itAnalyse);
            DiskMap.Visible := not lvwMain.Visible;
-           case ItemType(ImageIndex) of
-              itDisk: RefreshListImage(Data);
-              itDiskCorrupt: RefreshListImage(Data);
-              itSpecification: RefreshListSpecification(Data);
-              itTracksAll: RefreshListTrack(Data);
-              itSides: RefreshListSides(Data);
-              itTrack: RefreshListSector(Data);
-              itAnalyse: AnalyseMap(Data);
-              itFiles: RefreshListFiles(Data);
-              else
-                 if (TObject(Data).ClassType = TDSKSide) then RefreshListTrack(TDSKSide(Data));
-                 if (TObject(Data).ClassType = TDSKSector) then RefreshListSectorData(TDSKSector(Data));
+           if (Data <> nil) then
+           begin
+	           case ItemType(ImageIndex) of
+  	            itDisk: RefreshListImage(Data);
+    	          itDiskCorrupt: RefreshListImage(Data);
+      	        itSpecification: RefreshListSpecification(Data);
+        	      itTracksAll: RefreshListTrack(Data);
+          	    itSides: RefreshListSides(Data);
+            	  itTrack: RefreshListSector(Data);
+              	itAnalyse: AnalyseMap(Data);
+             	 itFiles: RefreshListFiles(Data);
+            	  else
+              	   if (TObject(Data).ClassType = TDSKSide) then RefreshListTrack(TDSKSide(Data));
+                	 if (TObject(Data).ClassType = TDSKSector) then RefreshListSectorData(TDSKSector(Data));
+             end;
            end;
         end
      else
@@ -548,6 +555,7 @@ begin
      Subitems.Add(StrInt(Track.SectorSize));
      Subitems.Add(StrInt(Track.GapLength));
      Subitems.Add(StrHex(Track.Filler));
+     Subitems.Add(DetectInterleave(Track));
   end;
   Result := NewListItem;
 end;

@@ -22,10 +22,10 @@ type
     lblWeb: TLabel;
     lblEmail: TLabel;
     procedure FormCreate(Sender: TObject);
-    procedure timFadeTimer(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure lblWebClick(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
+    procedure lblWebClick(Sender: TObject);
+    procedure timFadeTimer(Sender: TObject);
   end;
 
 var
