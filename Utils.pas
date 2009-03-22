@@ -22,18 +22,20 @@ function StrInt(I: Integer): String;
 function StrHex(I: Integer): String;
 function IntStr(S: String): Integer;
 function StrBlockClean(S: array of Char; Start, Len: Integer): String;
+function StrYesNo(IsEmpty: Boolean): String;
+function StrInByteArray(ByteArray: array of byte; SubString: String; Start: Integer): Boolean;
+
 function CompareBlock(A: array of Char; B: String): Boolean;
 function CompareBlockStart(A: array of Char; B: String; Start: Integer): Boolean;
-procedure DrawBorder(Canvas: TCanvas; var Rect: TRect; BorderStyle: TSpinBorderStyle);
+
 function FontToDescription(ThisFont: TFont): String;
 function FontFromDescription(Description: String): TFont;
 function FontDescription(ThisFont: TFont): String;
 function FontCopy(ThisFont: TFont): TFont;
-function StrYesNo(IsEmpty: Boolean): String;
-
-function StringInByteArray(ByteArray: array of byte; SubString: String; Start: Integer): Boolean;
 
 function FingerPrintFile(FileName: TFileName): String;
+
+procedure DrawBorder(Canvas: TCanvas; var Rect: TRect; BorderStyle: TSpinBorderStyle);
 
 implementation
 
@@ -103,47 +105,49 @@ var
   OTL, ITL, OBR, IBR: TColor;
 begin
   case BorderStyle of
-     bsLowered:
-     begin
-        OTL := clBtnShadow;
-        ITL := cl3DDkShadow;
-        IBR := cl3DLight;
-        OBR := clBtnHighlight;
-     end;
-     bsRaised:
-     begin
-        OBR := clBtnShadow;
-        IBR := cl3DDkShadow;
-        OTL := clBtnHighlight;
-        ITL := cl3DLight;
-     end;
-     else
-        exit;
+  	bsLowered:
+    begin
+    	OTL := clBtnShadow;
+      ITL := cl3DDkShadow;
+      IBR := cl3DLight;
+      OBR := clBtnHighlight;
+    end;
+
+    bsRaised:
+    begin
+    	OBR := clBtnShadow;
+      IBR := cl3DDkShadow;
+      OTL := clBtnHighlight;
+      ITL := cl3DLight;
+  	end;
+
+    else exit;
   end;
+
   with Canvas do
   begin
-     dec(Rect.Bottom);
-     dec(Rect.Right);
-     Pen.Color := OTL;
-     MoveTo(Rect.Left, Rect.Bottom);
-     LineTo(Rect.Left, Rect.Top);
-     LineTo(Rect.Right, Rect.Top);
+  	dec(Rect.Bottom);
+    dec(Rect.Right);
+    Pen.Color := OTL;
+    MoveTo(Rect.Left, Rect.Bottom);
+    LineTo(Rect.Left, Rect.Top);
+    LineTo(Rect.Right, Rect.Top);
 
-     Pen.Color := OBR;
-     LineTo(Rect.Right, Rect.Bottom);
-     LineTo(Rect.Left, Rect.Bottom);
-     InflateRect(Rect,-1,-1);
+    Pen.Color := OBR;
+    LineTo(Rect.Right, Rect.Bottom);
+    LineTo(Rect.Left, Rect.Bottom);
+    InflateRect(Rect,-1,-1);
 
-     Pen.Color := ITL;
-     MoveTo(Rect.Left, Rect.Bottom);
-     LineTo(Rect.Left, Rect.Top);
-     LineTo(Rect.Right, Rect.Top);
+    Pen.Color := ITL;
+    MoveTo(Rect.Left, Rect.Bottom);
+    LineTo(Rect.Left, Rect.Top);
+    LineTo(Rect.Right, Rect.Top);
 
-     Pen.Color := IBR;
-     LineTo(Rect.Right, Rect.Bottom);
-     LineTo(Rect.Left, Rect.Bottom);
-     inc(Rect.Top);
-     inc(Rect.Left);
+    Pen.Color := IBR;
+    LineTo(Rect.Right, Rect.Bottom);
+    LineTo(Rect.Left, Rect.Bottom);
+    inc(Rect.Top);
+    inc(Rect.Left);
   end;
 end;
 
@@ -178,9 +182,9 @@ begin
   Result := TFont.Create;
   with Result do
   begin
-     Name := ThisFont.Name;
-     Style := ThisFont.Style;
-     Size := ThisFont.Size;
+  	Name := ThisFont.Name;
+    Style := ThisFont.Style;
+    Size := ThisFont.Size;
   end;
 end;
 
@@ -193,12 +197,12 @@ end;
 function StrYesNo(IsEmpty: Boolean): String;
 begin
   if IsEmpty then
-     Result := 'Yes'
+  	Result := 'Yes'
   else
-     Result := 'No';
+  	Result := 'No';
 end;
 
-function StringInByteArray(ByteArray: array of Byte; SubString: String; Start: Integer): Boolean;
+function StrInByteArray(ByteArray: array of Byte; SubString: String; Start: Integer): Boolean;
 var
 	Idx, Last: Integer;
 begin
