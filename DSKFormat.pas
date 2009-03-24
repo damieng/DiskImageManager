@@ -35,7 +35,7 @@ type
      TIB_GapLength:   Byte;
      TIB_FillerByte:  Byte;
      SectorInfoList:  array[0..231] of Byte;
-     SectorData:      array[0..32767] of Byte;
+     SectorData:      array[0..65535] of Byte;
   end;
 
   TSCTInfoBlock = packed record // Sector

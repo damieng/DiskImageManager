@@ -325,7 +325,7 @@ const
      'Extended DSK',
      'Not yet saved',
      'Invalid',
-     'Super Extended DSK'
+     'Extended DSK (Simons extensions)'
   );
 
   DSKSpecFormats: array[TDSKSpecFormat] of String = (
@@ -540,7 +540,7 @@ begin
               ReadSize := SizeT + 256;
               if (TOff+ReadSize > FileSize) then
               begin
-              	Messages.Add(Sysutils.Format('Side %d track %d indicates %d bytes of data' +
+              	Messages.Add(Sysutils.Format('Side %d track %d indicated %d bytes of data' +
                           ' but file had only %d bytes left.',
                        	 [SIdx,TIdx,SizeT,FileSize-TOff]));
                 Corrupt := True;
@@ -550,7 +550,7 @@ begin
               if (ReadSize > SizeOf(TRKInfoBlock)) then
               begin
               	Messages.Add(Sysutils.Format('Side %d track %d indicated %d bytes of data' +
-                             ' which is more than my %d byte track buffer.',
+                             ' which is more than the %d bytes I can handle.',
                          		[SIdx,TIdx,SizeT,SizeOf(TRKInfoBlock.SectorData)]));
                 Corrupt := True;
             		DiskFile.ReadBuffer(TRKInfoBlock,SizeOf(TRKInfoBlock));
@@ -670,7 +670,7 @@ var
   DSKInfoBlock: TDSKInfoBlock;
   TRKInfoBlock: TTRKInfoBlock;
   SCTInfoBlock: TSCTInfoBlock;
-  SIdx, TIdx, EIdx, EOff: Integer;
+  SIdx, TIdx, EIdx, EOff, TrackBufferSize: Integer;
   TrackSize: Word;
 begin
   Result := False;
@@ -686,34 +686,34 @@ begin
     case SaveFileFormat of
     	diStandardDSK:
       begin
-          	DiskInfoBlock := DiskInfoStandard;
-            if Disk.Side[0].Track[0].Size > 0 then
-             	Disk_StdTrackSize := Disk.Side[0].Track[0].Size + 256
-            else
-            	Disk_StdTrackSize := 0;
+				DiskInfoBlock := DiskInfoStandard;
+        if Disk.Side[0].Track[0].Size > 0 then
+        	Disk_StdTrackSize := Disk.Side[0].Track[0].Size + 256
+        else
+        	Disk_StdTrackSize := 0;
 
-            for SIdx := 0 to Disk_NumSides-1 do
-            	for TIdx := 0 To Disk_NumTracks-1 do
-              	if (Disk.Side[SIdx].Track[TIdx].Size > Disk_StdTrackSize) then
-                	Disk_StdTrackSize := Disk.Side[SIdx].Track[TIdx].Size + 256;
+        for SIdx := 0 to Disk_NumSides-1 do
+        	for TIdx := 0 To Disk_NumTracks-1 do
+          	if (Disk.Side[SIdx].Track[TIdx].Size > Disk_StdTrackSize) then
+            	Disk_StdTrackSize := Disk.Side[SIdx].Track[TIdx].Size + 256;
       end;
 
       diExtendedDSK:
       begin
-            	DiskInfoBlock := DiskInfoExtended;
-           		for SIdx := 0 to Disk_NumSides-1 do
-              	for TIdx := 0 To Disk_NumTracks-1 do
-                 	if (Compress and (Disk.Side[SIdx].Track[TIdx].Sectors=0)) then
-	                 		Disk_ExtTrackSize[(TIdx * Disk_NumSides) + SIdx] := 0
-                    else
-                    	if (Disk.Side[SIdx].Track[TIdx].Size > 0) then
-                      begin
-                      	TrackSize := (Disk.Side[SIdx].Track[TIdx].Size div 256) + 1; // Track info 256
-                      	if (Disk.Side[SIdx].Track[TIdx].Size mod 256 > 0) then TrackSize := TrackSize + 1;
-                      	Disk_ExtTrackSize[(TIdx * Disk_NumSides) + SIdx] := TrackSize;
-                      end
-                      else
-                      	Disk_ExtTrackSize[(TIdx * Disk_NumSides) + SIdx] := 0;
+      	DiskInfoBlock := DiskInfoExtended;
+        	for SIdx := 0 to Disk_NumSides-1 do
+          	for TIdx := 0 To Disk_NumTracks-1 do
+            	if (Compress and (Disk.Side[SIdx].Track[TIdx].Sectors=0)) then
+              	Disk_ExtTrackSize[(TIdx * Disk_NumSides) + SIdx] := 0
+              else
+              	if (Disk.Side[SIdx].Track[TIdx].Size > 0) then
+                begin
+                	TrackSize := (Disk.Side[SIdx].Track[TIdx].Size div 256) + 1; // Track info 256
+                  if (Disk.Side[SIdx].Track[TIdx].Size mod 256 > 0) then TrackSize := TrackSize + 1;
+                  	Disk_ExtTrackSize[(TIdx * Disk_NumSides) + SIdx] := TrackSize;
+                end
+                else
+                	Disk_ExtTrackSize[(TIdx * Disk_NumSides) + SIdx] := 0;
       end;
     end;
   end;
@@ -722,56 +722,55 @@ begin
 
   // Write the tracks out
   for TIdx := 0 to DSKInfoBlock.Disk_NumTracks-1 do
-     for SIdx := 0 to Disk.Sides-1 do
-     begin
-        with Disk.Side[SIdx].Track[TIdx] do
+  	for SIdx := 0 to Disk.Sides-1 do
+    begin
+    with Disk.Side[SIdx].Track[TIdx] do
+    begin
+    	// Set various track info properties
+      FillChar(TRKInfoBlock,SizeOf(TRKInfoBlock),0);
+      with TRKInfoBlock do
+      begin
+      	TrackData := DiskInfoTrack;
+        TIB_TrackNum := Track;
+        TIB_SideNum := Side;
+        TIB_NumSectors := Sectors;
+        TIB_SectorSize := GetFDCSectorSize(SectorSize);
+        TIB_GapLength := GapLength;
+        TIB_FillerByte := Filler;
+      end;
+
+      // Write the actual sectors out
+      EOff := 0;
+      for EIdx := 0 to Sectors-1 do
+      	with Sector[EIdx] do
         begin
-           // Set various track info properties
-				FillChar(TRKInfoBlock,SizeOf(TRKInfoBlock),0);
-           with TRKInfoBlock do
-           begin
-              TrackData := DiskInfoTrack;
-              TIB_TrackNum := Track;
-              TIB_SideNum := Side;
-              TIB_NumSectors := Sectors;
-              TIB_SectorSize := GetFDCSectorSize(SectorSize);
-              TIB_GapLength := GapLength;
-              TIB_FillerByte := Filler;
-           end;
+        	FillChar(SCTInfoBlock,SizeOf(SCTInfoBlock),0);
+          with SCTInfoBlock do
+          begin
+          	SIB_TrackNum := Track;
+            SIB_SideNum := Side;
+            SIB_ID := ID;
+            SIB_Size := FDCSize;
+            SIB_FDC1 := FDCStatus[1];
+            SIB_FDC2 := FDCStatus[2];
+            if (FileFormat = diExtendedDSK) then SIB_DataLength := DataSize;
+          end;
 
-           // Write the actual sectors out
-           EOff := 0;
-           for EIdx := 0 to Sectors-1 do
-              with Sector[EIdx] do
-              begin
-                 FillChar(SCTInfoBlock,SizeOf(SCTInfoBlock),0);
-                 with SCTInfoBlock do
-                 begin
-                    SIB_TrackNum := Track;
-                    SIB_SideNum := Side;
-                    SIB_ID := ID;
-                    SIB_Size := FDCSize;
-                    SIB_FDC1 := FDCStatus[1];
-                    SIB_FDC2 := FDCStatus[2];
-                    if (FileFormat = diExtendedDSK) then SIB_DataLength := DataSize;
-                 end;
-
-                 Move(SCTInfoBlock,TRKInfoBlock.SectorInfoList[EIdx * SizeOf(SCTInfoBlock)],SizeOf(SCTInfoBlock));
-                 Move(Data,TRKInfoBlock.SectorData[EOff],DataSize);
-                 EOff := EOff + DataSize;
-              end;
-
-           // Write the whole track out
-				   if (Size > 0) then
-	            case FileFormat of
-    	         	diStandardDSK:
-                    DiskFile.WriteBuffer(TRKInfoBlock,DSKInfoBlock.Disk_StdTrackSize);
-              	diExtendedDSK:
-                    if not (Compress and (Sectors = 0)) then
-                     	DiskFile.WriteBuffer(TRKInfoBlock,DSKInfoBlock.Disk_ExtTrackSize[(TIdx * Disk.Sides) + SIdx] * 256);
-           	end;
+          Move(SCTInfoBlock,TRKInfoBlock.SectorInfoList[EIdx * SizeOf(SCTInfoBlock)],SizeOf(SCTInfoBlock));
+          Move(Data,TRKInfoBlock.SectorData[EOff],DataSize);
+          EOff := EOff + DataSize;
         end;
-     end;
+
+        // Write the whole track out
+        if (Size > 0) then
+        	case FileFormat of
+          	diStandardDSK: DiskFile.WriteBuffer(TRKInfoBlock,DSKInfoBlock.Disk_StdTrackSize);
+            diExtendedDSK:
+            	if not (Compress and (Sectors = 0)) then
+              	DiskFile.WriteBuffer(TRKInfoBlock,DSKInfoBlock.Disk_ExtTrackSize[(TIdx * Disk.Sides) + SIdx] * 256);
+        end;
+      end;
+    end;
   Result := True;
 end;
 
@@ -1483,16 +1482,16 @@ begin
 		with FParentDisk.Side[0].Track[0].Sector[0] do
   	begin
      	case FFormat of
-				dsFormatPCW_SS: 		Data[0] := 0;
+				dsFormatPCW_SS: Data[0] := 0;
         dsFormatCPC_System:	Data[0] := 1;
-        dsFormatCPC_Data:		Data[0] := 2;
-        dsFormatPCW_DS:		Data[0] := 3;
+        dsFormatCPC_Data:	Data[0] := 2;
+        dsFormatPCW_DS: Data[0] := 3;
 			end;
 
       case FSide of
-      	dsSideSingle:					Data[1] := 0;
-        dsSideDoubleAlternate:     Data[1] := 1;
-        dsSideDoubleSuccessive:    Data[1] := 2;
+      	dsSideSingle:	Data[1] := 0;
+        dsSideDoubleAlternate: Data[1] := 1;
+        dsSideDoubleSuccessive: Data[1] := 2;
         end;
       if FTrack = dsTrackDouble then Data[1] := (Data[1] or $80);
 

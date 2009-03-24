@@ -129,6 +129,7 @@ type
     procedure RefreshList;
     procedure RefreshListFiles(FileSystem: TDSKFileSystem);
     procedure RefreshListImage(Image: TDSKImage);
+		procedure RefreshListMessages(Messages: TStringList);
     procedure RefreshListTrack(OptionalSide: TObject);
     procedure RefreshListSector(Track: TDSKTrack);
     procedure RefreshListSectorData(Sector: TDSKSector);
@@ -185,7 +186,7 @@ var
   Idx: Integer;
 begin
   if (dlgOpen.Execute) then
-     for Idx := 0 To dlgOpen.Files.Count-1 do LoadImage(dlgOpen.Files[Idx]);
+  	for Idx := 0 To dlgOpen.Files.Count-1 do LoadImage(dlgOpen.Files[Idx]);
 end;
 
 function TfrmMain.LoadImage(FileName: TFileName): Boolean;
@@ -316,48 +317,59 @@ procedure TfrmMain.RefreshList;
 var
   OldViewStyle: TViewStyle;
 begin
-  with lvwMain do
+	with lvwMain do
   begin
-     PopupMenu := nil;
-     OldViewStyle := ViewStyle;
-     Items.BeginUpdate;
-     ViewStyle := vsList;
-     Items.Clear;
-     Columns.BeginUpdate();
-     Columns.Clear;
+  	PopupMenu := nil;
+    OldViewStyle := ViewStyle;
+    Items.BeginUpdate;
+    ViewStyle := vsList;
+    Items.Clear;
+    Columns.BeginUpdate;
+    Columns.Clear;
 
-     ParentFont := True;
-     ShowColumnHeaders := True;
+    ParentFont := True;
+    ShowColumnHeaders := True;
 
-     if (tvwMain.Selected <> nil) then
-        with tvwMain.Selected do
-        begin
-           pnlListLabel.Caption := AnsiReplaceStr(GetTitle(tvwMain.Selected), '&', '&&');
-   				 lvwMain.Visible := not (ItemType(ImageIndex)=itAnalyse);
-           DiskMap.Visible := not lvwMain.Visible;
-           if (Data <> nil) then
-           begin
-	           case ItemType(ImageIndex) of
-  	            itDisk: RefreshListImage(Data);
-    	          itDiskCorrupt: RefreshListImage(Data);
-      	        itSpecification: RefreshListSpecification(Data);
-        	      itTracksAll: RefreshListTrack(Data);
-          	    itSides: RefreshListSides(Data);
-            	  itTrack: RefreshListSector(Data);
-              	itAnalyse: AnalyseMap(Data);
-             	 itFiles: RefreshListFiles(Data);
-            	  else
-              	   if (TObject(Data).ClassType = TDSKSide) then RefreshListTrack(TDSKSide(Data));
-                	 if (TObject(Data).ClassType = TDSKSector) then RefreshListSectorData(TDSKSector(Data));
-             end;
-           end;
-        end
-     else
-     pnlListLabel.Caption := '';
-     ViewStyle := OldViewStyle;
-     Columns.EndUpdate();
-     Items.EndUpdate;
-  end;
+    if (tvwMain.Selected <> nil) then
+    	with tvwMain.Selected do
+      	begin
+        	pnlListLabel.Caption := AnsiReplaceStr(GetTitle(tvwMain.Selected), '&', '&&');
+          lvwMain.Visible := not (ItemType(ImageIndex)=itAnalyse);
+        	DiskMap.Visible := not lvwMain.Visible;
+          if (Data <> nil) then
+          begin
+          	case ItemType(ImageIndex) of
+            	itDisk: RefreshListImage(Data);
+              itDiskCorrupt: RefreshListImage(Data);
+              itSpecification: RefreshListSpecification(Data);
+              itTracksAll: RefreshListTrack(Data);
+              itSides: RefreshListSides(Data);
+              itTrack: RefreshListSector(Data);
+              itAnalyse: AnalyseMap(Data);
+              itFiles: RefreshListFiles(Data);
+              itMessages: RefreshListMessages(Data);
+              else
+              	if (TObject(Data).ClassType = TDSKSide) then RefreshListTrack(TDSKSide(Data));
+                if (TObject(Data).ClassType = TDSKSector) then RefreshListSectorData(TDSKSector(Data));
+            end;
+          end;
+      	end
+     	else
+     		pnlListLabel.Caption := '';
+     		ViewStyle := OldViewStyle;
+     		Columns.EndUpdate();
+     		Items.EndUpdate;
+	end;
+end;
+
+procedure TfrmMain.RefreshListMessages(Messages: TStringList);
+var
+	Idx: Integer;
+begin
+  SetListSimple;
+  if (Messages <> nil) then
+  	for Idx := 0 to Messages.Count - 1 do
+    	AddListInfo('',Messages[Idx]);
 end;
 
 procedure TfrmMain.RefreshListImage(Image: TDSKImage);
@@ -469,13 +481,13 @@ begin
   begin
      with Add do
      begin
-        Caption := 'Logical track';
+        Caption := 'Logical';
         Alignment := taRightJustify;
         Width := -2;
      end;
      with Add do
      begin
-        Caption := 'Physical track';
+        Caption := 'Physical';
         Alignment := taRightJustify;
         Width := -2;
      end;
@@ -515,6 +527,12 @@ begin
      with Add do
      begin
         Caption := 'Filler';
+        Alignment := taRightJustify;
+        Width := -2;
+     end;
+     with Add do
+     begin
+      	Caption := 'Interleave';
         Alignment := taRightJustify;
         Width := -2;
      end;
