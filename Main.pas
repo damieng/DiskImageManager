@@ -70,6 +70,8 @@ type
     itmFind: TMenuItem;
     itmFindNext: TMenuItem;
     dlgFind: TFindDialog;
+    itmRead: TMenuItem;
+    itmWrite: TMenuItem;
     procedure itmOpenClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure tvwMainChange(Sender: TObject; Node: TTreeNode);
@@ -97,16 +99,21 @@ type
     procedure itmFindClick(Sender: TObject);
     procedure dlgFindFind(Sender: TObject);
     procedure itmFindNextClick(Sender: TObject);
+    procedure itmReadClick(Sender: TObject);
+    procedure itmWriteClick(Sender: TObject);
   private
     NextNewFile: Integer;
+    FSamDiskEnabled: Boolean;
     function AddTree(Parent: TTreeNode; Text: String; ImageIdx: Integer; NodeObject: TObject): TTreeNode;
     function AddListInfo(Key: String; Value: String): TListItem;
     function AddListTrack(Track: TDSKTrack): TListItem;
     function AddListSector(Sector: TDSKSector): TListItem;
     function AddListSides(Side: TDSKSide): TListItem;
     procedure SetListSimple;
+    procedure SetSamDiskEnabled(Enabled: Boolean);
 	  function GetSelectedSector(Sender: TObject): TDSKSector;
     function GetTitle(Data: TTreeNode): String;
+		function GetCurrentImage: TDSKImage;
   public
     SectorFont: TFont;
     RestoreWindow, RestoreWorkspace: Boolean;
@@ -114,6 +121,7 @@ type
     BytesPerLine: Integer;
     UnknownASCII: String;
     SaveMapX, SaveMapY: Integer;
+    SamDiskLocation: String;
 
     procedure AddWorkspaceImage(Image: TDSKImage);
     procedure LoadSettings;
@@ -142,6 +150,8 @@ type
     function LoadImage(FileName: TFileName): Boolean;
     procedure CloseImage(Image: TDSKImage);
     function GetNextNewFile: Integer;
+
+    property SamDiskEnabled: Boolean read FSamDiskEnabled write SetSamDiskEnabled;
   end;
 
 const
@@ -149,7 +159,7 @@ const
   TAB = #9;
   CR = #13;
   LF = #10;
-  EOL = CR + LF;
+  CRLF = CR + LF;
 
 var
   frmMain: TfrmMain;
@@ -160,7 +170,7 @@ implementation
 
 {$R *.dfm}
 
-uses new;
+uses New, SamDisk;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
 var
@@ -272,23 +282,20 @@ end;
 
 procedure TfrmMain.UpdateMenus;
 var
-   AllowImageFile: Boolean;
+	AllowImageFile: Boolean;
 begin
   AllowImageFile := False;
   tvwMain.PopupMenu := nil;
 
   // Decide what class operating on
   if (tvwMain.Selected <> nil) then
-     if (tvwMain.Selected.Data <> nil) then
-     begin
-        if (TObject(tvwMain.Selected.Data).ClassType = TDSKImage) then
-        begin
-           AllowImageFile := True;
-        end;
-        if (TObject(tvwMain.Selected.Data).ClassType = TDSKSector) or
-          (TObject(tvwMain.Selected.Data).ClassType = TDSKTrack) then
-           tvwMain.PopupMenu := popSector;
-     end;
+  	if (tvwMain.Selected.Data <> nil) then
+    begin
+    	AllowImageFile := True;
+      if (TObject(tvwMain.Selected.Data).ClassType = TDSKSector) or
+      	(TObject(tvwMain.Selected.Data).ClassType = TDSKTrack) then
+        tvwMain.PopupMenu := popSector;
+    end;
 
   // Set main menu options
   itmClose.Enabled := AllowImageFile;
@@ -573,7 +580,6 @@ begin
      Subitems.Add(StrInt(Track.SectorSize));
      Subitems.Add(StrInt(Track.GapLength));
      Subitems.Add(StrHex(Track.Filler));
-     Subitems.Add(DetectInterleave(Track));
   end;
   Result := NewListItem;
 end;
@@ -742,8 +748,7 @@ end;
 procedure TfrmMain.RefreshListSectorData(Sector: TDSKSector);
 var
   Idx: Integer;
-  SecData: String;
-  SecHex: String;
+  SecData, SecHex: String;
 begin
   lvwMain.Font := SectorFont;
   with lvwMain.Columns do
@@ -817,11 +822,26 @@ begin
      end;
 end;
 
+// Get the current image
+function TfrmMain.GetCurrentImage: TDSKImage;
+var
+	Node: TTreeNode;
+begin
+  Result := nil;
+	Node := tvwMain.Selected;
+  if (Node = nil) then
+  	exit;
+
+  while (TObject(Node.Data).ClassType <> TDskImage) do
+  	Node := Node.Parent;
+
+	Result := TDskImage(Node.Data);
+end;
+
 procedure TfrmMain.itmCloseClick(Sender: TObject);
 begin
   if (tvwMain.Selected <> nil) then
-     if (tvwMain.Selected.ImageIndex = 0) then
-        CloseImage(TDSKImage(tvwMain.Selected.Data));
+        CloseImage(GetCurrentImage);
 end;
 
 procedure TfrmMain.itmExitClick(Sender: TObject);
@@ -878,11 +898,13 @@ end;
 
 // Menu: View > Options
 procedure TfrmMain.itmOptionsClick(Sender: TObject);
-var
-	frmOptions: TfrmOptions;
 begin
-	frmOptions := TfrmOptions.Create(Self);
-	frmOptions.Show;
+	TfrmOptions.Create(Self).Show();
+end;
+
+procedure TfrmMain.itmReadClick(Sender: TObject);
+begin
+  TfrmSamDisk.Create(self).Show();
 end;
 
 // Windows: Files dropped from explorer
@@ -890,15 +912,15 @@ procedure TfrmMain.DropMsg(var msg: TWMDropFiles);
 var
   Files, Idx: Integer;
   FileBuf: array[0..255] of Char;
-  FileName : String;
+  FileName : string;
 begin
-  Files := DragQueryFile(Msg.Drop, $FFFFFFFF, FileBuf, SizeOf(FileName));
+  Files := DragQueryFile(Msg.Drop,$FFFFFFFF,FileBuf,SizeOf(FileName));
   for Idx := 0 to Files-1 do
   begin
-     FileName := Copy(FileBuf, 0, DragQueryFile(Msg.Drop, Idx, FileBuf, 255));
+     FileName := Copy(FileBuf,0,DragQueryFile(Msg.Drop,Idx,FileBuf,255));
      LoadImage(FileName);
   end;
-  Msg.Result:=0;
+  Msg.Result := 0;
   DragFinish(msg.Drop);
 end;
 
@@ -924,11 +946,11 @@ begin
   RestoreWindow := Reg.ReadBool(S,'Restore',False);
   if RestoreWindow then
   begin
-     Left := Reg.ReadInteger(S,'Left',Left);
-     Top := Reg.ReadInteger(S,'Top',Top);
-     Height := Reg.ReadInteger(S,'Height',Height);
-     Width := Reg.ReadInteger(S,'Width',Width);
-     tvwMain.Width := Reg.ReadInteger(S,'TreeWidth',tvwMain.Width);
+  	Left := Reg.ReadInteger(S,'Left',Left);
+    Top := Reg.ReadInteger(S,'Top',Top);
+    Height := Reg.ReadInteger(S,'Height',Height);
+    Width := Reg.ReadInteger(S,'Width',Width);
+    tvwMain.Width := Reg.ReadInteger(S,'TreeWidth',tvwMain.Width);
   end;
 
   S := 'SectorView';
@@ -945,15 +967,19 @@ begin
      for Idx := 1 to Count do
      begin
         FileName := Reg.ReadString(S,StrInt(Idx),'');
-        If FileExists(FileName) then LoadImage(FileName);
+        if FileExists(FileName) then LoadImage(FileName);
      end;
   end;
 
   S := 'Saving';
   WarnConversionProblems := Reg.ReadBool(S,'WarnConversionProblems',True);
   RemoveEmptyTracks := Reg.ReadBool(S,'RemoveEmptyTracks',False);
- 	SaveMapX := Reg.ReadInteger('S','MapWidth',640);
- 	SaveMapY := Reg.ReadInteger('S','MapHeight',480);
+ 	SaveMapX := Reg.ReadInteger(S,'MapWidth',640);
+ 	SaveMapY := Reg.ReadInteger(S,'MapHeight',480);
+
+  S := 'SamDisk';
+  SamDiskEnabled := Reg.ReadBool(S,'Enabled',False);
+  SamDiskLocation := Reg.ReadString(S,'Location','');
 
   Reg.Free;
 end;
@@ -977,7 +1003,7 @@ begin
   Reg.WriteBool(S,'Restore',RestoreWindow);
   Reg.WriteInteger(S,'Left',Left);
   Reg.WriteInteger(S,'Top',Top);
-  Reg.WriteInteger(S,'Height',Top);
+  Reg.WriteInteger(S,'Height',Height);
   Reg.WriteInteger(S,'Width',Width);
   Reg.WriteInteger(S,'TreeWidth',tvwMain.Width);
   Reg.WriteString(S,'Font',FontToDescription(frmMain.Font));
@@ -993,14 +1019,11 @@ begin
   Reg.EraseSection(S);
   Reg.WriteBool(S,'Restore',RestoreWorkspace);
   for Idx := 0 to tvwMain.Items.Count-1 do
-  begin
-     if (tvwMain.Items[Idx].Data <> nil) then
-        if (TObject(tvwMain.Items[Idx].Data).ClassType = TDSKImage) then
-           begin
-              Reg.WriteString(S,StrInt(Count),TDSKImage(tvwMain.Items[Idx].Data).FileName);
-              inc(Count);
-           end;
-  end;
+  	if (tvwMain.Items[Idx].Data <> nil) and (TObject(tvwMain.Items[Idx].Data).ClassType = TDSKImage) then
+    begin
+    	Reg.WriteString(S,StrInt(Count),TDSKImage(tvwMain.Items[Idx].Data).FileName);
+      inc(Count);
+    end;
   Reg.WriteInteger(S,'',Count-1);
 
   S := 'Saving';
@@ -1008,6 +1031,10 @@ begin
   Reg.WriteBool(S,'RemoveEmptyTracks',RemoveEmptyTracks);
   Reg.WriteInteger(S,'MapWidth',SaveMapX);
   Reg.WriteInteger(S,'MapHeight',SaveMapY);
+
+  S := 'SamDisk';
+  Reg.WriteBool(S,'Enabled',SamDiskEnabled);
+  Reg.WriteString(S,'Location',SamDiskLocation);
 
   Reg.Free;
 end;
@@ -1063,32 +1090,32 @@ end;
 
 procedure TfrmMain.itmSaveCopyAsClick(Sender: TObject);
 begin
-	if (TObject(tvwMain.Selected.Data).ClassType = TDSKImage) then
-  	SaveImageAs(TDSKImage(tvwMain.Selected.Data),True);
+	if (tvwMain.Selected <> nil) then
+  	SaveImageAs(GetCurrentImage,True);
 end;
 
-procedure TfrmMain.SaveImageAs(Image: TDSKImage; Copy:Boolean);
+procedure TfrmMain.SaveImageAs(Image:TDSKImage; Copy:Boolean);
 begin
 	dlgSave.FileName := Image.FileName;
 	case Image.FileFormat of
-    	diStandardDSK: dlgSave.FilterIndex := 1;
-     diExtendedDSK: dlgSave.FilterIndex := 2;
+  	diStandardDSK: dlgSave.FilterIndex := 1;
+  	diExtendedDSK: dlgSave.FilterIndex := 2;
   end;
 
   if dlgSave.Execute then
-	    case dlgSave.FilterIndex of
- 	   	1: begin
-        		if ((not Image.Disk.IsTrackSizeUniform) and Self.WarnConversionProblems) then
-          			if MessageDlg('This image has variable track sizes that "Standard DSK format" does not support. ' +
-                 	'Save anyway using largest track size?',mtWarning, [mbYes, mbNo],0) = mrOK then
-                    Image.SaveFile(dlgSave.FileName,diStandardDSK,True,False)
-                 else
-                 	exit
-              else
-						Image.SaveFile(dlgSave.FileName,diStandardDSK,Copy,False);
-        	end;
-    	   2: Image.SaveFile(dlgSave.FileName,diExtendedDSK,Copy,RemoveEmptyTracks);
-     end;
+  	case dlgSave.FilterIndex of
+    	1: begin
+      		if ((not Image.Disk.IsTrackSizeUniform) and Self.WarnConversionProblems) then
+          	if MessageDlg('This image has variable track sizes that "Standard DSK format" does not support. ' +
+            	'Save anyway using largest track size?',mtWarning, [mbYes, mbNo],0) = mrOK then
+              Image.SaveFile(dlgSave.FileName,diStandardDSK,True,False)
+            else
+            	exit
+          else
+          	Image.SaveFile(dlgSave.FileName,diStandardDSK,Copy,False);
+      	end;
+      2: Image.SaveFile(dlgSave.FileName,diExtendedDSK,Copy,RemoveEmptyTracks);
+    end;
 end;
 
 procedure TfrmMain.itmSaveMapAsClick(Sender: TObject);
@@ -1131,10 +1158,25 @@ begin
    itmStatusBar.Checked := staBar.visible;
 end;
 
+procedure TfrmMain.itmWriteClick(Sender: TObject);
+var
+  frmSamDisk: TFrmSamDisk;
+begin
+	with GetCurrentImage do
+  begin
+  	if (IsChanged) then
+    	if (MessageDlg('Disk image has unsaved changes. Save to proceed?',mtConfirmation,[mbYes,mbNo],0) = mrNo) then
+      	exit;
+		frmSamDisk := TFrmSamDisk.Create(self);
+		frmSamDisk.Source := FileName;
+  	frmSamDisk.Show;
+  end;
+end;
+
 procedure TfrmMain.itmSaveClick(Sender: TObject);
 begin
-	if (TObject(tvwMain.Selected.Data).ClassType = TDSKImage) then
-  	SaveImage(TDSKImage(tvwMain.Selected.Data));
+	if (tvwMain.Selected <> nil) then
+  	SaveImage(GetCurrentImage);
 end;
 
 procedure TfrmMain.SaveImage(Image: TDSKImage);
@@ -1142,7 +1184,7 @@ begin
   if (Image.FileFormat=diNotYetSaved) then
   	SaveImageAs(Image,False)
   else
-    	Image.SaveFile(Image.FileName,Image.FileFormat,False,(RemoveEmptyTracks and (Image.FileFormat=diExtendedDSK)));
+  	Image.SaveFile(Image.FileName,Image.FileFormat,False,(RemoveEmptyTracks and (Image.FileFormat=diExtendedDSK)));
 end;
 
 procedure TfrmMain.itmSectorResetFDCClick(Sender: TObject);
@@ -1169,11 +1211,9 @@ end;
 function TfrmMain.GetSelectedSector(Sender: TObject): TDSKSector;
 begin
 	Result := nil;
-
   if (Sender = lvwMain) then
   	if (lvwMain.Selected <> nil) then
-	   	with lvwMain.Selected do
-				Result := TDSKSector(Data);
+    	Result := TDSKSector(lvwMain.Selected.Data);
 end;
 
 procedure TfrmMain.itmSectorBlankDataClick(Sender: TObject);
@@ -1181,28 +1221,27 @@ var
 	Sector: TDSKSector;
 begin
 	Sector := GetSelectedSector(popSector.PopupComponent);
-  if (Sector <> nil) then
-  	if ConfirmChange('format','sector') then
-		   begin
-        Sector.DataSize := Sector.ParentTrack.SectorSize;
-			  Sector.FillSector(Sector.ParentTrack.Filler);
-     	  UpdateMenus;
-		   end;
+  if (Sector <> nil) and ConfirmChange('format','sector') then
+  begin
+  	Sector.DataSize := Sector.ParentTrack.SectorSize;
+    Sector.FillSector(Sector.ParentTrack.Filler);
+    UpdateMenus;
+  end;
 end;
 
 procedure TfrmMain.itmSectorUnformatClick(Sender: TObject);
 begin
  	if (tvwMain.Selected <> nil) then
   begin
-     if (TObject(tvwMain.Selected.Data).ClassType = TDSKTrack) then
-     	  if ConfirmChange('unformat', 'track') then
-        begin
-          TDSKTrack(tvwMain.Selected.Data).Unformat;
-          tvwMain.Selected.DeleteChildren;
-        end;
-     if (TObject(tvwMain.Selected.Data).ClassType = TDSKSector) then
-     	  if ConfirmChange('unformat', 'sector') then
-			    TDSKSector(tvwMain.Selected.Data).Unformat;
+  	if (TObject(tvwMain.Selected.Data).ClassType = TDSKTrack) then
+    	if ConfirmChange('unformat', 'track') then
+      begin
+      	TDSKTrack(tvwMain.Selected.Data).Unformat;
+        tvwMain.Selected.DeleteChildren;
+      end;
+     	if (TObject(tvwMain.Selected.Data).ClassType = TDSKSector) then
+      	if ConfirmChange('unformat', 'sector') then
+        	TDSKSector(tvwMain.Selected.Data).Unformat;
      UpdateMenus;
   end;
 end;
@@ -1214,26 +1253,27 @@ var
 begin
  	if (tvwMain.Selected <> nil) then
   begin
-     if (TObject(tvwMain.Selected.Data).ClassType = TDSKTrack) then
-		    begin
-          Track := TDSKTrack(tvwMain.Selected.Data);
-          for TIdx := 0 to (Track.Sectors - 1) do
-            TfrmSector.Create(Self, Track.Sector[TIdx]);
-        end;
-     if (TObject(tvwMain.Selected.Data).ClassType = TDSKSector) then
-        TfrmSector.Create(Self, TDSKSector(tvwMain.Selected.Data));
-     UpdateMenus;
+  	if (TObject(tvwMain.Selected.Data).ClassType = TDSKTrack) then
+    begin
+    	Track := TDSKTrack(tvwMain.Selected.Data);
+      for TIdx := 0 to (Track.Sectors - 1) do
+      	TfrmSector.Create(Self, Track.Sector[TIdx]);
+    end;
+    if (TObject(tvwMain.Selected.Data).ClassType = TDSKSector) then
+    	TfrmSector.Create(Self, TDSKSector(tvwMain.Selected.Data));
+    UpdateMenus;
   end;
 end;
 
 function TfrmMain.ConfirmChange(Action: String; Upon: String): Boolean;
 begin
-	if WarnSectorChange then
-	 	Result := (MessageDlg('You are about to ' + Action + ' this ' + Upon + ' ' +
-     			 CR + CR +'Do you know what you are doing?',mtWarning,
-	        		[mbYes, mbNo],0) = mrYes)
-  else
+	if not WarnSectorChange then
+  begin
   	Result := True;
+  	exit;
+  end;
+  Result := (MessageDlg('You are about to ' + Action + ' this ' + Upon + ' ' +
+  	CR + CR +'Do you know what you are doing?',mtWarning,[mbYes,mbNo],0) = mrYes)
 end;
 
 function GetListViewAsText(ForListView: TListView): String;
@@ -1243,7 +1283,7 @@ begin
   // Headings
   for CIdx := 0 to ForListView.Columns.Count-1 do
     Result := Result + ForListView.Columns[CIdx].Caption + TAB;
-  Result := Result + EOL;
+  Result := Result + CRLF;
 
   // Details
   for RIdx := 0 to ForListView.Items.Count-1 do
@@ -1251,8 +1291,8 @@ begin
     begin
       Result := Result + ForListView.Items[RIdx].Caption + TAB;
       for CIdx := 0 to ForListView.Items[RIdx].SubItems.Count-1 do
-        Result := Result + ForListView.Items[RIdx].SubItems[CIdx] + TAB;
-      Result := Result + EOL;
+      	Result := Result + ForListView.Items[RIdx].SubItems[CIdx] + TAB;
+      Result := Result + CRLF;
     end;
 end;
 
@@ -1310,5 +1350,11 @@ begin
   dlgFindFind(Sender);
 end;
 
-end.
+procedure TfrmMain.SetSamDiskEnabled(Enabled: Boolean);
+begin
+	FSamDiskEnabled := Enabled;
+	itmRead.Enabled := FSamDiskEnabled;
+	itmWrite.Enabled := FSamDiskEnabled;
+end;
 
+end.

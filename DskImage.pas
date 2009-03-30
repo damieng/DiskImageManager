@@ -32,7 +32,7 @@ type
   TDSKFile = class;
 
   // Image
-  TDSKImageFormat = (diStandardDSK, diExtendedDSK, diNotYetSaved, diInvalid, diSuperExtendedDSK);
+  TDSKImageFormat = (diStandardDSK, diExtendedDSK, diNotYetSaved, diInvalid);
 
   TDSKImage = class(TObject)
   private
@@ -324,8 +324,7 @@ const
      'Standard DSK',
      'Extended DSK',
      'Not yet saved',
-     'Invalid',
-     'Extended DSK (Simons extensions)'
+     'Invalid'
   );
 
   DSKSpecFormats: array[TDSKSpecFormat] of String = (

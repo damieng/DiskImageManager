@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
   Left = 591
   Top = 277
-  ClientHeight = 367
+  ClientHeight = 386
   ClientWidth = 556
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
@@ -20,22 +20,23 @@ object frmMain: TfrmMain
     Left = 180
     Top = 0
     Width = 4
-    Height = 346
+    Height = 365
     ExplicitHeight = 343
   end
   object pnlLeft: TPanel
     Left = 0
     Top = 0
     Width = 180
-    Height = 346
+    Height = 365
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 0
+    ExplicitHeight = 346
     object tvwMain: TTreeView
       Left = 0
       Top = 19
       Width = 180
-      Height = 327
+      Height = 346
       Align = alClient
       HideSelection = False
       Images = imlSmall
@@ -45,6 +46,7 @@ object frmMain: TfrmMain
       ShowRoot = False
       TabOrder = 1
       OnChange = tvwMainChange
+      ExplicitHeight = 327
     end
     object pnlTreeLabel: TPanel
       Left = 0
@@ -61,26 +63,28 @@ object frmMain: TfrmMain
   end
   object staBar: TStatusBar
     Left = 0
-    Top = 346
+    Top = 365
     Width = 556
     Height = 21
     AutoHint = True
     Panels = <>
     SimplePanel = True
+    ExplicitTop = 346
   end
   object pnlRight: TPanel
     Left = 184
     Top = 0
     Width = 372
-    Height = 346
+    Height = 365
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
+    ExplicitHeight = 346
     object DiskMap: TSpinDiskMap
       Left = 0
       Top = 19
       Width = 372
-      Height = 327
+      Height = 346
       Align = alClient
       BorderStyle = bsLowered
       Color = clAppWorkSpace
@@ -106,7 +110,7 @@ object frmMain: TfrmMain
       Left = 0
       Top = 19
       Width = 372
-      Height = 327
+      Height = 346
       Align = alClient
       AllocBy = 20
       Columns = <>
@@ -119,6 +123,7 @@ object frmMain: TfrmMain
       TabOrder = 1
       ViewStyle = vsReport
       OnDblClick = lvwMainDblClick
+      ExplicitHeight = 327
     end
   end
   object mnuMain: TMainMenu
@@ -139,6 +144,12 @@ object frmMain: TfrmMain
         ShortCut = 16463
         OnClick = itmOpenClick
       end
+      object itmRead: TMenuItem
+        Caption = '&Read from disk...'
+        Hint = 'Read image from disk using SamDisk'
+        ShortCut = 16466
+        OnClick = itmReadClick
+      end
       object N1: TMenuItem
         Caption = '-'
       end
@@ -154,6 +165,12 @@ object frmMain: TfrmMain
         Enabled = False
         Hint = 'Save current disk image to a file with a new name'
         OnClick = itmSaveCopyAsClick
+      end
+      object itmWrite: TMenuItem
+        Caption = '&Write to disk...'
+        Hint = 'Write current image to disk using SamDisk'
+        ShortCut = 16471
+        OnClick = itmWriteClick
       end
       object N2: TMenuItem
         Caption = '-'

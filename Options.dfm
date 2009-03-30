@@ -68,18 +68,14 @@ object frmOptions: TfrmOptions
     BevelOuter = bvNone
     BorderWidth = 5
     TabOrder = 1
-    ExplicitWidth = 298
-    ExplicitHeight = 323
     object pagOptions: TPageControl
       Left = 5
       Top = 5
       Width = 296
       Height = 321
-      ActivePage = tabSectors
+      ActivePage = tabMain
       Align = alClient
       TabOrder = 0
-      ExplicitLeft = 1
-      ExplicitTop = 1
       object tabMain: TTabSheet
         Caption = 'Main'
         object lblFontMainLabel: TLabel
@@ -396,6 +392,45 @@ object frmOptions: TfrmOptions
           TabOrder = 5
         end
       end
+      object tabSamDisk: TTabSheet
+        Caption = 'SamDisk'
+        ImageIndex = 4
+        object lblSamDiskLocation: TLabel
+          Left = 8
+          Top = 47
+          Width = 40
+          Height = 13
+          Caption = 'Location'
+        end
+        object chkSamDiskIntegration: TCheckBox
+          Left = 8
+          Top = 16
+          Width = 273
+          Height = 17
+          Caption = 'Integrate with SamDisk'
+          TabOrder = 0
+        end
+        object edtSamDiskLocation: TEdit
+          Left = 64
+          Top = 45
+          Width = 177
+          Height = 19
+          BevelKind = bkSoft
+          BorderStyle = bsNone
+          Color = clBtnFace
+          ReadOnly = True
+          TabOrder = 1
+        end
+        object btnSamDiskLocation: TButton
+          Left = 248
+          Top = 45
+          Width = 25
+          Height = 19
+          Caption = '...'
+          TabOrder = 2
+          OnClick = btnSamDiskLocationClick
+        end
+      end
     end
   end
   object dlgFont: TFontDialog
@@ -404,6 +439,13 @@ object frmOptions: TfrmOptions
     Font.Height = -11
     Font.Name = 'MS Sans Serif'
     Font.Style = []
-    Left = 264
+    Left = 152
+    Top = 264
+  end
+  object dlgSamDiskLocation: TOpenDialog
+    Filter = 'SamDisk executable|SamDisk.exe'
+    Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
+    Left = 184
+    Top = 264
   end
 end

@@ -36,7 +36,7 @@ function GetAppVersion: String;
 implementation
 
 uses
-  main;
+  Main;
 
 {$R *.dfm}
 
@@ -48,19 +48,18 @@ begin
   Size := GetFileVersionInfoSize(PChar(ParamStr(0)),Size2);
   if (Size > 0) then
   begin
-     GetMem(Pt,Size);
-     try
-        GetFileVersionInfo(PChar(ParamStr(0)),0,Size,Pt);
-        VerQueryValue(Pt,'\',Pt2,Size2);
-        with TVSFixedFileInfo(Pt2^) do
-        begin
-           Result := Format('%d.%d.%d.%d',
-                 [HiWord(dwFileVersionMS),LoWord(dwFileVersionMS),
-                 HiWord(dwFileVersionLS),LoWord(dwFileVersionLS)]);
-        end;
-     finally
-        FreeMem(Pt);
-     end;
+  	GetMem(Pt,Size);
+    try
+    	GetFileVersionInfo(PChar(ParamStr(0)),0,Size,Pt);
+      VerQueryValue(Pt,'\',Pt2,Size2);
+      with TVSFixedFileInfo(Pt2^) do
+      begin
+      	Result := Format('%d.%d.%d.%d', [HiWord(dwFileVersionMS),LoWord(dwFileVersionMS),
+                 	HiWord(dwFileVersionLS),LoWord(dwFileVersionLS)]);
+      end;
+    finally
+    	FreeMem(Pt);
+    end;
   end;
 end;
 
@@ -73,32 +72,29 @@ end;
 
 procedure TfrmAbout.timFadeTimer(Sender: TObject);
 begin
-  if (timFade.Tag >0) then
-     if (frmAbout.AlphaBlendValue < 250) then
-        frmAbout.AlphaBlendValue := frmAbout.AlphaBlendValue + timFade.Tag
-     else
-     begin
-        timFade.Enabled := False;
-        frmAbout.AlphaBlendValue := 255;
-     end
-  else
-     if (frmAbout.AlphaBlendValue > 5) then
-        frmAbout.AlphaBlendValue := frmAbout.AlphaBlendValue + timFade.Tag
-     else
-     begin
-        timFade.Enabled := False;
-        frmAbout.AlphaBlendValue := 0;
-        Close;
-     end;
+  if (timFade.Tag > 0) then
+  	if (frmAbout.AlphaBlendValue < 250) then
+    	frmAbout.AlphaBlendValue := frmAbout.AlphaBlendValue + timFade.Tag
+    else
+    begin
+    	timFade.Enabled := False;
+      frmAbout.AlphaBlendValue := 255;
+    end
+	else
+  	if (frmAbout.AlphaBlendValue > 5) then
+    	frmAbout.AlphaBlendValue := frmAbout.AlphaBlendValue + timFade.Tag
+    else
+    begin
+    	timFade.Enabled := False;
+      frmAbout.AlphaBlendValue := 0;
+      Close;
+    end;
 end;
 
 procedure TfrmAbout.FormShow(Sender: TObject);
 begin
   frmAbout.Font := frmMain.Font;
   frmAbout.AlphaBlendValue := 0;
-  lblWeb.Font.Color := clBlue;
-  lblWeb.Font.Style := [fsUnderline];
-  lblEmail.Font := lblWeb.Font;
   lblVersion.Font.Color := clBtnShadow;
   timFade.Tag := 4;
   timFade.Enabled := True;
@@ -106,7 +102,7 @@ end;
 
 procedure TfrmAbout.lblWebClick(Sender: TObject);
 begin
-  ShellExecute(Self.handle,'open',PChar(TLabel(Sender).Hint),nil,nil,0);
+	ShellExecute(Application.Handle,'open',PChar(TLabel(Sender).Hint),nil,nil,0);
 end;
 
 procedure TfrmAbout.btnOKClick(Sender: TObject);

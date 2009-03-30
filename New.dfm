@@ -133,7 +133,7 @@ object frmNew: TfrmNew
       Top = 5
       Width = 289
       Height = 254
-      ActivePage = tabFormat
+      ActivePage = tabDetails
       Align = alClient
       Constraints.MinHeight = 254
       Constraints.MinWidth = 281

@@ -185,7 +185,13 @@ object frmAbout: TfrmAbout
     Hint = 'http://www.damieng.com/spectrum/disk-manager'
     Caption = 'http://www.damieng.com/spectrum/disk-manager'
     Color = clBtnFace
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clBlue
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = [fsUnderline]
     ParentColor = False
+    ParentFont = False
     OnClick = lblWebClick
   end
   object lblEmail: TLabel
@@ -197,7 +203,13 @@ object frmAbout: TfrmAbout
     Hint = 'mailto:damien@envytech.co.uk'
     Caption = 'damien@envytech.co.uk'
     Color = clBtnFace
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clBlue
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = [fsUnderline]
     ParentColor = False
+    ParentFont = False
     OnClick = lblWebClick
   end
   object btnOK: TButton

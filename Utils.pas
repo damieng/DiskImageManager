@@ -64,9 +64,9 @@ function StrBlockClean(S: array of Char; Start, Len: Integer): String;
 var
   Idx: Integer;
 begin
-  for Idx := Start to Len-1 do
-     if ((Ord(S[Idx]) > 31) and (Ord(S[Idx]) < 128)) then
-        Result := Result + S[Idx];
+	for Idx := Start to Len-1 do
+  	if ((Ord(S[Idx]) > 31) and (Ord(S[Idx]) < 128)) then
+    	Result := Result + S[Idx];
 end;
 
 // Compare two char arrays
@@ -78,9 +78,9 @@ begin
   Idx := 0;
   while (Result and (Idx < Length(B)-1)) do
   begin
-     if (A[Idx] <> B[Idx+1]) then
-        Result := False;
-     inc(Idx);
+  	if (A[Idx] <> B[Idx+1]) then
+     	Result := False;
+    inc(Idx);
   end;
 end;
 
@@ -93,9 +93,9 @@ begin
   Idx := 0;
   while (Result and (Idx < Length(B)-1)) do
   begin
-     if (A[Idx+Start] <> B[Idx+1]) then
-        Result := False;
-     inc(Idx);
+  	if (A[Idx+Start] <> B[Idx+1]) then
+    	Result := False;
+    inc(Idx);
   end;
 end;
 
@@ -171,8 +171,8 @@ begin
   Result := TFont.Create;
   Result.Name := StringReplace(Break[0],'_',' ',[rfReplaceAll]);
   Result.Size := IntStr(StringReplace(Break[1],'pt','',[rfReplaceAll]));
-  if (Break[1]='Bold') then Result.Style := Result.Style + [fsBold];
-  if (Break[2]='Italic') then Result.Style := Result.Style + [fsItalic];
+  if (Break[1] = 'Bold') then Result.Style := Result.Style + [fsBold];
+  if (Break[2] = 'Italic') then Result.Style := Result.Style + [fsItalic];
   Break.Free;
 end;
 
@@ -212,7 +212,7 @@ begin
 	while ((Result) and (Start+Idx < Last) and (Idx < Length(SubString))) do
   begin
 		if ByteArray[Start+Idx] <> Byte(SubString[Idx+1]) then Result := False;
-     inc(Idx);
+    inc(Idx);
   end;
 end;
 

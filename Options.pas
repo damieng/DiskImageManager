@@ -59,6 +59,12 @@ type
     udMapY: TUpDown;
     chkWarnSectorChange: TCheckBox;
     pnlTabs: TPanel;
+    tabSamDisk: TTabSheet;
+    chkSamDiskIntegration: TCheckBox;
+    lblSamDiskLocation: TLabel;
+    edtSamDiskLocation: TEdit;
+    btnSamDiskLocation: TButton;
+    dlgSamDiskLocation: TOpenDialog;
     procedure cbxBackChange(Sender: TObject);
     procedure cbxGridChange(Sender: TObject);
     procedure btnFontMainClick(Sender: TObject);
@@ -67,8 +73,10 @@ type
     procedure edtTrackMarksChange(Sender: TObject);
     procedure btnResetClick(Sender: TObject);
     procedure chkDarkBlankSectorsClick(Sender: TObject);
+    procedure btnSamDiskLocationClick(Sender: TObject);
   private
      MainFont, SectorFont, MapFont: TFont;
+     SamDiskLocation: String;
      procedure Read;
      procedure Write;
   public
@@ -139,6 +147,7 @@ end;
 
 function TfrmOptions.Show: Boolean;
 begin
+	pagOptions.ActivePageIndex := 0;
   Read;
   Result := (ShowModal = mrOK);
   if Result then Write;
@@ -167,6 +176,8 @@ begin
   chkSaveRemoveEmptyTracks.Checked := frmMain.RemoveEmptyTracks;
   udMapX.Position := frmMain.SaveMapX;
   udMapY.Position := frmMain.SaveMapY;
+  chkSamDiskIntegration.Checked := frmMain.SamDiskEnabled;
+  edtSamDiskLocation.Text := frmMain.SamDiskLocation;
 end;
 
 procedure TfrmOptions.Write;
@@ -189,6 +200,8 @@ begin
      RemoveEmptyTracks := chkSaveRemoveEmptyTracks.Checked;
      SaveMapX := udMapX.Position;
      SaveMapY := udMapY.Position;
+     SamDiskEnabled := chkSamDiskIntegration.Checked;
+     SamDiskLocation := edtSamDiskLocation.Text;	
   end;
 end;
 
@@ -208,6 +221,19 @@ begin
   Reg.EraseSection('Workspace');
   frmMain.LoadSettings;
   Read;
+end;
+
+procedure TfrmOptions.btnSamDiskLocationClick(Sender: TObject);
+begin
+  with dlgSamDiskLocation do
+  begin
+    FileName := SamDiskLocation;
+    if Execute then
+    begin
+    	SamDiskLocation := FileName;
+      edtSamDiskLocation.Text := FileName;
+    end;
+  end;
 end;
 
 procedure TfrmOptions.chkDarkBlankSectorsClick(Sender: TObject);
