@@ -1,5 +1,7 @@
 unit SectorProperties;
 
+{$MODE Delphi}
+
 {
   Disk Image Manager -  Copyright 2002-2009 Envy Technologies Ltd.
 
@@ -10,7 +12,7 @@ interface
 
 uses
   DskImage, Utils,
-  Windows, SysUtils, Classes, Graphics, Forms, Controls, StdCtrls,
+  LCLIntf, LCLType, LMessages, SysUtils, Classes, Graphics, Forms, Controls, StdCtrls,
   Buttons, ComCtrls, ExtCtrls, CheckLst, Dialogs;
 
 type
@@ -79,9 +81,9 @@ var
 
 implementation
 
-uses main;
+uses Main;
 
-{$R *.dfm}
+{$R *.lfm}
 
 constructor TfrmSector.Create(AOwner: TComponent; Sector: TDSKSector);
 begin

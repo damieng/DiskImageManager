@@ -1,5 +1,7 @@
 unit New;
 
+{$MODE Delphi}
+
 {
   Disk Image Manager -  Copyright 2002-2009 Envy Technologies Ltd.
 
@@ -10,7 +12,7 @@ interface
 
 uses
   DskImage, Main,
-  Windows, Messages, SysUtils, Variants, Classes, Controls, Forms,
+  LCLIntf, LCLType, LMessages, Messages, SysUtils, Variants, Classes, Controls, Forms,
   StdCtrls, ComCtrls, ExtCtrls, Dialogs, Buttons;
 
 type
@@ -133,7 +135,7 @@ var
 
 implementation
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TfrmNew.edtFillerChange(Sender: TObject);
 begin

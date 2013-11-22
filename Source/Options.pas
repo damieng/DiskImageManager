@@ -1,5 +1,7 @@
 unit Options;
 
+{$MODE Delphi}
+
 {
   Disk Image Manager -  Copyright 2002-2009 Envy Technologies Ltd.
 
@@ -46,8 +48,8 @@ type
     chkRestoreWorkspace: TCheckBox;
     btnReset: TButton;
     chkDarkBlankSectors: TCheckBox;
-    cbxBack: TColorBox;
-    cbxGrid: TColorBox;
+    cbxBack: TColorButton;
+    cbxGrid: TColorButton;
     tabSaving: TTabSheet;
     chkWarnConversionProblems: TCheckBox;
     chkSaveRemoveEmptyTracks: TCheckBox;
@@ -88,18 +90,18 @@ var
 
 implementation
 
-uses main;
+uses Main;
 
-{$R *.dfm}
+{$R *.lfm}
 
 procedure TfrmOptions.cbxBackChange(Sender: TObject);
 begin
-  DiskMap.Color := cbxBack.Selected;
+  DiskMap.Color := cbxBack.Color;
 end;
 
 procedure TfrmOptions.cbxGridChange(Sender: TObject);
 begin
-  DiskMap.GridColor := cbxGrid.Selected;
+  DiskMap.GridColor := cbxGrid.Color;
 end;
 
 procedure TfrmOptions.btnFontMainClick(Sender: TObject);
@@ -167,9 +169,9 @@ begin
   udTrackMarks.Position := frmMain.DiskMap.TrackMark;
   chkDarkBlankSectors.Checked := frmMain.DiskMap.DarkBlankSectors;
   edtNonDisplay.Text := frmMain.UnknownASCII;
-  cbxBack.Selected := frmMain.DiskMap.Color;
+  cbxBack.Color := frmMain.DiskMap.Color;
   cbxBackChange(Self);
-  cbxGrid.Selected := frmMain.DiskMap.GridColor;
+  cbxGrid.Color := frmMain.DiskMap.GridColor;
   cbxGridChange(Self);
   chkWarnConversionProblems.Checked := frmMain.WarnConversionProblems;
   chkWarnSectorChange.Checked := frmMain.WarnSectorChange;
@@ -186,9 +188,9 @@ begin
   begin
      frmMain.SectorFont := FontCopy(Self.SectorFont);
      frmMain.Font := FontCopy(Self.MainFont);
-     DiskMap.Color := cbxBack.Selected;
+     DiskMap.Color := cbxBack.Color;
      DiskMap.DarkBlankSectors := chkDarkBlankSectors.Checked;
-     DiskMap.GridColor := cbxGrid.Selected;
+     DiskMap.GridColor := cbxGrid.Color;
      DiskMap.TrackMark := udTrackMarks.Position;
      DiskMap.Font := FontCopy(Self.MapFont);
      RestoreWindow := chkRestoreWindow.Checked;

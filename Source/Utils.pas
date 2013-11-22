@@ -1,5 +1,7 @@
 unit Utils;
 
+{$MODE Delphi}
+
 {
   Disk Image Manager -  Copyright 2002-2009 Envy Technologies Ltd.
 
@@ -9,7 +11,7 @@ unit Utils;
 interface
 
 uses
-  Classes, Graphics, Windows, SysUtils;
+  Classes, Graphics, LCLIntf, LCLType, LMessages, SysUtils;
 
 const
   BytesPerKB: Integer = 1024;

@@ -1,5 +1,7 @@
 unit DskImage;
 
+{$MODE Delphi}
+
 {
   Disk Image Manager -  Copyright 2002-2009 Envy Technologies Ltd.
 
@@ -9,8 +11,8 @@ unit DskImage;
 interface
 
 uses
-  DskFormat, Utils,
-  Classes, Dialogs, SysUtils, Windows, Math;
+  DSKFormat, Utils,
+  Classes, Dialogs, SysUtils, LCLIntf, LCLType, LMessages, Math;
 
 const
   MaxSectorSize = 32768;

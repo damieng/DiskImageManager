@@ -1,5 +1,7 @@
 unit About;
 
+{$MODE Delphi}
+
 {
   Disk Image Manager -  Copyright 2002-2009 Envy Technologies Ltd.
 
@@ -9,7 +11,7 @@ unit About;
 interface
 
 uses
-  Windows, Controls, Forms, ExtCtrls, StdCtrls, Graphics, Classes, SysUtils, ShellApi;
+  LCLIntf, LCLType, LMessages, Controls, Forms, ExtCtrls, StdCtrls, Graphics, Classes, SysUtils;
 
 type
   TfrmAbout = class(TForm)
@@ -36,16 +38,17 @@ function GetAppVersion: String;
 implementation
 
 uses
-  Main;
+  Main, Windows;
 
-{$R *.dfm}
+{$R *.lfm}
 
 function GetAppVersion: String;
 var
   Size, Size2: DWord;
   Pt, Pt2: Pointer;
 begin
-  Size := GetFileVersionInfoSize(PChar(ParamStr(0)),Size2);
+  Size :=
+  GetFileVersionInfoSize(PChar(ParamStr(0)),Size2);
   if (Size > 0) then
   begin
   	GetMem(Pt,Size);
@@ -102,7 +105,7 @@ end;
 
 procedure TfrmAbout.lblWebClick(Sender: TObject);
 begin
-	ShellExecute(Application.Handle,'open',PChar(TLabel(Sender).Hint),nil,nil,0);
+	 OpenDocument(PChar(TLabel(Sender).Hint)); { *Converted from ShellExecute*  }
 end;
 
 procedure TfrmAbout.btnOKClick(Sender: TObject);

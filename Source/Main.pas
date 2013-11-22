@@ -1,5 +1,7 @@
 unit Main;
 
+{$MODE Delphi}
+
 {
   Disk Image Manager -  Copyright 2002-2009 Envy Technologies Ltd.
 
@@ -11,7 +13,8 @@ interface
 uses
   DiskMap, DskImage, Utils, About, Options, SectorProperties, FormatAnalysis,
   Classes, Graphics, Registry, SysUtils, Forms, Dialogs, Menus, ComCtrls,
-  ExtCtrls, ImgList, Controls, Messages, Windows, ShellApi, Clipbrd, StrUtils;
+  ExtCtrls, ImgList, Controls, Messages, LCLIntf, LCLType, LMessages, Clipbrd, FileUtil,
+  StrUtils;
 
 type
   // Must match the imagelist, put sides last
@@ -168,9 +171,9 @@ function GetListViewAsText(ForListView: TListView): String;
 
 implementation
 
-{$R *.dfm}
+{$R *.lfm}
 
-uses New, SamDisk;
+uses New{, SamDisk};
 
 procedure TfrmMain.FormCreate(Sender: TObject);
 var
@@ -179,7 +182,7 @@ var
 begin
   LoadSettings;
   NextNewFile := 0;
-  DragAcceptFiles(Handle,true);
+//  DragAcceptFiles(Handle,true);
   Caption := Application.Title;
   itmAbout.Caption := 'About ' + Application.Title;
   itmDarkUnusedSectors.Checked := DiskMap.DarkBlankSectors;
@@ -187,7 +190,7 @@ begin
   for Idx := 1 to ParamCount do
   begin
     FileName := ParamStr(Idx);
-    if ExtractFileExt(FileName) = '.dsk' then if FileExists(FileName) then LoadImage(FileName);
+    if ExtractFileExt(FileName) = '.dsk' then if FileExistsUTF8(FileName) { *Converted from FileExists*  } then LoadImage(FileName);
   end;
 end;
 
@@ -651,10 +654,10 @@ var
 begin
   for Idx := 0 to Parent.Count-1 do
   begin
-     if (Parent.Item[Idx].Data = Item) then
-        tvwMain.Selected := Parent.Item[Idx]
-     else
-        SelectTreeChild(Parent.Item[Idx],Item);
+//     if (Parent.Item[Idx].Data = Item) then
+//        tvwMain.Selected := Parent.Item[Idx]
+//     else
+//        SelectTreeChild(Parent.Item[Idx],Item);
   end;
 end;
 
@@ -904,7 +907,7 @@ end;
 
 procedure TfrmMain.itmReadClick(Sender: TObject);
 begin
-  TfrmSamDisk.Create(self).Show();
+//  TfrmSamDisk.Create(self).Show();
 end;
 
 // Windows: Files dropped from explorer
@@ -914,14 +917,14 @@ var
   FileBuf: array[0..255] of Char;
   FileName : string;
 begin
-  Files := DragQueryFile(Msg.Drop,$FFFFFFFF,FileBuf,SizeOf(FileName));
-  for Idx := 0 to Files-1 do
-  begin
-     FileName := Copy(FileBuf,0,DragQueryFile(Msg.Drop,Idx,FileBuf,255));
-     LoadImage(FileName);
-  end;
-  Msg.Result := 0;
-  DragFinish(msg.Drop);
+//  Files := DragQueryFile(Msg.Drop,$FFFFFFFF,FileBuf,SizeOf(FileName));
+//  for Idx := 0 to Files-1 do
+//  begin
+//     FileName := Copy(FileBuf,0,DragQueryFile(Msg.Drop,Idx,FileBuf,255));
+//     LoadImage(FileName);
+//  end;
+//  Msg.Result := 0;
+//  DragFinish(msg.Drop);
 end;
 
 // Load system settings
@@ -967,7 +970,7 @@ begin
      for Idx := 1 to Count do
      begin
         FileName := Reg.ReadString(S,StrInt(Idx),'');
-        if FileExists(FileName) then LoadImage(FileName);
+        if FileExistsUTF8(FileName) { *Converted from FileExists*  } then LoadImage(FileName);
      end;
   end;
 
@@ -1159,18 +1162,18 @@ begin
 end;
 
 procedure TfrmMain.itmWriteClick(Sender: TObject);
-var
-  frmSamDisk: TFrmSamDisk;
+//var
+//  frmSamDisk: TFrmSamDisk;
 begin
-	with GetCurrentImage do
-  begin
-  	if (IsChanged) then
-    	if (MessageDlg('Disk image has unsaved changes. Save to proceed?',mtConfirmation,[mbYes,mbNo],0) = mrNo) then
-      	exit;
-		frmSamDisk := TFrmSamDisk.Create(self);
-		frmSamDisk.Source := FileName;
-  	frmSamDisk.Show;
-  end;
+//	with GetCurrentImage do
+//  begin
+//  	if (IsChanged) then
+//    	if (MessageDlg('Disk image has unsaved changes. Save to proceed?',mtConfirmation,[mbYes,mbNo],0) = mrNo) then
+//      	exit;
+//		frmSamDisk := TFrmSamDisk.Create(self);
+//		frmSamDisk.Source := FileName;
+//  	frmSamDisk.Show;
+//  end;
 end;
 
 procedure TfrmMain.itmSaveClick(Sender: TObject);
@@ -1302,8 +1305,12 @@ begin
 end;
 
 procedure TfrmMain.itmEditSelectAllClick(Sender: TObject);
+var
+  i: integer;
 begin
-  lvwMain.SelectAll;
+  lvwMain.Items.BeginUpdate;
+  for i := 0 to lvwMain.Items.Count-1 do lvwMain.Items[i].Selected:=true;
+  lvwMain.Items.EndUpdate;
 end;
 
 procedure TfrmMain.itmFindClick(Sender: TObject);
