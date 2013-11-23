@@ -4,11 +4,6 @@ object frmMain: TfrmMain
   ClientHeight = 386
   ClientWidth = 556
   Color = clBtnFace
-  Font.Charset = ANSI_CHARSET
-  Font.Color = clWindowText
-  Font.Height = -11
-  Font.Name = 'Tahoma'
-  Font.Style = []
   Menu = mnuMain
   Position = poDesigned
   OnClose = FormClose

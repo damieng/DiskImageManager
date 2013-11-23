@@ -77,12 +77,12 @@ type
     procedure chkDarkBlankSectorsClick(Sender: TObject);
     procedure btnSamDiskLocationClick(Sender: TObject);
   private
-     MainFont, SectorFont, MapFont: TFont;
-     SamDiskLocation: String;
-     procedure Read;
-     procedure Write;
+    MainFont, SectorFont, MapFont: TFont;
+    SamDiskLocation: string;
+    procedure Read;
+    procedure Write;
   public
-    function Show: Boolean;
+    function Show: boolean;
   end;
 
 var
@@ -108,13 +108,13 @@ procedure TfrmOptions.btnFontMainClick(Sender: TObject);
 begin
   with dlgFont do
   begin
-     Font := MainFont;
-     Options := Options - [fdFixedPitchOnly];
-     if Execute then
-     begin
-        MainFont := Font;
-        edtFontMain.Text := FontDescription(MainFont);
-     end;
+    Font := MainFont;
+    Options := Options - [fdFixedPitchOnly];
+    if Execute then
+    begin
+      MainFont := Font;
+      edtFontMain.Text := FontDescription(MainFont);
+    end;
   end;
 end;
 
@@ -122,14 +122,14 @@ procedure TfrmOptions.btnFontMapClick(Sender: TObject);
 begin
   with dlgFont do
   begin
-     Font := MapFont;
-     Options := Options - [fdFixedPitchOnly];
-     if Execute then
-     begin
-        MapFont := Font;
-        edtFontMap.Text := FontDescription(MapFont);
-        DiskMap.Font := MapFont;
-     end;
+    Font := MapFont;
+    Options := Options - [fdFixedPitchOnly];
+    if Execute then
+    begin
+      MapFont := Font;
+      edtFontMap.Text := FontDescription(MapFont);
+      DiskMap.Font := MapFont;
+    end;
   end;
 end;
 
@@ -137,22 +137,23 @@ procedure TfrmOptions.btnFontSectorClick(Sender: TObject);
 begin
   with dlgFont do
   begin
-     Font := SectorFont;
-     Options := Options + [fdFixedPitchOnly];
-     if Execute then
-     begin
-        SectorFont := Font;
-        edtFontSector.Text := FontDescription(SectorFont);
-     end;
+    Font := SectorFont;
+    Options := Options + [fdFixedPitchOnly];
+    if Execute then
+    begin
+      SectorFont := Font;
+      edtFontSector.Text := FontDescription(SectorFont);
+    end;
   end;
 end;
 
-function TfrmOptions.Show: Boolean;
+function TfrmOptions.Show: boolean;
 begin
-	pagOptions.ActivePageIndex := 0;
+  pagOptions.ActivePageIndex := 0;
   Read;
-  Result := (ShowModal = mrOK);
-  if Result then Write;
+  Result := (ShowModal = mrOk);
+  if Result then
+    Write;
 end;
 
 procedure TfrmOptions.Read;
@@ -186,24 +187,24 @@ procedure TfrmOptions.Write;
 begin
   with frmMain do
   begin
-     frmMain.SectorFont := FontCopy(Self.SectorFont);
-     frmMain.Font := FontCopy(Self.MainFont);
-     DiskMap.Color := cbxBack.Color;
-     DiskMap.DarkBlankSectors := chkDarkBlankSectors.Checked;
-     DiskMap.GridColor := cbxGrid.Color;
-     DiskMap.TrackMark := udTrackMarks.Position;
-     DiskMap.Font := FontCopy(Self.MapFont);
-     RestoreWindow := chkRestoreWindow.Checked;
-     BytesPerLine := udBytes.Position;
-     UnknownASCII := edtNonDisplay.Text;
-     RestoreWorkspace := chkRestoreWorkspace.Checked;
-     WarnConversionProblems := chkWarnConversionProblems.Checked;
-     WarnSectorChange := chkWarnSectorChange.Checked;
-     RemoveEmptyTracks := chkSaveRemoveEmptyTracks.Checked;
-     SaveMapX := udMapX.Position;
-     SaveMapY := udMapY.Position;
-     SamDiskEnabled := chkSamDiskIntegration.Checked;
-     SamDiskLocation := edtSamDiskLocation.Text;	
+    frmMain.SectorFont := FontCopy(Self.SectorFont);
+    frmMain.Font := FontCopy(Self.MainFont);
+    DiskMap.Color := cbxBack.Color;
+    DiskMap.DarkBlankSectors := chkDarkBlankSectors.Checked;
+    DiskMap.GridColor := cbxGrid.Color;
+    DiskMap.TrackMark := udTrackMarks.Position;
+    DiskMap.Font := FontCopy(Self.MapFont);
+    RestoreWindow := chkRestoreWindow.Checked;
+    BytesPerLine := udBytes.Position;
+    UnknownASCII := edtNonDisplay.Text;
+    RestoreWorkspace := chkRestoreWorkspace.Checked;
+    WarnConversionProblems := chkWarnConversionProblems.Checked;
+    WarnSectorChange := chkWarnSectorChange.Checked;
+    RemoveEmptyTracks := chkSaveRemoveEmptyTracks.Checked;
+    SaveMapX := udMapX.Position;
+    SaveMapY := udMapY.Position;
+    SamDiskEnabled := chkSamDiskIntegration.Checked;
+    SamDiskLocation := edtSamDiskLocation.Text;
   end;
 end;
 
@@ -232,7 +233,7 @@ begin
     FileName := SamDiskLocation;
     if Execute then
     begin
-    	SamDiskLocation := FileName;
+      SamDiskLocation := FileName;
       edtSamDiskLocation.Text := FileName;
     end;
   end;
@@ -243,4 +244,4 @@ begin
   DiskMap.DarkBlankSectors := chkDarkBlankSectors.Checked;
 end;
 
-end.
+end.

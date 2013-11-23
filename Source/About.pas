@@ -11,7 +11,8 @@ unit About;
 interface
 
 uses
-  LCLIntf, LCLType, LMessages, Controls, Forms, ExtCtrls, StdCtrls, Graphics, Classes, SysUtils;
+  LCLIntf, LCLType, LMessages, Controls, Forms, ExtCtrls, StdCtrls,
+  Graphics, Classes, SysUtils;
 
 type
   TfrmAbout = class(TForm)
@@ -33,37 +34,37 @@ type
 var
   frmAbout: TfrmAbout;
 
-function GetAppVersion: String;
+function GetAppVersion: string;
 
 implementation
 
 uses
-  Main, Windows;
+  Main;
 
 {$R *.lfm}
 
-function GetAppVersion: String;
+function GetAppVersion: string;
 var
   Size, Size2: DWord;
   Pt, Pt2: Pointer;
 begin
-  Size :=
-  GetFileVersionInfoSize(PChar(ParamStr(0)),Size2);
-  if (Size > 0) then
-  begin
-  	GetMem(Pt,Size);
-    try
-    	GetFileVersionInfo(PChar(ParamStr(0)),0,Size,Pt);
-      VerQueryValue(Pt,'\',Pt2,Size2);
-      with TVSFixedFileInfo(Pt2^) do
-      begin
-      	Result := Format('%d.%d.%d.%d', [HiWord(dwFileVersionMS),LoWord(dwFileVersionMS),
-                 	HiWord(dwFileVersionLS),LoWord(dwFileVersionLS)]);
-      end;
-    finally
-    	FreeMem(Pt);
-    end;
-  end;
+  //Size :=
+  //GetFileVersionInfoSize(PChar(ParamStr(0)),Size2);
+  //if (Size > 0) then
+  //begin
+  //  GetMem(Pt,Size);
+  //  try
+  //    GetFileVersionInfo(PChar(ParamStr(0)),0,Size,Pt);
+  //    VerQueryValue(Pt,'\',Pt2,Size2);
+  //    with TVSFixedFileInfo(Pt2^) do
+  //    begin
+  //      Result := Format('%d.%d.%d.%d', [HiWord(dwFileVersionMS),LoWord(dwFileVersionMS),
+  //                 HiWord(dwFileVersionLS),LoWord(dwFileVersionLS)]);
+  //    end;
+  //  finally
+  //    FreeMem(Pt);
+  //  end;
+  //end;
 end;
 
 procedure TfrmAbout.FormCreate(Sender: TObject);
@@ -76,22 +77,22 @@ end;
 procedure TfrmAbout.timFadeTimer(Sender: TObject);
 begin
   if (timFade.Tag > 0) then
-  	if (frmAbout.AlphaBlendValue < 250) then
-    	frmAbout.AlphaBlendValue := frmAbout.AlphaBlendValue + timFade.Tag
+    if (frmAbout.AlphaBlendValue < 250) then
+      frmAbout.AlphaBlendValue := frmAbout.AlphaBlendValue + timFade.Tag
     else
     begin
-    	timFade.Enabled := False;
+      timFade.Enabled := False;
       frmAbout.AlphaBlendValue := 255;
     end
-	else
-  	if (frmAbout.AlphaBlendValue > 5) then
-    	frmAbout.AlphaBlendValue := frmAbout.AlphaBlendValue + timFade.Tag
-    else
-    begin
-    	timFade.Enabled := False;
-      frmAbout.AlphaBlendValue := 0;
-      Close;
-    end;
+  else
+  if (frmAbout.AlphaBlendValue > 5) then
+    frmAbout.AlphaBlendValue := frmAbout.AlphaBlendValue + timFade.Tag
+  else
+  begin
+    timFade.Enabled := False;
+    frmAbout.AlphaBlendValue := 0;
+    Close;
+  end;
 end;
 
 procedure TfrmAbout.FormShow(Sender: TObject);
@@ -105,7 +106,7 @@ end;
 
 procedure TfrmAbout.lblWebClick(Sender: TObject);
 begin
-	 OpenDocument(PChar(TLabel(Sender).Hint)); { *Converted from ShellExecute*  }
+  OpenDocument(PChar(TLabel(Sender).Hint)); { *Converted from ShellExecute*  }
 end;
 
 procedure TfrmAbout.btnOKClick(Sender: TObject);
@@ -114,4 +115,4 @@ begin
   timFade.Enabled := True;
 end;
 
-end.
+end.

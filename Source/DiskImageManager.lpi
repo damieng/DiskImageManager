@@ -75,7 +75,9 @@
       <Unit6>
         <Filename Value="SectorProperties.pas"/>
         <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmSector"/>
         <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
         <UnitName Value="SectorProperties"/>
       </Unit6>
       <Unit7>
