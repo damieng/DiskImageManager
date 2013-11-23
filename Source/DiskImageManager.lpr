@@ -12,6 +12,8 @@ uses
   SectorProperties in 'SectorProperties.pas' {frmSector},
   Main in 'Main.pas' {frmMain};
 
+{$R *.res}
+
 begin
   Application.Initialize;
   Application.Title := 'Disk Image Manager';
