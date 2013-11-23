@@ -12,7 +12,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="33" Y="15"/>
-        <UsageCount Value="24"/>
+        <UsageCount Value="25"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
@@ -24,7 +24,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="85" Y="11"/>
-        <UsageCount Value="24"/>
+        <UsageCount Value="25"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit1>
@@ -34,9 +34,9 @@
         <UnitName Value="Utils"/>
         <EditorIndex Value="8"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="1"/>
-        <CursorPos X="1" Y="1"/>
-        <UsageCount Value="24"/>
+        <TopLine Value="13"/>
+        <CursorPos X="10" Y="41"/>
+        <UsageCount Value="25"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit2>
@@ -51,7 +51,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="33" Y="15"/>
-        <UsageCount Value="24"/>
+        <UsageCount Value="25"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -66,9 +66,9 @@
         <IsVisibleTab Value="True"/>
         <EditorIndex Value="6"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="167"/>
-        <CursorPos X="44" Y="169"/>
-        <UsageCount Value="24"/>
+        <TopLine Value="106"/>
+        <CursorPos X="1" Y="1"/>
+        <UsageCount Value="25"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -82,7 +82,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="85" Y="11"/>
-        <UsageCount Value="24"/>
+        <UsageCount Value="25"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit5>
@@ -97,7 +97,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="85" Y="11"/>
-        <UsageCount Value="24"/>
+        <UsageCount Value="25"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit6>
@@ -112,7 +112,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="1" Y="8"/>
-        <UsageCount Value="24"/>
+        <UsageCount Value="25"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -200,7 +200,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="59" Y="13"/>
-        <UsageCount Value="11"/>
+        <UsageCount Value="12"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit17>
@@ -226,48 +226,48 @@
         <Caret Line="1388" Column="52" TopLine="1364"/>
       </Position2>
       <Position3>
-        <Filename Value="About.pas"/>
-        <Caret Line="29" Column="43" TopLine="78"/>
-      </Position3>
-      <Position4>
         <Filename Value="New.pas"/>
         <Caret Line="666" Column="51" TopLine="283"/>
-      </Position4>
-      <Position5>
+      </Position3>
+      <Position4>
         <Filename Value="SectorProperties.pas"/>
         <Caret Line="273" Column="5" TopLine="234"/>
+      </Position4>
+      <Position5>
+        <Filename Value="Utils.pas"/>
+        <Caret Line="149" Column="49" TopLine="137"/>
       </Position5>
       <Position6>
         <Filename Value="Utils.pas"/>
-        <Caret Line="149" Column="49" TopLine="137"/>
+        <Caret Line="268" Column="5" TopLine="170"/>
       </Position6>
       <Position7>
-        <Filename Value="Utils.pas"/>
-        <Caret Line="268" Column="5" TopLine="170"/>
+        <Filename Value="Options.pas"/>
+        <Caret Line="89" Column="54" TopLine="85"/>
       </Position7>
       <Position8>
         <Filename Value="Options.pas"/>
-        <Caret Line="89" Column="54" TopLine="85"/>
+        <Caret Line="106" Column="59" TopLine="100"/>
       </Position8>
       <Position9>
         <Filename Value="Options.pas"/>
-        <Caret Line="106" Column="59" TopLine="100"/>
+        <Caret Line="125" Column="1" TopLine="101"/>
       </Position9>
       <Position10>
         <Filename Value="Options.pas"/>
-        <Caret Line="125" Column="1" TopLine="101"/>
+        <Caret Line="171" Column="44" TopLine="169"/>
       </Position10>
       <Position11>
         <Filename Value="Options.pas"/>
-        <Caret Line="171" Column="44" TopLine="169"/>
+        <Caret Line="170" Column="44" TopLine="168"/>
       </Position11>
       <Position12>
         <Filename Value="Options.pas"/>
-        <Caret Line="170" Column="44" TopLine="168"/>
+        <Caret Line="169" Column="44" TopLine="167"/>
       </Position12>
       <Position13>
         <Filename Value="Options.pas"/>
-        <Caret Line="169" Column="44" TopLine="167"/>
+        <Caret Line="216" Column="25" TopLine="98"/>
       </Position13>
     </JumpHistory>
   </ProjectSession>

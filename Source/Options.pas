@@ -193,9 +193,7 @@ begin
   chkDarkBlankSectors.Checked := frmMain.DiskMap.DarkBlankSectors;
   edtNonDisplay.Text := frmMain.UnknownASCII;
   cbxBack.ButtonColor := frmMain.DiskMap.Color;
-  cbxBackChange(Self);
   cbxGrid.ButtonColor := frmMain.DiskMap.GridColor;
-  cbxGridChange(Self);
   chkWarnConversionProblems.Checked := frmMain.WarnConversionProblems;
   chkWarnSectorChange.Checked := frmMain.WarnSectorChange;
   chkSaveRemoveEmptyTracks.Checked := frmMain.RemoveEmptyTracks;
@@ -211,9 +209,9 @@ begin
   begin
     frmMain.SectorFont := FontCopy(Self.SectorFont);
     frmMain.Font := FontCopy(Self.MainFont);
-    DiskMap.Color := cbxBack.Color;
+    DiskMap.Color := cbxBack.ButtonColor;
     DiskMap.DarkBlankSectors := chkDarkBlankSectors.Checked;
-    DiskMap.GridColor := cbxGrid.Color;
+    DiskMap.GridColor := cbxGrid.ButtonColor;
     DiskMap.TrackMark := udTrackMarks.Position;
     DiskMap.Font := FontCopy(Self.MapFont);
     RestoreWindow := chkRestoreWindow.Checked;
