@@ -1,12 +1,12 @@
 object frmAbout: TfrmAbout
   Left = 452
-  Height = 139
+  Height = 88
   Top = 181
   Width = 341
   AlphaBlend = True
   AlphaBlendValue = 50
   BorderStyle = bsDialog
-  ClientHeight = 139
+  ClientHeight = 88
   ClientWidth = 341
   Color = clBtnFace
   Font.CharSet = ANSI_CHARSET
@@ -176,46 +176,26 @@ object frmAbout: TfrmAbout
   end
   object lblWeb: TLabel
     Cursor = crHandPoint
-    Left = 8
+    Left = 12
     Height = 14
-    Hint = 'http://www.damieng.com/spectrum/disk-manager'
-    Top = 75
-    Width = 240
-    Caption = 'http://www.damieng.com/spectrum/disk-manager'
-    Color = clBtnFace
+    Top = 67
+    Width = 230
+    Caption = 'https://github.com/damieng/DiskImageManager'
     Font.CharSet = ANSI_CHARSET
     Font.Color = clBlue
     Font.Height = -11
     Font.Name = 'Tahoma'
+    Font.Pitch = fpVariable
+    Font.Quality = fqDraft
     Font.Style = [fsUnderline]
     ParentColor = False
     ParentFont = False
-    Transparent = False
-    OnClick = lblWebClick
-  end
-  object lblEmail: TLabel
-    Cursor = crHandPoint
-    Left = 8
-    Height = 14
-    Hint = 'mailto:damien@envytech.co.uk'
-    Top = 120
-    Width = 120
-    Caption = 'damien@envytech.co.uk'
-    Color = clBtnFace
-    Font.CharSet = ANSI_CHARSET
-    Font.Color = clBlue
-    Font.Height = -11
-    Font.Name = 'Tahoma'
-    Font.Style = [fsUnderline]
-    ParentColor = False
-    ParentFont = False
-    Transparent = False
     OnClick = lblWebClick
   end
   object btnOK: TButton
-    Left = 264
+    Left = 256
     Height = 25
-    Top = 112
+    Top = 56
     Width = 75
     Caption = 'OK'
     Default = True
@@ -227,7 +207,7 @@ object frmAbout: TfrmAbout
     Enabled = False
     Interval = 10
     OnTimer = timFadeTimer
-    left = 304
-    top = 80
+    left = 64
+    top = 32
   end
 end

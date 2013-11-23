@@ -26,7 +26,6 @@ type
     lblVersion: TLabel;
     timFade: TTimer;
     lblWeb: TLabel;
-    lblEmail: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
@@ -37,8 +36,6 @@ type
 var
   frmAbout: TfrmAbout;
 
-function GetAppVersion: string;
-
 implementation
 
 uses
@@ -46,35 +43,11 @@ uses
 
 {$R *.lfm}
 
-function GetAppVersion: string;
-var
-  Size, Size2: DWord;
-  Pt, Pt2: Pointer;
-begin
-  //Size :=
-  //GetFileVersionInfoSize(PChar(ParamStr(0)),Size2);
-  //if (Size > 0) then
-  //begin
-  //  GetMem(Pt,Size);
-  //  try
-  //    GetFileVersionInfo(PChar(ParamStr(0)),0,Size,Pt);
-  //    VerQueryValue(Pt,'\',Pt2,Size2);
-  //    with TVSFixedFileInfo(Pt2^) do
-  //    begin
-  //      Result := Format('%d.%d.%d.%d', [HiWord(dwFileVersionMS),LoWord(dwFileVersionMS),
-  //                 HiWord(dwFileVersionLS),LoWord(dwFileVersionLS)]);
-  //    end;
-  //  finally
-  //    FreeMem(Pt);
-  //  end;
-  //end;
-end;
-
 procedure TfrmAbout.FormCreate(Sender: TObject);
 begin
   Caption := 'About ' + Application.Title;
   lblTitle.Caption := Application.Title;
-  lblVersion.Caption := 'Version: ' + GetAppVersion;
+  lblVersion.Caption := 'Compiled: ' + {$I %DATE%} + ' ' + {$I %TIME%};
 end;
 
 procedure TfrmAbout.timFadeTimer(Sender: TObject);
@@ -109,7 +82,7 @@ end;
 
 procedure TfrmAbout.lblWebClick(Sender: TObject);
 begin
-  OpenDocument(PChar(TLabel(Sender).Hint)); { *Converted from ShellExecute*  }
+  OpenDocument(PChar(TLabel(Sender).Caption));
 end;
 
 procedure TfrmAbout.btnOKClick(Sender: TObject);
