@@ -10,7 +10,7 @@ interface
 
 uses
   DskImage, Utils,
-  Types, Forms, Messages, SysUtils, Classes, Controls, Graphics, GraphUtil;
+  Forms, Windows, Messages, SysUtils, Classes, Controls, Graphics, GraphUtil;
 
 type
   TSpinDiskMap = class(TGraphicControl)
@@ -55,7 +55,7 @@ implementation
 
 procedure Register;
 begin
-  RegisterComponents('Spin', [TSpinDiskMap]);
+  RegisterComponents('DIM', [TSpinDiskMap]);
 end;
 
 constructor TSpinDiskMap.Create(AOwner: TComponent);
@@ -179,8 +179,8 @@ begin
         if ((TrackIdx = 0) and (SectorIdx < Sectors)) then
         begin
           TextA := StrInt(SectorIdx);
-          TextOut(GRect.Left - TextWidth(TextA) - TextW, Y - (SectorSize div 2) -
-            (TextHeight(TextA) div 2), TextA);
+          TextOut(GRect.Left - TextWidth(Text) - TextW, Y - (SectorSize div 2) -
+            (TextHeight(Text) div 2), TextA);
         end;
       end;
     end;
@@ -291,4 +291,4 @@ begin
   Result := True;
 end;
 
-end.
+end.
