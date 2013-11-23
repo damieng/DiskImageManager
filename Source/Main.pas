@@ -159,7 +159,7 @@ type
   end;
 
 const
-  RegKey = 'Software\Envy Technologies\Disk Image Manager';
+  RegKey = 'Software\DamienG\DiskImageManager';
   TAB = #9;
   CR = #13;
   LF = #10;
@@ -174,7 +174,7 @@ implementation
 
 {$R *.lfm}
 
-uses New{, SamDisk};
+uses New;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
 var
@@ -183,7 +183,6 @@ var
 begin
   LoadSettings;
   NextNewFile := 0;
-  //  DragAcceptFiles(Handle,true);
   Caption := Application.Title;
   itmAbout.Caption := 'About ' + Application.Title;
   itmDarkUnusedSectors.Checked := DiskMap.DarkBlankSectors;
@@ -192,7 +191,7 @@ begin
   begin
     FileName := ParamStr(Idx);
     if ExtractFileExt(FileName) = '.dsk' then
-      if FileExistsUTF8(FileName) { *Converted from FileExists*  } then
+      if FileExistsUTF8(FileName) then
         LoadImage(FileName);
   end;
 end;
@@ -433,7 +432,6 @@ begin
         else
         begin
           AddListInfo('Is changed', 'No');
-          //AddListInfo('Fingerprint (SHA-1)',Image.FingerPrint);
           AddListInfo('File size', SysUtils.Format('%d bytes', [FileSize]));
         end;
       end;
@@ -449,12 +447,12 @@ begin
     with Add do
     begin
       Caption := 'Key';
-      AutoSize := true;
+      AutoSize := True;
     end;
     with Add do
     begin
       Caption := 'Value';
-      AutoSize := true;
+      AutoSize := True;
     end;
   end;
 end;
@@ -613,19 +611,19 @@ begin
     begin
       Caption := 'Side';
       Alignment := taRightJustify;
-      AutoSize := true;
+      AutoSize := True;
     end;
     with Add do
     begin
       Caption := 'Tracks';
       Alignment := taRightJustify;
-      AutoSize := true;
+      AutoSize := True;
     end;
     with Add do
     begin
       Caption := '';
       Alignment := taRightJustify;
-      AutoSize := true;
+      AutoSize := True;
     end;
   end;
   for Idx := 0 to Disk.Sides - 1 do
@@ -671,10 +669,10 @@ var
 begin
   for Idx := 0 to Parent.Count - 1 do
   begin
-    //     if (Parent.Item[Idx].Data = Item) then
-    //        tvwMain.Selected := Parent.Item[Idx]
-    //     else
-    //        SelectTreeChild(Parent.Item[Idx],Item);
+    if (Parent.Items[Idx].Data = Item) then
+      tvwMain.Selected := Parent.Items[Idx]
+    else
+      SelectTreeChild(Parent.Items[Idx], Item);
   end;
 end;
 
@@ -867,7 +865,6 @@ end;
 
 procedure TfrmMain.itmExitClick(Sender: TObject);
 begin
-  // TODO: Interrogate through disk images, see if any unsaved and prompt
   Close;
 end;
 
