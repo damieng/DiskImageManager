@@ -105,15 +105,13 @@ type
     procedure itmFindClick(Sender: TObject);
     procedure dlgFindFind(Sender: TObject);
     procedure itmFindNextClick(Sender: TObject);
-    procedure itmReadClick(Sender: TObject);
-    procedure itmWriteClick(Sender: TObject);
   private
     NextNewFile: integer;
     FSamDiskEnabled: boolean;
     function AddTree(Parent: TTreeNode; Text: string; ImageIdx: integer;
       NodeObject: TObject): TTreeNode;
     function AddListInfo(Key: string; Value: string): TListItem;
-    function AddListTrack(Track: TDSKTrack): TListItem;
+    function AddListTrack(Track: TDSKTrack; HideSide: boolean): TListItem;
     function AddListSector(Sector: TDSKSector): TListItem;
     function AddListSides(Side: TDSKSide): TListItem;
     procedure SetListSimple;
@@ -140,7 +138,6 @@ type
     procedure SaveImageAs(Image: TDSKImage; Copy: boolean);
 
     procedure AnalyseMap(Side: TDSKSide);
-    //procedure DropMsg(var msg: TWMDropFiles); message WM_DROPFILES;
     procedure RefreshList;
     procedure RefreshListFiles(FileSystem: TDSKFileSystem);
     procedure RefreshListImage(Image: TDSKImage);
@@ -242,13 +239,14 @@ begin
   begin
     // Optional specification
     if (Image.Disk.Specification.Read <> dsFormatInvalid) then
-      AddTree(ImageNode, 'Specification', Ord(itSpecification), Image.Disk.Specification);
+      AddTree(ImageNode, 'Specification', Ord(itSpecification),
+        Image.Disk.Specification);
     // Add the sides
     SidesNode := AddTree(ImageNode, 'Sides', Ord(itSides), Image.Disk);
     for SIdx := 0 to Image.Disk.Sides - 1 do
     begin
-      SideNode := AddTree(SidesNode, Format('Side %d', [SIdx + 1]), Ord(
-        itSide0) + SIdx, Image.Disk.Side[SIdx]);
+      SideNode := AddTree(SidesNode, Format('Side %d', [SIdx + 1]),
+        Ord(itSide0) + SIdx, Image.Disk.Side[SIdx]);
       AddTree(SideNode, 'Map', Ord(itAnalyse), Image.Disk.Side[SIdx]);
       // Add the tracks
       TracksNode := AddTree(SideNode, 'Tracks', Ord(itTracksAll), Image.Disk.Side[SIdx]);
@@ -380,7 +378,7 @@ begin
     else
       pnlListLabel.Caption := '';
     ViewStyle := OldViewStyle;
-    Columns.EndUpdate();
+    Columns.EndUpdate;
     Items.EndUpdate;
   end;
 end;
@@ -451,12 +449,12 @@ begin
     with Add do
     begin
       Caption := 'Key';
-      Width := -2;
+      AutoSize := true;
     end;
     with Add do
     begin
       Caption := 'Value';
-      Width := -2;
+      AutoSize := true;
     end;
   end;
 end;
@@ -508,64 +506,64 @@ begin
     begin
       Caption := 'Logical';
       Alignment := taRightJustify;
-      Width := -2;
+      AutoSize := True;
     end;
     with Add do
     begin
       Caption := 'Physical';
       Alignment := taRightJustify;
-      Width := -2;
+      AutoSize := True;
     end;
-    with Add do
+    if not HideSide then
     begin
-      Caption := 'Side';
-      Alignment := taRightJustify;
-      if HideSide then
-        Width := 0
-      else
-        Width := -2;
+      with Add do
+      begin
+        Caption := 'Side';
+        Alignment := taRightJustify;
+        AutoSize := True;
+      end;
     end;
     with Add do
     begin
       Caption := 'Track size';
       Alignment := taRightJustify;
-      Width := -2;
+      AutoSize := True;
     end;
     with Add do
     begin
       Caption := 'Sectors';
       Alignment := taRightJustify;
-      Width := -2;
+      AutoSize := True;
     end;
     with Add do
     begin
       Caption := 'Sector size';
       Alignment := taRightJustify;
-      Width := -2;
+      AutoSize := True;
     end;
     with Add do
     begin
       Caption := 'Gap';
       Alignment := taRightJustify;
-      Width := -2;
+      AutoSize := True;
     end;
     with Add do
     begin
       Caption := 'Filler';
       Alignment := taRightJustify;
-      Width := -2;
+      AutoSize := True;
     end;
     with Add do
     begin
       Caption := 'Interleave';
       Alignment := taRightJustify;
-      Width := -2;
+      AutoSize := True;
     end;
     with Add do
     begin
       Caption := '';
       Alignment := taRightJustify;
-      Width := -2;
+      AutoSize := True;
     end;
   end;
 
@@ -573,18 +571,18 @@ begin
   begin
     Side := TDSKSide(OptionalSide);
     for TIdx := 0 to Side.Tracks - 1 do
-      AddListTrack(Side.Track[TIdx]);
+      AddListTrack(Side.Track[TIdx], HideSide);
   end
   else
   begin
     DSK := TDSKImage(OptionalSide);
     for TIdx := 0 to DSK.Disk.Side[0].Tracks - 1 do
       for SIdx := 0 to DSK.Disk.Sides - 1 do
-        AddListTrack(DSK.Disk.Side[SIdx].Track[TIdx]);
+        AddListTrack(DSK.Disk.Side[SIdx].Track[TIdx], HideSide);
   end;
 end;
 
-function TfrmMain.AddListTrack(Track: TDSKTrack): TListItem;
+function TfrmMain.AddListTrack(Track: TDSKTrack; HideSide: boolean): TListItem;
 var
   NewListItem: TListItem;
 begin
@@ -594,7 +592,8 @@ begin
     Caption := StrInt(Track.Logical);
     Data := Track;
     Subitems.Add(StrInt(Track.Track));
-    Subitems.Add(StrInt(Track.Side));
+    if not HideSide then
+      Subitems.Add(StrInt(Track.Side));
     Subitems.Add(StrInt(Track.Size));
     Subitems.Add(StrInt(Track.Sectors));
     Subitems.Add(StrInt(Track.SectorSize));
@@ -614,19 +613,19 @@ begin
     begin
       Caption := 'Side';
       Alignment := taRightJustify;
-      Width := -2;
+      AutoSize := true;
     end;
     with Add do
     begin
       Caption := 'Tracks';
       Alignment := taRightJustify;
-      Width := -2;
+      AutoSize := true;
     end;
     with Add do
     begin
       Caption := '';
       Alignment := taRightJustify;
-      Width := -2;
+      AutoSize := true;
     end;
   end;
   for Idx := 0 to Disk.Sides - 1 do
@@ -690,54 +689,54 @@ begin
     begin
       Caption := 'Sector';
       Alignment := taRightJustify;
-      Width := -2;
+      AutoSize := True;
     end;
     with Add do
     begin
       Caption := 'Track';
       Alignment := taRightJustify;
-      Width := -2;
+      AutoSize := True;
     end;
     with Add do
     begin
       Caption := 'Side';
       Alignment := taRightJustify;
-      Width := -2;
+      AutoSize := True;
     end;
     with Add do
     begin
       Caption := 'ID';
       Alignment := taRightJustify;
-      Width := -2;
+      AutoSize := True;
     end;
     with Add do
     begin
       Caption := 'FDC size';
       Alignment := taRightJustify;
-      Width := -2;
+      AutoSize := True;
     end;
     with Add do
     begin
       Caption := 'FDC flags';
       Alignment := taRightJustify;
-      Width := -2;
+      AutoSize := True;
     end;
     with Add do
     begin
       Caption := 'Data size';
       Alignment := taRightJustify;
-      Width := -2;
+      AutoSize := True;
     end;
     with Add do
     begin
       Caption := 'Status';
-      Width := -2;
+      AutoSize := True;
     end;
     with Add do
     begin
       Caption := '';
       Alignment := taRightJustify;
-      Width := -2;
+      AutoSize := True;
     end;
   end;
   for Idx := 0 to Track.Sectors - 1 do
@@ -781,17 +780,17 @@ begin
     begin
       Caption := 'Off';
       Alignment := taRightJustify;
-      Width := -2;
+      AutoSize := True;
     end;
     with Add do
     begin
       Caption := 'Hex';
-      Width := -2;
+      AutoSize := True;
     end;
     with Add do
     begin
       Caption := 'ASCII';
-      Width := -2;
+      AutoSize := True;
     end;
   end;
 
@@ -891,18 +890,18 @@ begin
     with Add do
     begin
       Caption := 'File name';
-      Width := -2;
+      AutoSize := True;
     end;
     with Add do
     begin
       Caption := 'Size';
       Alignment := taRightJustify;
-      Width := -2;
+      AutoSize := True;
     end;
     with Add do
     begin
       Caption := 'Type';
-      Width := -2;
+      AutoSize := True;
     end;
   end;
 
@@ -923,28 +922,6 @@ procedure TfrmMain.itmOptionsClick(Sender: TObject);
 begin
   TfrmOptions.Create(Self).Show();
 end;
-
-procedure TfrmMain.itmReadClick(Sender: TObject);
-begin
-  //  TfrmSamDisk.Create(self).Show();
-end;
-
-// Windows: Files dropped from explorer
-//procedure TfrmMain.DropMsg(var msg: TWMDropFiles);
-//var
-// Files, Idx: Integer;
-// FileBuf: array[0..255] of Char;
-//  FileName : string;
-//begin
-//  Files := DragQueryFile(Msg.Drop,$FFFFFFFF,FileBuf,SizeOf(FileName));
-//  for Idx := 0 to Files-1 do
-//  begin
-//     FileName := Copy(FileBuf,0,DragQueryFile(Msg.Drop,Idx,FileBuf,255));
-//     LoadImage(FileName);
-//  end;
-//  Msg.Result := 0;
-//  DragFinish(msg.Drop);
-//end;
 
 // Load system settings
 procedure TfrmMain.LoadSettings;
@@ -989,7 +966,7 @@ begin
     for Idx := 1 to Count do
     begin
       FileName := Reg.ReadString(S, StrInt(Idx), '');
-      if FileExistsUTF8(FileName) { *Converted from FileExists*  } then
+      if FileExistsUTF8(FileName) then
         LoadImage(FileName);
     end;
   end;
@@ -1185,21 +1162,6 @@ procedure TfrmMain.itmStatusBarClick(Sender: TObject);
 begin
   staBar.Visible := not itmStatusBar.Checked;
   itmStatusBar.Checked := staBar.Visible;
-end;
-
-procedure TfrmMain.itmWriteClick(Sender: TObject);
-//var
-//  frmSamDisk: TFrmSamDisk;
-begin
-  //  with GetCurrentImage do
-  //  begin
-  //    if (IsChanged) then
-  //      if (MessageDlg('Disk image has unsaved changes. Save to proceed?',mtConfirmation,[mbYes,mbNo],0) = mrNo) then
-  //        exit;
-  //    frmSamDisk := TFrmSamDisk.Create(self);
-  //    frmSamDisk.Source := FileName;
-  //    frmSamDisk.Show;
-  //  end;
 end;
 
 procedure TfrmMain.itmSaveClick(Sender: TObject);

@@ -140,7 +140,6 @@ object frmMain: TfrmMain
         Caption = '&Read from disk...'
         Hint = 'Read image from disk using SamDisk'
         ShortCut = 16466
-        OnClick = itmReadClick
       end
       object N1: TMenuItem
         Caption = '-'
@@ -162,7 +161,6 @@ object frmMain: TfrmMain
         Caption = '&Write to disk...'
         Hint = 'Write current image to disk using SamDisk'
         ShortCut = 16471
-        OnClick = itmWriteClick
       end
       object N2: TMenuItem
         Caption = '-'
