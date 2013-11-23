@@ -4,7 +4,7 @@
     <PathDelim Value="\"/>
     <Version Value="9"/>
     <BuildModes Active="Default"/>
-    <Units Count="17">
+    <Units Count="18">
       <Unit0>
         <Filename Value="DiskImageManager.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -151,15 +151,11 @@
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit14>
       <Unit15>
-        <Filename Value="..\..\..\..\..\..\usr\local\share\fpcsrc\packages\cocoaint\src\CocoaAll.pas"/>
+        <Filename Value="D:\usr\local\share\fpcsrc\packages\cocoaint\src\CocoaAll.pas"/>
         <UnitName Value="CocoaAll"/>
-        <IsVisibleTab Value="True"/>
-        <EditorIndex Value="0"/>
-        <WindowIndex Value="0"/>
         <TopLine Value="25"/>
         <CursorPos X="34" Y="20"/>
         <UsageCount Value="10"/>
-        <Loaded Value="True"/>
       </Unit15>
       <Unit16>
         <Filename Value="components.pas"/>
@@ -170,15 +166,22 @@
         <UsageCount Value="10"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit16>
+      <Unit17>
+        <Filename Value="DIMComponents.pas"/>
+        <UnitName Value="DIMComponents"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="0"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="1"/>
+        <CursorPos X="1" Y="1"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit17>
     </Units>
     <General>
       <ActiveWindowIndexAtStart Value="0"/>
     </General>
-    <JumpHistory Count="1" HistoryIndex="0">
-      <Position1>
-        <Filename Value="..\..\..\..\..\..\usr\local\share\fpcsrc\packages\cocoaint\src\CocoaAll.pas"/>
-        <Caret Line="12" Column="15" TopLine="1"/>
-      </Position1>
-    </JumpHistory>
+    <JumpHistory Count="0" HistoryIndex="-1"/>
   </ProjectSession>
 </CONFIG>
