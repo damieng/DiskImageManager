@@ -4,55 +4,73 @@
     <PathDelim Value="\"/>
     <Version Value="9"/>
     <BuildModes Active="Default"/>
-    <Units Count="18">
+    <Units Count="19">
       <Unit0>
         <Filename Value="DiskImageManager.lpr"/>
         <IsPartOfProject Value="True"/>
+        <EditorIndex Value="4"/>
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="33" Y="15"/>
-        <UsageCount Value="22"/>
+        <UsageCount Value="24"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
       <Unit1>
         <Filename Value="DskImage.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="DskImage"/>
+        <EditorIndex Value="5"/>
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
-        <CursorPos X="1" Y="112"/>
-        <UsageCount Value="22"/>
+        <CursorPos X="85" Y="11"/>
+        <UsageCount Value="24"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit1>
       <Unit2>
         <Filename Value="Utils.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Utils"/>
+        <EditorIndex Value="8"/>
+        <WindowIndex Value="0"/>
         <TopLine Value="1"/>
-        <CursorPos X="40" Y="14"/>
-        <UsageCount Value="22"/>
+        <CursorPos X="1" Y="1"/>
+        <UsageCount Value="24"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit2>
       <Unit3>
         <Filename Value="About.pas"/>
         <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmAbout"/>
         <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
         <UnitName Value="About"/>
+        <EditorIndex Value="3"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="79"/>
-        <CursorPos X="43" Y="29"/>
-        <UsageCount Value="22"/>
+        <TopLine Value="1"/>
+        <CursorPos X="33" Y="15"/>
+        <UsageCount Value="24"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit3>
       <Unit4>
         <Filename Value="Options.pas"/>
         <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmOptions"/>
         <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
         <UnitName Value="Options"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="6"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="197"/>
-        <CursorPos X="35" Y="236"/>
-        <UsageCount Value="22"/>
+        <TopLine Value="167"/>
+        <CursorPos X="44" Y="169"/>
+        <UsageCount Value="24"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit4>
       <Unit5>
@@ -60,10 +78,12 @@
         <IsPartOfProject Value="True"/>
         <HasResources Value="True"/>
         <UnitName Value="New"/>
+        <EditorIndex Value="2"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="283"/>
-        <CursorPos X="51" Y="666"/>
-        <UsageCount Value="22"/>
+        <TopLine Value="1"/>
+        <CursorPos X="85" Y="11"/>
+        <UsageCount Value="24"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit5>
       <Unit6>
@@ -73,21 +93,28 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="SectorProperties"/>
+        <EditorIndex Value="7"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="234"/>
-        <CursorPos X="5" Y="273"/>
-        <UsageCount Value="22"/>
+        <TopLine Value="1"/>
+        <CursorPos X="85" Y="11"/>
+        <UsageCount Value="24"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit6>
       <Unit7>
         <Filename Value="Main.pas"/>
         <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmMain"/>
         <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
         <UnitName Value="Main"/>
+        <EditorIndex Value="1"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="1232"/>
-        <CursorPos X="64" Y="1251"/>
-        <UsageCount Value="22"/>
+        <TopLine Value="1"/>
+        <CursorPos X="1" Y="8"/>
+        <UsageCount Value="24"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit7>
       <Unit8>
@@ -169,19 +196,79 @@
       <Unit17>
         <Filename Value="DIMComponents.pas"/>
         <UnitName Value="DIMComponents"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="0"/>
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
-        <CursorPos X="1" Y="1"/>
-        <UsageCount Value="10"/>
+        <CursorPos X="59" Y="13"/>
+        <UsageCount Value="11"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit17>
+      <Unit18>
+        <Filename Value="Options.lfm"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="272"/>
+        <CursorPos X="37" Y="296"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="LFM"/>
+      </Unit18>
     </Units>
     <General>
       <ActiveWindowIndexAtStart Value="0"/>
     </General>
-    <JumpHistory Count="0" HistoryIndex="-1"/>
+    <JumpHistory Count="13" HistoryIndex="12">
+      <Position1>
+        <Filename Value="Options.pas"/>
+        <Caret Line="236" Column="35" TopLine="125"/>
+      </Position1>
+      <Position2>
+        <Filename Value="Main.pas"/>
+        <Caret Line="1388" Column="52" TopLine="1364"/>
+      </Position2>
+      <Position3>
+        <Filename Value="About.pas"/>
+        <Caret Line="29" Column="43" TopLine="78"/>
+      </Position3>
+      <Position4>
+        <Filename Value="New.pas"/>
+        <Caret Line="666" Column="51" TopLine="283"/>
+      </Position4>
+      <Position5>
+        <Filename Value="SectorProperties.pas"/>
+        <Caret Line="273" Column="5" TopLine="234"/>
+      </Position5>
+      <Position6>
+        <Filename Value="Utils.pas"/>
+        <Caret Line="149" Column="49" TopLine="137"/>
+      </Position6>
+      <Position7>
+        <Filename Value="Utils.pas"/>
+        <Caret Line="268" Column="5" TopLine="170"/>
+      </Position7>
+      <Position8>
+        <Filename Value="Options.pas"/>
+        <Caret Line="89" Column="54" TopLine="85"/>
+      </Position8>
+      <Position9>
+        <Filename Value="Options.pas"/>
+        <Caret Line="106" Column="59" TopLine="100"/>
+      </Position9>
+      <Position10>
+        <Filename Value="Options.pas"/>
+        <Caret Line="125" Column="1" TopLine="101"/>
+      </Position10>
+      <Position11>
+        <Filename Value="Options.pas"/>
+        <Caret Line="171" Column="44" TopLine="169"/>
+      </Position11>
+      <Position12>
+        <Filename Value="Options.pas"/>
+        <Caret Line="170" Column="44" TopLine="168"/>
+      </Position12>
+      <Position13>
+        <Filename Value="Options.pas"/>
+        <Caret Line="169" Column="44" TopLine="167"/>
+      </Position13>
+    </JumpHistory>
   </ProjectSession>
 </CONFIG>

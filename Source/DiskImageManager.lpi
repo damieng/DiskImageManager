@@ -57,13 +57,17 @@
       <Unit3>
         <Filename Value="About.pas"/>
         <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmAbout"/>
         <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
         <UnitName Value="About"/>
       </Unit3>
       <Unit4>
         <Filename Value="Options.pas"/>
         <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmOptions"/>
         <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
         <UnitName Value="Options"/>
       </Unit4>
       <Unit5>
@@ -83,7 +87,9 @@
       <Unit7>
         <Filename Value="Main.pas"/>
         <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmMain"/>
         <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
         <UnitName Value="Main"/>
       </Unit7>
     </Units>

@@ -3,9 +3,12 @@ unit Utils;
 {$MODE Delphi}
 
 {
-  Disk Image Manager -  Copyright 2002-2009 Envy Technologies Ltd.
+  Disk Image Manager -  Utility functions
 
-  Utility functions
+  Copyright (c) Damien Guard. All rights reserved.
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
 }
 
 interface
@@ -262,4 +265,4 @@ begin
   end;
 end;
 
-end.
+end.
