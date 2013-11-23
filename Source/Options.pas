@@ -3,9 +3,12 @@ unit Options;
 {$MODE Delphi}
 
 {
-  Disk Image Manager -  Copyright 2002-2009 Envy Technologies Ltd.
+  Disk Image Manager -  Options window
 
-  Options window
+  Copyright (c) Damien Guard. All rights reserved.
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
 }
 
 interface
@@ -15,6 +18,9 @@ uses
   Graphics, Forms, ComCtrls, StdCtrls, Classes, Controls, ExtCtrls, Registry, Dialogs;
 
 type
+
+  { TfrmOptions }
+
   TfrmOptions = class(TForm)
     pnlButtons: TPanel;
     pagOptions: TPageControl;
@@ -31,8 +37,6 @@ type
     lblFontMapLabel: TLabel;
     edtFontMap: TEdit;
     btnFontMap: TButton;
-    lblBackColorLabel: TLabel;
-    lblGridColorLabel: TLabel;
     lblFontSectorLabel: TLabel;
     edtFontSector: TEdit;
     btnFontSector: TButton;
@@ -68,10 +72,13 @@ type
     btnSamDiskLocation: TButton;
     dlgSamDiskLocation: TOpenDialog;
     procedure cbxBackChange(Sender: TObject);
+    procedure cbxBackClick(Sender: TObject);
+    procedure cbxBackColorChanged(Sender: TObject);
     procedure cbxGridChange(Sender: TObject);
     procedure btnFontMainClick(Sender: TObject);
     procedure btnFontMapClick(Sender: TObject);
     procedure btnFontSectorClick(Sender: TObject);
+    procedure cbxGridColorChanged(Sender: TObject);
     procedure edtTrackMarksChange(Sender: TObject);
     procedure btnResetClick(Sender: TObject);
     procedure chkDarkBlankSectorsClick(Sender: TObject);
@@ -96,12 +103,22 @@ uses Main;
 
 procedure TfrmOptions.cbxBackChange(Sender: TObject);
 begin
-  DiskMap.Color := cbxBack.Color;
+
+end;
+
+procedure TfrmOptions.cbxBackClick(Sender: TObject);
+begin
+
+end;
+
+procedure TfrmOptions.cbxBackColorChanged(Sender: TObject);
+begin
+  DiskMap.Color := cbxBack.ButtonColor;
 end;
 
 procedure TfrmOptions.cbxGridChange(Sender: TObject);
 begin
-  DiskMap.GridColor := cbxGrid.Color;
+
 end;
 
 procedure TfrmOptions.btnFontMainClick(Sender: TObject);
@@ -147,6 +164,11 @@ begin
   end;
 end;
 
+procedure TfrmOptions.cbxGridColorChanged(Sender: TObject);
+begin
+  DiskMap.GridColor := cbxGrid.ButtonColor;
+end;
+
 function TfrmOptions.Show: boolean;
 begin
   pagOptions.ActivePageIndex := 0;
@@ -170,9 +192,9 @@ begin
   udTrackMarks.Position := frmMain.DiskMap.TrackMark;
   chkDarkBlankSectors.Checked := frmMain.DiskMap.DarkBlankSectors;
   edtNonDisplay.Text := frmMain.UnknownASCII;
-  cbxBack.Color := frmMain.DiskMap.Color;
+  cbxBack.ButtonColor := frmMain.DiskMap.Color;
   cbxBackChange(Self);
-  cbxGrid.Color := frmMain.DiskMap.GridColor;
+  cbxGrid.ButtonColor := frmMain.DiskMap.GridColor;
   cbxGridChange(Self);
   chkWarnConversionProblems.Checked := frmMain.WarnConversionProblems;
   chkWarnSectorChange.Checked := frmMain.WarnSectorChange;
@@ -244,4 +266,4 @@ begin
   DiskMap.DarkBlankSectors := chkDarkBlankSectors.Checked;
 end;
 
-end.
+end.
