@@ -1,63 +1,63 @@
 object frmNew: TfrmNew
   Left = 960
+  Height = 294
   Top = 818
+  Width = 513
   BorderStyle = bsDialog
   Caption = 'New'
   ClientHeight = 294
   ClientWidth = 513
   Color = clBtnFace
-  Font.Charset = ANSI_CHARSET
+  Font.CharSet = ANSI_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
-  Font.Style = []
-  Position = poMainFormCenter
   OnCreate = FormCreate
   OnShow = FormShow
-  PixelsPerInch = 96
+  Position = poMainFormCenter
+  LCLVersion = '1.0.14.0'
   object pnlInfo: TPanel
     Left = 299
+    Height = 264
     Top = 0
     Width = 214
-    Height = 264
     Align = alClient
     BevelOuter = bvNone
     BorderWidth = 6
+    ClientHeight = 264
+    ClientWidth = 214
     TabOrder = 0
     object lvwWarnings: TListView
-      Left = 4
-      Top = 134
-      Width = 202
+      Left = 6
       Height = 122
+      Top = 136
+      Width = 202
       Align = alBottom
-      Columns = <
+      Columns = <      
         item
           Caption = 'Value'
-          Width = -2
-          WidthType = (
-            -2)
+          Width = 198
         end>
-      Font.Charset = ANSI_CHARSET
+      Font.CharSet = ANSI_CHARSET
       Font.Color = clMaroon
       Font.Height = -9
       Font.Name = 'Tahoma'
-      Font.Style = []
+      ParentFont = False
       ReadOnly = True
       RowSelect = True
-      ParentFont = False
       ShowColumnHeaders = False
       TabOrder = 0
       ViewStyle = vsReport
     end
     object pnlSummary: TPanel
-      Left = 4
-      Top = 4
-      Width = 202
+      Left = 6
       Height = 19
+      Top = 6
+      Width = 202
       Align = alTop
       BevelOuter = bvNone
       Caption = 'Summary'
-      Font.Charset = ANSI_CHARSET
+      Font.CharSet = ANSI_CHARSET
       Font.Color = clWindowText
       Font.Height = -11
       Font.Name = 'Tahoma'
@@ -66,24 +66,20 @@ object frmNew: TfrmNew
       TabOrder = 1
     end
     object lvwSummary: TListView
-      Left = 4
-      Top = 23
-      Width = 202
+      Left = 6
       Height = 64
+      Top = 25
+      Width = 202
       Align = alTop
-      Columns = <
+      Columns = <      
         item
           Caption = 'Key'
-          Width = -2
-          WidthType = (
-            -2)
-        end
+          Width = 198
+        end      
         item
           Alignment = taRightJustify
           Caption = 'Value'
-          Width = -2
-          WidthType = (
-            -2)
+          Width = 38
         end>
       ReadOnly = True
       RowSelect = True
@@ -92,14 +88,14 @@ object frmNew: TfrmNew
       ViewStyle = vsReport
     end
     object pnlWarnings: TPanel
-      Left = 4
-      Top = 115
-      Width = 202
+      Left = 6
       Height = 19
+      Top = 117
+      Width = 202
       Align = alBottom
       BevelOuter = bvNone
       Caption = 'Warnings'
-      Font.Charset = ANSI_CHARSET
+      Font.CharSet = ANSI_CHARSET
       Font.Color = clWindowText
       Font.Height = -11
       Font.Name = 'Tahoma'
@@ -110,62 +106,60 @@ object frmNew: TfrmNew
   end
   object pnlTabs: TPanel
     Left = 0
+    Height = 264
     Top = 0
     Width = 299
-    Height = 264
     Align = alLeft
     BevelOuter = bvNone
     BorderWidth = 5
+    ClientHeight = 264
+    ClientWidth = 299
     TabOrder = 1
     object pagTabs: TPageControl
-      Left = 3
-      Top = 3
-      Width = 289
+      Left = 5
       Height = 254
-      ActivePage = tabDetails
+      Top = 5
+      Width = 289
+      ActivePage = tabFormat
       Align = alClient
       Constraints.MinHeight = 254
       Constraints.MinWidth = 281
+      TabIndex = 0
       TabOrder = 0
       object tabFormat: TTabSheet
         Caption = 'Basic'
+        ClientHeight = 228
+        ClientWidth = 281
         object lblFormatDesc: TLabel
           Left = 8
+          Height = 33
           Top = 8
           Width = 257
-          Height = 33
           AutoSize = False
-          Caption = 
-            'Select from a pre-defined disk format from the list or load defi' +
-            'nition from a file.'
+          Caption = 'Select from a pre-defined disk format from the list or load definition from a file.'
+          ParentColor = False
           WordWrap = True
         end
         object lvwFormats: TListView
           Left = 8
+          Height = 127
           Top = 40
-          Width = 264
-          Height = 153
-          Anchors = [akLeft, akTop, akRight, akBottom]
-          Columns = <
+          Width = 256
+          Anchors = [akTop, akLeft, akRight, akBottom]
+          Columns = <          
             item
               Caption = 'Name'
-              Width = -2
-              WidthType = (
-                -2)
-            end
+              Width = 260
+            end          
             item
               Alignment = taRightJustify
               Caption = 'Size KB'
-              Width = -2
-              WidthType = (
-                -2)
-            end
+              Width = 46
+            end          
             item
               Alignment = taRightJustify
               Caption = 'Free KB'
-              Width = -2
-              WidthType = (
-                -2)
+              Width = 49
             end>
           ColumnClick = False
           HideSelection = False
@@ -177,536 +171,563 @@ object frmNew: TfrmNew
         end
         object chkAdjust: TCheckBox
           Left = 8
+          Height = 19
           Top = 200
-          Width = 161
-          Height = 17
+          Width = 152
           Caption = 'Allow advanced adjustment'
-          TabOrder = 1
           OnClick = chkAdjustClick
+          TabOrder = 1
         end
       end
       object tabDetails: TTabSheet
         Caption = 'Advanced'
+        ClientHeight = 228
+        ClientWidth = 281
         ImageIndex = 1
         object lblSides: TLabel
           Left = 8
+          Height = 14
           Top = 11
-          Width = 67
-          Height = 13
+          Width = 68
           Caption = 'Side structure'
+          ParentColor = False
         end
         object lblTracks: TLabel
           Left = 8
+          Height = 14
           Top = 35
-          Width = 72
-          Height = 13
+          Width = 73
           Caption = 'Tracks per side'
+          ParentColor = False
         end
         object lblSectors: TLabel
           Left = 144
+          Height = 14
           Top = 35
-          Width = 64
-          Height = 13
+          Width = 65
           Caption = 'Sectors/track'
           FocusControl = edtSectors
+          ParentColor = False
         end
         object lblSecSize: TLabel
           Left = 8
+          Height = 14
           Top = 67
-          Width = 52
-          Height = 13
+          Width = 53
           Caption = 'Sector size'
           FocusControl = edtSecSize
+          ParentColor = False
         end
         object lblGapRW: TLabel
           Left = 8
+          Height = 14
           Top = 139
-          Width = 72
-          Height = 13
+          Width = 73
           Caption = 'Gap read/write'
           FocusControl = edtGapRW
+          ParentColor = False
         end
         object lblGapFormat: TLabel
           Left = 144
+          Height = 14
           Top = 139
-          Width = 54
-          Height = 13
+          Width = 55
           Caption = 'Gap format'
           FocusControl = edtGapFormat
+          ParentColor = False
         end
         object lblResTracks: TLabel
           Left = 144
+          Height = 14
           Top = 91
-          Width = 72
-          Height = 13
+          Width = 73
           Caption = 'Reserve tracks'
           FocusControl = edtResTracks
+          ParentColor = False
         end
         object lblDirBlocks: TLabel
           Left = 8
+          Height = 14
           Top = 171
-          Width = 76
-          Height = 13
+          Width = 77
           Caption = 'Directory blocks'
           FocusControl = edtDirBlocks
+          ParentColor = False
         end
         object lblFiller: TLabel
           Left = 8
+          Height = 14
           Top = 203
-          Width = 47
-          Height = 13
+          Width = 48
           Caption = 'Filler byte'
           FocusControl = udFiller
+          ParentColor = False
         end
         object lblFillHex: TLabel
           Left = 147
+          Height = 13
           Top = 203
           Width = 22
-          Height = 13
           AutoSize = False
+          ParentColor = False
         end
         object lblFirstSector: TLabel
           Left = 144
+          Height = 14
           Top = 67
-          Width = 68
-          Height = 13
+          Width = 69
           Caption = 'First sector ID'
           FocusControl = edtFirstSector
+          ParentColor = False
         end
         object lblInterleave: TLabel
           Left = 8
+          Height = 14
           Top = 91
-          Width = 50
-          Height = 13
+          Width = 51
           Caption = 'Interleave'
           FocusControl = edtInterleave
+          ParentColor = False
         end
         object lblSkewTrack: TLabel
           Left = 8
+          Height = 14
           Top = 115
-          Width = 57
-          Height = 13
+          Width = 58
           Caption = 'Skew tracks'
           FocusControl = edtSkewTrack
+          ParentColor = False
         end
         object lblBlockSize: TLabel
           Left = 144
+          Height = 14
           Top = 171
-          Width = 45
-          Height = 13
+          Width = 46
           Caption = 'Block size'
           FocusControl = edtBlockSize
+          ParentColor = False
         end
         object lblSkewSide: TLabel
           Left = 144
+          Height = 14
           Top = 115
-          Width = 52
-          Height = 13
+          Width = 53
           Caption = 'Skew sides'
           FocusControl = edtSkewSide
+          ParentColor = False
         end
         object cboSides: TComboBox
           Left = 88
+          Height = 21
           Top = 8
           Width = 137
-          Height = 21
-          Style = csDropDownList
           ItemHeight = 13
-          TabOrder = 0
           OnChange = cboSidesChange
+          Style = csDropDownList
+          TabOrder = 0
         end
         object edtTracks: TEdit
           Left = 88
+          Height = 21
           Top = 32
           Width = 33
-          Height = 21
-          BiDiMode = bdLeftToRight
-          ParentBiDiMode = False
+          ParentBidiMode = False
+          OnChange = edtTracksChange
           TabOrder = 1
           Text = '1'
-          OnChange = edtTracksChange
         end
         object edtSectors: TEdit
           Left = 224
+          Height = 21
           Top = 32
           Width = 33
-          Height = 21
-          BiDiMode = bdLeftToRight
-          ParentBiDiMode = False
+          ParentBidiMode = False
+          OnChange = edtSectorsChange
           TabOrder = 2
           Text = '1'
-          OnChange = edtSectorsChange
         end
         object edtSecSize: TEdit
           Left = 88
+          Height = 21
           Top = 64
           Width = 33
-          Height = 21
-          BiDiMode = bdLeftToRight
-          ParentBiDiMode = False
+          ParentBidiMode = False
+          OnChange = edtSecSizeChange
           TabOrder = 3
           Text = '1'
-          OnChange = edtSecSizeChange
         end
         object udSecSize: TUpDown
           Left = 121
+          Height = 21
           Top = 64
           Width = 16
-          Height = 21
           Associate = edtSecSize
+          Min = 0
           Max = 6912
           Increment = 256
           Position = 1
           TabOrder = 4
           Thousands = False
+          Wrap = False
         end
         object edtGapRW: TEdit
           Left = 88
+          Height = 21
           Top = 136
           Width = 33
-          Height = 21
-          BiDiMode = bdLeftToRight
-          ParentBiDiMode = False
+          ParentBidiMode = False
+          OnChange = edtGapRWChange
           TabOrder = 7
           Text = '1'
-          OnChange = edtGapRWChange
         end
         object udGapRW: TUpDown
           Left = 121
+          Height = 21
           Top = 136
           Width = 15
-          Height = 21
           Associate = edtGapRW
+          Min = 0
           Max = 255
           Position = 1
           TabOrder = 8
+          Wrap = False
         end
         object edtGapFormat: TEdit
           Left = 224
+          Height = 21
           Top = 136
           Width = 33
-          Height = 21
-          BiDiMode = bdLeftToRight
-          ParentBiDiMode = False
+          ParentBidiMode = False
+          OnChange = edtGapFormatChange
           TabOrder = 9
           Text = '1'
-          OnChange = edtGapFormatChange
         end
         object udGapFormat: TUpDown
           Left = 257
+          Height = 21
           Top = 136
           Width = 15
-          Height = 21
           Associate = edtGapFormat
+          Min = 0
           Max = 255
           Position = 1
           TabOrder = 10
+          Wrap = False
         end
         object edtResTracks: TEdit
           Left = 224
+          Height = 21
           Top = 88
           Width = 33
-          Height = 21
-          BiDiMode = bdLeftToRight
-          ParentBiDiMode = False
+          ParentBidiMode = False
+          OnChange = edtResTracksChange
           TabOrder = 11
           Text = '1'
-          OnChange = edtResTracksChange
         end
         object udResTracks: TUpDown
           Left = 257
+          Height = 21
           Top = 88
           Width = 15
-          Height = 21
           Associate = edtResTracks
+          Min = 0
           Max = 255
           Position = 1
           TabOrder = 12
+          Wrap = False
         end
         object edtDirBlocks: TEdit
           Left = 88
+          Height = 21
           Top = 168
           Width = 33
-          Height = 21
-          BiDiMode = bdLeftToRight
-          ParentBiDiMode = False
+          ParentBidiMode = False
+          OnChange = edtDirBlocksChange
           TabOrder = 13
           Text = '1'
-          OnChange = edtDirBlocksChange
         end
         object udDirBlocks: TUpDown
           Left = 121
+          Height = 21
           Top = 168
           Width = 15
-          Height = 21
           Associate = edtDirBlocks
+          Min = 0
           Max = 255
           Position = 1
           TabOrder = 14
+          Wrap = False
         end
         object edtFiller: TEdit
           Left = 88
+          Height = 21
           Top = 200
           Width = 33
-          Height = 21
-          BiDiMode = bdLeftToRight
-          ParentBiDiMode = False
+          ParentBidiMode = False
+          OnChange = edtFillerChange
           TabOrder = 15
           Text = '1'
-          OnChange = edtFillerChange
         end
         object udFiller: TUpDown
           Left = 121
+          Height = 21
           Top = 200
           Width = 15
-          Height = 21
           Associate = edtFiller
+          Min = 0
           Max = 255
           Position = 1
           TabOrder = 16
+          Wrap = False
         end
         object udTracks: TUpDown
           Left = 121
+          Height = 21
           Top = 32
           Width = 15
-          Height = 21
           Associate = edtTracks
           Min = 1
           Max = 255
           Position = 1
           TabOrder = 17
+          Wrap = False
         end
         object udSectors: TUpDown
           Left = 257
+          Height = 21
           Top = 32
           Width = 15
-          Height = 21
           Associate = edtSectors
           Min = 1
           Max = 255
           Position = 1
           TabOrder = 18
+          Wrap = False
         end
         object edtFirstSector: TEdit
           Left = 224
+          Height = 21
           Top = 64
           Width = 33
-          Height = 21
-          BiDiMode = bdLeftToRight
-          ParentBiDiMode = False
+          ParentBidiMode = False
+          OnChange = edtFirstSectorChange
           TabOrder = 5
           Text = '1'
-          OnChange = edtFirstSectorChange
         end
         object udFirstSector: TUpDown
           Left = 257
+          Height = 21
           Top = 64
           Width = 15
-          Height = 21
           Associate = edtFirstSector
+          Min = 0
           Max = 255
           Position = 1
           TabOrder = 6
+          Wrap = False
         end
         object edtInterleave: TEdit
           Left = 88
+          Height = 21
           Top = 88
           Width = 33
-          Height = 21
-          BiDiMode = bdLeftToRight
-          ParentBiDiMode = False
+          ParentBidiMode = False
+          OnChange = edtInterleaveChange
           TabOrder = 19
           Text = '1'
-          OnChange = edtInterleaveChange
         end
         object udInterleave: TUpDown
           Left = 121
+          Height = 21
           Top = 88
           Width = 15
-          Height = 21
           Associate = edtInterleave
           Min = -127
           Max = 127
           Position = 1
           TabOrder = 20
+          Wrap = False
         end
         object edtSkewTrack: TEdit
           Left = 88
+          Height = 21
           Top = 112
           Width = 33
-          Height = 21
-          BiDiMode = bdLeftToRight
-          ParentBiDiMode = False
+          ParentBidiMode = False
+          OnChange = edtSkewTrackChange
           TabOrder = 21
           Text = '1'
-          OnChange = edtSkewTrackChange
         end
         object udSkewTrack: TUpDown
           Left = 121
+          Height = 21
           Top = 112
           Width = 15
-          Height = 21
           Associate = edtSkewTrack
           Min = -127
           Max = 127
           Position = 1
           TabOrder = 22
+          Wrap = False
         end
         object edtBlockSize: TEdit
           Left = 224
+          Height = 21
           Top = 168
           Width = 33
-          Height = 21
-          BiDiMode = bdLeftToRight
-          ParentBiDiMode = False
+          ParentBidiMode = False
+          OnChange = edtBlockSizeChange
           TabOrder = 23
           Text = '0'
-          OnChange = edtBlockSizeChange
         end
         object udBlockSize: TUpDown
           Left = 257
+          Height = 21
           Top = 168
           Width = 16
-          Height = 21
           Associate = edtBlockSize
+          Min = 0
           Max = 16384
           Increment = 128
+          Position = 0
           TabOrder = 24
           Thousands = False
+          Wrap = False
         end
         object edtSkewSide: TEdit
           Left = 224
+          Height = 21
           Top = 112
           Width = 33
-          Height = 21
-          BiDiMode = bdLeftToRight
-          ParentBiDiMode = False
+          ParentBidiMode = False
+          OnChange = edtSkewSideChange
           TabOrder = 25
           Text = '1'
-          OnChange = edtSkewSideChange
         end
         object udSkewSide: TUpDown
           Left = 257
+          Height = 21
           Top = 112
           Width = 15
-          Height = 21
           Associate = edtSkewSide
           Min = -127
           Max = 127
           Position = 1
           TabOrder = 26
+          Wrap = False
         end
       end
       object tabDiskSpec: TTabSheet
         Caption = 'Specification'
+        ClientHeight = 228
+        ClientWidth = 281
         ImageIndex = 2
         object lblSpecDesc: TLabel
           Left = 8
+          Height = 41
           Top = 8
           Width = 257
-          Height = 41
           AutoSize = False
-          Caption = 
-            'For the PCW/+3 to correctly identify disk formats a specificatio' +
-            'n block should to be written to the start of the disk or it will' +
-            ' assume the standard 180K format.'
+          Caption = 'For the PCW/+3 to correctly identify disk formats a specification block should to be written to the start of the disk or it will assume the standard 180K format.'
+          ParentColor = False
           WordWrap = True
         end
         object chkWriteDiskSpec: TCheckBox
           Left = 8
+          Height = 19
           Top = 59
-          Width = 161
-          Height = 17
+          Width = 156
           Caption = 'Write disk specification block'
-          TabOrder = 0
           OnClick = chkWriteDiskSpecClick
+          TabOrder = 0
         end
       end
       object tabBoot: TTabSheet
         Caption = 'Boot'
+        ClientHeight = 228
+        ClientWidth = 281
         ImageIndex = 3
         OnShow = tabBootShow
         object lblBootDesc: TLabel
           Left = 8
+          Height = 57
           Top = 8
           Width = 257
-          Height = 57
           AutoSize = False
-          Caption = 
-            'You may choose a binary file to use as a boot sector. For the PC' +
-            'W/+3 this normally follows the disk specification which also con' +
-            'tains the boot checksum, for the Amstrad CPC the first sector ID' +
-            ' must be 65.'
+          Caption = 'You may choose a binary file to use as a boot sector. For the PCW/+3 this normally follows the disk specification which also contains the boot checksum, for the Amstrad CPC the first sector ID must be 65.'
+          ParentColor = False
           WordWrap = True
         end
         object lblBootBinary: TLabel
           Left = 8
+          Height = 14
           Top = 75
-          Width = 19
-          Height = 13
+          Width = 20
           Caption = 'File '
+          ParentColor = False
         end
         object lblBootType: TLabel
           Left = 8
+          Height = 14
           Top = 103
-          Width = 24
-          Height = 13
+          Width = 25
           Caption = 'Type'
+          ParentColor = False
         end
         object lblBinFile: TLabel
           Left = 48
+          Height = 13
           Top = 75
           Width = 161
-          Height = 13
           AutoSize = False
+          ParentColor = False
         end
         object lblBinOffset: TLabel
           Left = 67
+          Height = 13
           Top = 131
           Width = 30
-          Height = 13
           AutoSize = False
+          ParentColor = False
         end
         object lblBootDetails: TLabel
           Left = 8
+          Height = 14
           Top = 135
-          Width = 32
-          Height = 13
+          Width = 33
           Caption = 'Details'
+          ParentColor = False
         end
         object cboBootMachine: TComboBox
           Left = 48
+          Height = 21
           Top = 100
           Width = 161
-          Height = 21
-          Style = csDropDownList
           ItemHeight = 13
-          TabOrder = 0
-          OnChange = cboBootMachineChange
           Items.Strings = (
             'Spectrum +3'
             'Amstrad PCW 8256'
             'Amstrad PCW 9512'
-            'Amstrad CPC 664/6128')
+            'Amstrad CPC 664/6128'
+          )
+          OnChange = cboBootMachineChange
+          Style = csDropDownList
+          TabOrder = 0
         end
         object lvwBootDetails: TListView
           Left = 48
+          Height = 76
           Top = 133
           Width = 225
-          Height = 76
-          Columns = <
+          Columns = <          
             item
               Caption = 'Key'
-              Width = -2
-              WidthType = (
-                -2)
-            end
+              Width = 221
+            end          
             item
               Alignment = taRightJustify
               Caption = 'Value'
-              Width = -2
-              WidthType = (
-                -2)
+              Width = 38
             end>
           ReadOnly = True
           RowSelect = True
@@ -716,11 +737,9 @@ object frmNew: TfrmNew
         end
         object btnBootClear: TBitBtn
           Left = 250
+          Height = 22
           Top = 72
           Width = 24
-          Height = 22
-          TabOrder = 2
-          OnClick = btnBootClearClick
           Glyph.Data = {
             F6000000424DF600000000000000760000002800000010000000100000000100
             0400000000008000000000000000000000001000000000000000000000000000
@@ -729,15 +748,16 @@ object frmNew: TfrmNew
             8888888888888888888888808888888888088800088888888888880000888888
             8088888000888888088888880008888008888888800088008888888888000008
             8888888888800088888888888800000888888888800088008888888000088880
-            0888880000888888008888000888888888088888888888888888}
+            0888880000888888008888000888888888088888888888888888
+          }
+          OnClick = btnBootClearClick
+          TabOrder = 2
         end
         object btnBootBin: TBitBtn
           Left = 225
+          Height = 22
           Top = 72
           Width = 24
-          Height = 22
-          TabOrder = 3
-          OnClick = btnBootBinClick
           Glyph.Data = {
             F6000000424DF600000000000000760000002800000010000000100000000100
             0400000000008000000000000000000000001000000000000000000000000000
@@ -746,46 +766,49 @@ object frmNew: TfrmNew
             88888888888888888888000000000008888800333333333088880B0333333333
             08880FB03333333330880BFB0333333333080FBFB000000000000BFBFBFBFB08
             88880FBFBFBFBF0888880BFB0000000888888000888888880008888888888888
-            8008888888880888080888888888800088888888888888888888}
+            8008888888880888080888888888800088888888888888888888
+          }
+          OnClick = btnBootBinClick
+          TabOrder = 3
         end
       end
     end
   end
   object pnlButtons: TPanel
     Left = 0
+    Height = 30
     Top = 264
     Width = 513
-    Height = 30
     Align = alBottom
     BevelOuter = bvNone
+    ClientHeight = 30
+    ClientWidth = 513
     TabOrder = 2
     object btnFormat: TButton
       Left = 350
+      Height = 25
       Top = 0
       Width = 75
-      Height = 25
       Anchors = [akTop, akRight]
-      Cancel = True
       Caption = 'Format'
       Default = True
-      TabOrder = 0
       OnClick = btnFormatClick
+      TabOrder = 0
     end
     object btnCancel: TButton
       Left = 431
+      Height = 25
       Top = 0
       Width = 75
-      Height = 25
       Anchors = [akTop, akRight]
-      Cancel = True
       Caption = 'Close'
-      TabOrder = 1
       OnClick = btnCancelClick
+      TabOrder = 1
     end
   end
   object dlgOpenBoot: TOpenDialog
     Options = [ofReadOnly, ofHideReadOnly, ofFileMustExist, ofEnableSizing]
-    Left = 8
-    Top = 264
+    left = 8
+    top = 264
   end
 end

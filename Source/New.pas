@@ -119,6 +119,7 @@ type
     procedure btnBootClearClick(Sender: TObject);
     procedure edtBlockSizeChange(Sender: TObject);
   private
+    IsLoading: boolean;
     CurrentFormat: TDSKFormatSpecification;
 
     BootSectorBin: array[0..MaxSectorSize] of byte;
@@ -152,6 +153,7 @@ end;
 
 procedure TfrmNew.UpdateDetails;
 begin
+  IsLoading := true;
   with CurrentFormat do
   begin
     cboSides.ItemIndex := Ord(Sides);
@@ -169,6 +171,7 @@ begin
     udSkewTrack.Position := SkewTrack;
     udSkewSide.Position := SkewSide;
   end;
+  IsLoading := false;
   UpdateSummary;
 end;
 
@@ -176,6 +179,7 @@ procedure TfrmNew.UpdateSummary;
 var
   NewWarn: TListItem;
 begin
+  if IsLoading then exit;
   // Set summary details
   if lvwSummary.Items.Count > 0 then
   begin
@@ -354,7 +358,6 @@ end;
 
 procedure TfrmNew.SetCurrentFormat(ItemIndex: integer);
 begin
-
   // Amstrad PCW/Spectrum +3 CF2 (start from this)
   with CurrentFormat do
   begin
@@ -529,7 +532,7 @@ end;
 procedure TfrmNew.FormShow(Sender: TObject);
 begin
   SetCurrentFormat(0);
-  lvwFormats.Items[0].Selected := True;
+  //lvwFormats.Items[0].Selected := True;
 end;
 
 procedure TfrmNew.chkWriteDiskSpecClick(Sender: TObject);
