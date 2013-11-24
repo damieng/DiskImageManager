@@ -1,7 +1,7 @@
 unit DiskMap;
 
 {
-  Disk Image Manager -  Copyright 2002-2009 Envy Technologies Ltd.
+  Disk Image Manager -  Copyright 2002-2013 Envy Technologies Ltd.
 
   Disk map graphical component
 }
