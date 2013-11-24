@@ -40,8 +40,6 @@ function FontFromDescription(Description: string): TFont;
 function FontDescription(ThisFont: TFont): string;
 function FontCopy(ThisFont: TFont): TFont;
 
-function FingerPrintFile(FileName: TFileName): string;
-
 procedure DrawBorder(Canvas: TCanvas; var Rect: TRect; BorderStyle: TSpinBorderStyle);
 
 implementation
@@ -197,13 +195,14 @@ begin
     Name := ThisFont.Name;
     Style := ThisFont.Style;
     Size := ThisFont.Size;
+    Color := ThisFont.Color;
   end;
 end;
 
 // Font as human readable description
 function FontDescription(ThisFont: TFont): string;
 begin
-  Result := StringReplace(FontToDescription(ThisFont), ',', ' ', [rfReplaceAll]);
+  Result := Trim(StringReplace(FontToDescription(ThisFont), ',', ' ', [rfReplaceAll]));
 end;
 
 function StrYesNo(IsEmpty: boolean): string;
@@ -227,41 +226,6 @@ begin
     if ByteArray[Start + Idx] <> byte(SubString[Idx + 1]) then
       Result := False;
     Inc(Idx);
-  end;
-end;
-
-function FingerPrintFile(FileName: TFileName): string;
-var
-  //Hasher: TDCP_sha1;
-  HashDigest: array of byte;
-  FileStream: TFileStream;
-  Buffer: array[0..65535] of byte;
-  ReadBytes, Idx: integer;
-begin
-  FileStream := TFileStream.Create(FileName, fmOpenRead);
-  try
-    //Hasher := TDCP_sha1.Create(nil);
-    //Hasher.Init;
-    repeat
-      ReadBytes := FileStream.Read(Buffer, SizeOf(Buffer));
-      //Hasher.Update(Buffer,ReadBytes);
-    until ReadBytes <> SizeOf(Buffer);
-    FileStream.Free;
-
-    //SetLength(HashDigest,Hasher.HashSize div 8);
-    //Hasher.Final(HashDigest[0]);  // get the output
-
-    Result := '';
-    for Idx := 0 to Length(HashDigest) - 1 do  // convert it into a hex string
-    begin
-      if (((Idx mod 4) = 0) and (Idx > 0)) then
-        Result := Result + ' ';
-      Result := Result + IntToHex(HashDigest[Idx], 2);
-    end;
-  except
-    //Hasher.Free;
-    FileStream.Free;
-    Result := 'Error reading file.';
   end;
 end;
 

@@ -47,7 +47,6 @@ type
     FDisk: TDSKDisk;
     FFileName: TFileName;
     FFileSize: int64;
-    FFingerPrint: string;
     FIsChanged: boolean;
 
     procedure SetIsChanged(NewValue: boolean);
@@ -73,7 +72,6 @@ type
     property Disk: TDSKDisk read FDisk write FDisk;
     property FileName: TFileName read FFileName write FFileName;
     property FileSize: int64 read FFileSize write FFileSize;
-    property FingerPrint: string read FFingerPrint;
     property IsChanged: boolean read FIsChanged write SetIsChanged;
   end;
 
@@ -397,8 +395,6 @@ end;
 
 procedure TDSKImage.SetIsChanged(NewValue: boolean);
 begin
-  if NewValue then
-    FFingerPrint := '';
   FIsChanged := NewValue;
 end;
 
@@ -487,7 +483,6 @@ begin
   if Result then
   begin
     FIsChanged := False;
-    FFingerPrint := FingerPrintFile(LoadFileName);
     FileName := LoadFileName;
   end
   else
@@ -682,7 +677,6 @@ begin
   if not Copy then
   begin
     FIsChanged := False;
-    FFingerPrint := FingerPrintFile(SaveFileName);
     FileName := SaveFileName;
     Self.FileFormat := SaveFileFormat;
   end;
