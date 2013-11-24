@@ -34,7 +34,7 @@ Capable of identifying the following original disk formats even when de-skewed b
 * HiForm 208/203 (Ian Collier)
 * Supermat 192/XCF2
 * MGT SAM Coupe BDOS
-* *SAMDOS
+* SAMDOS
 * MasterDOS
 
 ###Copy protection identification
