@@ -189,9 +189,8 @@ begin
   for Idx := 1 to ParamCount do
   begin
     FileName := ParamStr(Idx);
-    if ExtractFileExt(FileName) = '.dsk' then
-      if FileExistsUTF8(FileName) then
-        LoadImage(FileName);
+    if (ExtractFileExt(FileName) = '.dsk') and (FileExistsUTF8(FileName)) then
+       LoadImage(FileName);
   end;
 end;
 
@@ -199,7 +198,7 @@ procedure TfrmMain.itmOpenClick(Sender: TObject);
 var
   Idx: integer;
 begin
-  if (dlgOpen.Execute) then
+  if dlgOpen.Execute then
     for Idx := 0 to dlgOpen.Files.Count - 1 do
       LoadImage(dlgOpen.Files[Idx]);
 end;
@@ -209,7 +208,7 @@ var
   NewImage: TDSKImage;
 begin
   NewImage := TDSKImage.Create;
-  if (NewImage.LoadFile(FileName)) then
+  if NewImage.LoadFile(FileName) then
   begin
     AddWorkspaceImage(NewImage);
     Result := True;
@@ -228,15 +227,15 @@ var
 begin
   tvwMain.Items.BeginUpdate;
 
-  if (Image.Corrupt) then
+  if Image.Corrupt then
     ImageNode := AddTree(nil, ExtractFileName(Image.FileName), Ord(itDiskCorrupt), Image)
   else
     ImageNode := AddTree(nil, ExtractFileName(Image.FileName), Ord(itDisk), Image);
 
-  if (Image.Disk.Sides > 0) then
+  if Image.Disk.Sides > 0 then
   begin
     // Optional specification
-    if (Image.Disk.Specification.Read <> dsFormatInvalid) then
+    if Image.Disk.Specification.Read <> dsFormatInvalid then
       AddTree(ImageNode, 'Specification', Ord(itSpecification),
         Image.Disk.Specification);
     // Add the sides
@@ -298,14 +297,13 @@ begin
   tvwMain.PopupMenu := nil;
 
   // Decide what class operating on
-  if (tvwMain.Selected <> nil) then
-    if (tvwMain.Selected.Data <> nil) then
-    begin
-      AllowImageFile := True;
-      if (TObject(tvwMain.Selected.Data).ClassType = TDSKSector) or
-        (TObject(tvwMain.Selected.Data).ClassType = TDSKTrack) then
-        tvwMain.PopupMenu := popSector;
-    end;
+  if (tvwMain.Selected <> nil) and (tvwMain.Selected.Data <> nil) then
+  begin
+    AllowImageFile := True;
+    if (TObject(tvwMain.Selected.Data).ClassType = TDSKSector) or
+       (TObject(tvwMain.Selected.Data).ClassType = TDSKTrack) then
+       tvwMain.PopupMenu := popSector;
+  end;
 
   // Set main menu options
   itmClose.Enabled := AllowImageFile;
@@ -348,13 +346,13 @@ begin
     ParentFont := True;
     ShowColumnHeaders := True;
 
-    if (tvwMain.Selected <> nil) then
+    if tvwMain.Selected <> nil then
       with tvwMain.Selected do
       begin
         pnlListLabel.Caption := AnsiReplaceStr(GetTitle(tvwMain.Selected), '&', '&&');
         lvwMain.Visible := not (ItemType(ImageIndex) = itAnalyse);
         DiskMap.Visible := not lvwMain.Visible;
-        if (Data <> nil) then
+        if Data <> nil then
         begin
           case ItemType(ImageIndex) of
             itDisk: RefreshListImage(Data);
@@ -367,9 +365,9 @@ begin
             itFiles: RefreshListFiles(Data);
             itMessages: RefreshListMessages(Data);
             else
-              if (TObject(Data).ClassType = TDSKSide) then
+              if TObject(Data).ClassType = TDSKSide then
                 RefreshListTrack(TDSKSide(Data));
-              if (TObject(Data).ClassType = TDSKSector) then
+              if TObject(Data).ClassType = TDSKSector then
                 RefreshListSectorData(TDSKSector(Data));
           end;
         end;
@@ -387,7 +385,7 @@ var
   Idx: integer;
 begin
   SetListSimple;
-  if (Messages <> nil) then
+  if Messages <> nil then
     for Idx := 0 to Messages.Count - 1 do
       AddListInfo('', Messages[Idx]);
 end;
@@ -395,16 +393,16 @@ end;
 procedure TfrmMain.RefreshListImage(Image: TDSKImage);
 begin
   SetListSimple;
-  if (Image <> nil) then
+  if Image <> nil then
     with Image do
     begin
       AddListInfo('Creator', Creator);
-      if (Corrupt) then
+      if Corrupt then
         AddListInfo('Format', DSKImageFormats[FileFormat] + ' (Corrupt)')
       else
         AddListInfo('Format', DSKImageFormats[FileFormat]);
       AddListInfo('Sides', StrInt(Disk.Sides));
-      if (Disk.Sides > 0) then
+      if Disk.Sides > 0 then
       begin
         AddListInfo('Tracks per side', StrInt(Disk.Side[0].Tracks));
         AddListInfo('Track total', StrInt(Disk.TrackTotal));
@@ -462,7 +460,7 @@ begin
   SetListSimple;
   Specification.Read;
   AddListInfo('Format', DSKSpecFormats[Specification.Format]);
-  if (Specification.Format <> dsFormatInvalid) then
+  if Specification.Format <> dsFormatInvalid then
   begin
     AddListInfo('Sided', DSKSpecSides[Specification.Side]);
     AddListInfo('Track mode', DSKSpecTracks[Specification.Track]);
@@ -920,7 +918,7 @@ end;
 // Menu: View > Options
 procedure TfrmMain.itmOptionsClick(Sender: TObject);
 begin
-  TfrmOptions.Create(Self).Show();
+  TfrmOptions.Create(Self).Show;
 end;
 
 // Load system settings
@@ -1043,7 +1041,7 @@ end;
 procedure TfrmMain.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   SaveSettings;
-  if (CloseAll(True)) then
+  if CloseAll(True) then
   begin
     Action := caFree;
   end
@@ -1109,7 +1107,7 @@ begin
     case dlgSave.FilterIndex of
       1:
       begin
-        if ((not Image.Disk.IsTrackSizeUniform) and Self.WarnConversionProblems) then
+        if (not Image.Disk.IsTrackSizeUniform) and Self.WarnConversionProblems then
           if MessageDlg(
             'This image has variable track sizes that "Standard DSK format" does not support. ' +
             'Save anyway using largest track size?', mtWarning,
@@ -1166,13 +1164,13 @@ end;
 
 procedure TfrmMain.itmSaveClick(Sender: TObject);
 begin
-  if (tvwMain.Selected <> nil) then
+  if tvwMain.Selected <> nil then
     SaveImage(GetCurrentImage);
 end;
 
 procedure TfrmMain.SaveImage(Image: TDSKImage);
 begin
-  if (Image.FileFormat = diNotYetSaved) then
+  if Image.FileFormat = diNotYetSaved then
     SaveImageAs(Image, False)
   else
     Image.SaveFile(Image.FileName, Image.FileFormat, False,
@@ -1184,7 +1182,7 @@ var
   Track: TDSKTrack;
   TIdx: integer;
 begin
-  if (tvwMain.Selected <> nil) then
+  if tvwMain.Selected <> nil then
   begin
     if (TObject(tvwMain.Selected.Data).ClassType = TDSKTrack) then
       if ConfirmChange('reset FDC flags for', 'track') then
@@ -1203,9 +1201,8 @@ end;
 function TfrmMain.GetSelectedSector(Sender: TObject): TDSKSector;
 begin
   Result := nil;
-  if (Sender = lvwMain) then
-    if (lvwMain.Selected <> nil) then
-      Result := TDSKSector(lvwMain.Selected.Data);
+  if (Sender = lvwMain) and (lvwMain.Selected <> nil) then
+     Result := TDSKSector(lvwMain.Selected.Data);
 end;
 
 procedure TfrmMain.itmSectorBlankDataClick(Sender: TObject);
@@ -1223,7 +1220,7 @@ end;
 
 procedure TfrmMain.itmSectorUnformatClick(Sender: TObject);
 begin
-  if (tvwMain.Selected <> nil) then
+  if tvwMain.Selected <> nil then
   begin
     if (TObject(tvwMain.Selected.Data).ClassType = TDSKTrack) then
       if ConfirmChange('unformat', 'track') then
@@ -1281,7 +1278,7 @@ begin
 
   // Details
   for RIdx := 0 to ForListView.Items.Count - 1 do
-    if (ForListView.Items[RIdx].Selected) then
+    if ForListView.Items[RIdx].Selected then
     begin
       Result := Result + ForListView.Items[RIdx].Caption + TAB;
       for CIdx := 0 to ForListView.Items[RIdx].SubItems.Count - 1 do
@@ -1316,33 +1313,33 @@ var
   TreeIdx: integer;
   Obj: TObject;
 begin
-  if (tvwMain.Selected.Data = nil) then
+  if tvwMain.Selected.Data = nil then
     exit;
 
   // Find out where to start searching
   Obj := TObject(tvwMain.Selected.Data);
   StartSector := nil;
-  if (Obj.ClassType = TDSKImage) then
+  if Obj.ClassType = TDSKImage then
     StartSector := TDSKImage(Obj).Disk.Side[0].Track[0].Sector[0];
-  if (Obj.ClassType = TDSKDisk) then
+  if Obj.ClassType = TDSKDisk then
     StartSector := TDSKDisk(Obj).Side[0].Track[0].Sector[0];
-  if (Obj.ClassType = TDSKSide) then
+  if Obj.ClassType = TDSKSide then
     StartSector := TDSKSide(Obj).Track[0].Sector[0];
-  if (Obj.ClassType = TDSKTrack) then
+  if Obj.ClassType = TDSKTrack then
     StartSector := TDSKTrack(Obj).Sector[0];
-  if (Obj.ClassType = TDSKSector) then
+  if Obj.ClassType = TDSKSector then
     StartSector := TDSKSector(Obj);
 
-  if (StartSector = nil) then
+  if StartSector = nil then
     exit;
 
   FoundSector := StartSector.ParentTrack.ParentSide.ParentDisk.ParentImage.FindText(
     StartSector, dlgFind.FindText, frMatchCase in dlgFind.Options);
 
-  if (FoundSector <> nil) then
+  if FoundSector <> nil then
   begin
     for TreeIdx := 0 to tvwMain.Items.Count - 1 do
-      if (tvwMain.Items[TreeIdx].Data = FoundSector) then
+      if tvwMain.Items[TreeIdx].Data = FoundSector then
         tvwMain.Selected := tvwMain.Items[TreeIdx];
   end;
 end;
@@ -1359,4 +1356,4 @@ begin
   itmWrite.Enabled := FSamDiskEnabled;
 end;
 
-end.
+end.
