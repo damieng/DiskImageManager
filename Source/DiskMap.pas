@@ -125,7 +125,7 @@ begin
     Font := Self.Font;
     Pen.Color := clWhite;
     TextH := TextHeight('X');
-    TextW := TextWidth('X');
+    TextW := TextWidth('M');
     InflateRect(Rect, -TextW, -TextH);
 
     // Calculate usable track/sector sizes and new area
