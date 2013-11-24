@@ -4,15 +4,15 @@
     <PathDelim Value="\"/>
     <Version Value="9"/>
     <BuildModes Active="Default"/>
-    <Units Count="19">
+    <Units Count="20">
       <Unit0>
         <Filename Value="DiskImageManager.lpr"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="4"/>
+        <EditorIndex Value="6"/>
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
-        <CursorPos X="33" Y="15"/>
-        <UsageCount Value="25"/>
+        <CursorPos X="33" Y="17"/>
+        <UsageCount Value="33"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
@@ -20,11 +20,11 @@
         <Filename Value="DskImage.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="DskImage"/>
-        <EditorIndex Value="5"/>
+        <EditorIndex Value="7"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="1"/>
-        <CursorPos X="85" Y="11"/>
-        <UsageCount Value="25"/>
+        <TopLine Value="2"/>
+        <CursorPos X="49" Y="18"/>
+        <UsageCount Value="33"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit1>
@@ -32,11 +32,11 @@
         <Filename Value="Utils.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Utils"/>
-        <EditorIndex Value="8"/>
+        <EditorIndex Value="10"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="13"/>
-        <CursorPos X="10" Y="41"/>
-        <UsageCount Value="25"/>
+        <TopLine Value="1"/>
+        <CursorPos X="40" Y="17"/>
+        <UsageCount Value="33"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit2>
@@ -47,11 +47,11 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="About"/>
-        <EditorIndex Value="3"/>
+        <EditorIndex Value="5"/>
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
-        <CursorPos X="33" Y="15"/>
-        <UsageCount Value="25"/>
+        <CursorPos X="21" Y="17"/>
+        <UsageCount Value="33"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -63,12 +63,11 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="Options"/>
-        <IsVisibleTab Value="True"/>
-        <EditorIndex Value="6"/>
+        <EditorIndex Value="8"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="106"/>
-        <CursorPos X="1" Y="1"/>
-        <UsageCount Value="25"/>
+        <TopLine Value="170"/>
+        <CursorPos X="22" Y="188"/>
+        <UsageCount Value="33"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -78,11 +77,11 @@
         <IsPartOfProject Value="True"/>
         <HasResources Value="True"/>
         <UnitName Value="New"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="3"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="1"/>
-        <CursorPos X="85" Y="11"/>
-        <UsageCount Value="25"/>
+        <TopLine Value="84"/>
+        <CursorPos X="7" Y="100"/>
+        <UsageCount Value="33"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit5>
@@ -93,11 +92,11 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="SectorProperties"/>
-        <EditorIndex Value="7"/>
+        <EditorIndex Value="9"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="1"/>
-        <CursorPos X="85" Y="11"/>
-        <UsageCount Value="25"/>
+        <TopLine Value="2"/>
+        <CursorPos X="21" Y="18"/>
+        <UsageCount Value="33"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit6>
@@ -110,9 +109,9 @@
         <UnitName Value="Main"/>
         <EditorIndex Value="1"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="1"/>
-        <CursorPos X="1" Y="8"/>
-        <UsageCount Value="25"/>
+        <TopLine Value="762"/>
+        <CursorPos X="3" Y="775"/>
+        <UsageCount Value="33"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -122,7 +121,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="191"/>
         <CursorPos X="23" Y="5"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
         <DefaultSyntaxHighlighter Value="LFM"/>
       </Unit8>
       <Unit9>
@@ -130,14 +129,18 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="1" Y="1"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
       </Unit9>
       <Unit10>
         <Filename Value="DiskMap.pas"/>
         <UnitName Value="DiskMap"/>
-        <TopLine Value="162"/>
-        <CursorPos X="46" Y="182"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="4"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="1"/>
+        <CursorPos X="19" Y="13"/>
         <UsageCount Value="10"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit10>
       <Unit11>
@@ -146,7 +149,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="88"/>
         <CursorPos X="20" Y="90"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
         <DefaultSyntaxHighlighter Value="LFM"/>
       </Unit11>
       <Unit12>
@@ -157,7 +160,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="1" Y="1"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="19"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit12>
       <Unit13>
@@ -165,7 +168,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="1" Y="1"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
         <DefaultSyntaxHighlighter Value="LFM"/>
       </Unit13>
       <Unit14>
@@ -174,7 +177,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="254"/>
         <CursorPos X="5" Y="59"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit14>
       <Unit15>
@@ -182,7 +185,7 @@
         <UnitName Value="CocoaAll"/>
         <TopLine Value="25"/>
         <CursorPos X="34" Y="20"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
       </Unit15>
       <Unit16>
         <Filename Value="components.pas"/>
@@ -190,7 +193,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="1" Y="8"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit16>
       <Unit17>
@@ -200,7 +203,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="59" Y="13"/>
-        <UsageCount Value="12"/>
+        <UsageCount Value="16"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit17>
@@ -209,66 +212,145 @@
         <WindowIndex Value="0"/>
         <TopLine Value="272"/>
         <CursorPos X="37" Y="296"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
         <DefaultSyntaxHighlighter Value="LFM"/>
       </Unit18>
+      <Unit19>
+        <Filename Value="FormatAnalysis.pas"/>
+        <UnitName Value="FormatAnalysis"/>
+        <EditorIndex Value="2"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="1"/>
+        <CursorPos X="14" Y="11"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit19>
     </Units>
     <General>
       <ActiveWindowIndexAtStart Value="0"/>
     </General>
-    <JumpHistory Count="13" HistoryIndex="12">
+    <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
-        <Filename Value="Options.pas"/>
-        <Caret Line="236" Column="35" TopLine="125"/>
+        <Filename Value="FormatAnalysis.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
       </Position1>
       <Position2>
-        <Filename Value="Main.pas"/>
-        <Caret Line="1388" Column="52" TopLine="1364"/>
+        <Filename Value="DskImage.pas"/>
+        <Caret Line="398" Column="1" TopLine="383"/>
       </Position2>
       <Position3>
-        <Filename Value="New.pas"/>
-        <Caret Line="666" Column="51" TopLine="283"/>
+        <Filename Value="DskImage.pas"/>
+        <Caret Line="464" Column="19" TopLine="448"/>
       </Position3>
       <Position4>
         <Filename Value="SectorProperties.pas"/>
-        <Caret Line="273" Column="5" TopLine="234"/>
+        <Caret Line="177" Column="29" TopLine="162"/>
       </Position4>
       <Position5>
-        <Filename Value="Utils.pas"/>
-        <Caret Line="149" Column="49" TopLine="137"/>
+        <Filename Value="DskImage.pas"/>
+        <Caret Line="464" Column="1" TopLine="448"/>
       </Position5>
       <Position6>
-        <Filename Value="Utils.pas"/>
-        <Caret Line="268" Column="5" TopLine="170"/>
+        <Filename Value="DskImage.pas"/>
+        <Caret Line="466" Column="35" TopLine="450"/>
       </Position6>
       <Position7>
-        <Filename Value="Options.pas"/>
-        <Caret Line="89" Column="54" TopLine="85"/>
+        <Filename Value="DskImage.pas"/>
+        <Caret Line="506" Column="35" TopLine="490"/>
       </Position7>
       <Position8>
-        <Filename Value="Options.pas"/>
-        <Caret Line="106" Column="59" TopLine="100"/>
+        <Filename Value="Main.pas"/>
+        <Caret Line="19" Column="32" TopLine="3"/>
       </Position8>
       <Position9>
-        <Filename Value="Options.pas"/>
-        <Caret Line="125" Column="1" TopLine="101"/>
+        <Filename Value="DskImage.pas"/>
+        <Caret Line="692" Column="25" TopLine="682"/>
       </Position9>
       <Position10>
-        <Filename Value="Options.pas"/>
-        <Caret Line="171" Column="44" TopLine="169"/>
+        <Filename Value="DskImage.pas"/>
+        <Caret Line="1310" Column="54" TopLine="1294"/>
       </Position10>
       <Position11>
-        <Filename Value="Options.pas"/>
-        <Caret Line="170" Column="44" TopLine="168"/>
+        <Filename Value="DskImage.pas"/>
+        <Caret Line="18" Column="49" TopLine="2"/>
       </Position11>
       <Position12>
-        <Filename Value="Options.pas"/>
-        <Caret Line="169" Column="44" TopLine="167"/>
+        <Filename Value="New.pas"/>
+        <Caret Line="11" Column="85" TopLine="1"/>
       </Position12>
       <Position13>
-        <Filename Value="Options.pas"/>
-        <Caret Line="216" Column="25" TopLine="98"/>
+        <Filename Value="New.pas"/>
+        <Caret Line="99" Column="49" TopLine="83"/>
       </Position13>
+      <Position14>
+        <Filename Value="About.pas"/>
+        <Caret Line="69" Column="66" TopLine="62"/>
+      </Position14>
+      <Position15>
+        <Filename Value="Main.pas"/>
+        <Caret Line="19" Column="32" TopLine="3"/>
+      </Position15>
+      <Position16>
+        <Filename Value="About.pas"/>
+        <Caret Line="17" Column="21" TopLine="1"/>
+      </Position16>
+      <Position17>
+        <Filename Value="Main.pas"/>
+        <Caret Line="19" Column="59" TopLine="3"/>
+      </Position17>
+      <Position18>
+        <Filename Value="Main.pas"/>
+        <Caret Line="1272" Column="16" TopLine="1258"/>
+      </Position18>
+      <Position19>
+        <Filename Value="Main.pas"/>
+        <Caret Line="1275" Column="22" TopLine="1259"/>
+      </Position19>
+      <Position20>
+        <Filename Value="Main.pas"/>
+        <Caret Line="329" Column="34" TopLine="317"/>
+      </Position20>
+      <Position21>
+        <Filename Value="Main.pas"/>
+        <Caret Line="801" Column="28" TopLine="785"/>
+      </Position21>
+      <Position22>
+        <Filename Value="Main.pas"/>
+        <Caret Line="322" Column="16" TopLine="311"/>
+      </Position22>
+      <Position23>
+        <Filename Value="Main.pas"/>
+        <Caret Line="823" Column="3" TopLine="801"/>
+      </Position23>
+      <Position24>
+        <Filename Value="Main.pas"/>
+        <Caret Line="295" Column="75" TopLine="287"/>
+      </Position24>
+      <Position25>
+        <Filename Value="Main.pas"/>
+        <Caret Line="328" Column="46" TopLine="312"/>
+      </Position25>
+      <Position26>
+        <Filename Value="Main.pas"/>
+        <Caret Line="802" Column="28" TopLine="786"/>
+      </Position26>
+      <Position27>
+        <Filename Value="Main.pas"/>
+        <Caret Line="794" Column="26" TopLine="787"/>
+      </Position27>
+      <Position28>
+        <Filename Value="New.pas"/>
+        <Caret Line="353" Column="26" TopLine="347"/>
+      </Position28>
+      <Position29>
+        <Filename Value="New.pas"/>
+        <Caret Line="18" Column="21" TopLine="2"/>
+      </Position29>
+      <Position30>
+        <Filename Value="DiskMap.pas"/>
+        <Caret Line="182" Column="46" TopLine="162"/>
+      </Position30>
     </JumpHistory>
   </ProjectSession>
 </CONFIG>

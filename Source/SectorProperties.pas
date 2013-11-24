@@ -15,7 +15,7 @@ interface
 
 uses
   DskImage, Utils,
-  LCLIntf, LCLType, LMessages, SysUtils, Classes, Graphics, Forms, Controls, StdCtrls,
+  LCLIntf, LCLType, SysUtils, Classes, Graphics, Forms, Controls, StdCtrls,
   Buttons, ComCtrls, ExtCtrls, CheckLst, Dialogs;
 
 type

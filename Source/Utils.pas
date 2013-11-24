@@ -14,7 +14,7 @@ unit Utils;
 interface
 
 uses
-  Classes, Graphics, LCLIntf, LCLType, LMessages, SysUtils;
+  Classes, Graphics, LCLIntf, LCLType, SysUtils;
 
 const
   BytesPerKB: integer = 1024;
@@ -69,6 +69,7 @@ function StrBlockClean(S: array of char; Start, Len: integer): string;
 var
   Idx: integer;
 begin
+  Result := '';
   for Idx := Start to Len - 1 do
     if ((Ord(S[Idx]) > 31) and (Ord(S[Idx]) < 128)) then
       Result := Result + S[Idx];

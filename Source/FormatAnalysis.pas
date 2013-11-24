@@ -8,8 +8,7 @@ unit FormatAnalysis;
 
 interface
 
-uses DskImage,
-	StrUtils, SysUtils;
+uses DskImage, SysUtils;
 
 const
 	// Copy protection ID strings

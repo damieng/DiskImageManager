@@ -15,7 +15,7 @@ interface
 
 uses
   DSKFormat, Utils,
-  Classes, Dialogs, SysUtils, LCLIntf, LCLType, LMessages, Math;
+  Classes, Dialogs, SysUtils, LCLIntf, LCLType, Math;
 
 const
   MaxSectorSize = 32768;
@@ -689,7 +689,7 @@ var
   DSKInfoBlock: TDSKInfoBlock;
   TRKInfoBlock: TTRKInfoBlock;
   SCTInfoBlock: TSCTInfoBlock;
-  SIdx, TIdx, EIdx, EOff, TrackBufferSize: integer;
+  SIdx, TIdx, EIdx, EOff: integer;
   TrackSize: word;
 begin
   Result := False;

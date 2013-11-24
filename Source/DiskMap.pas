@@ -10,7 +10,7 @@ interface
 
 uses
   DskImage, Utils,
-  Forms, Windows, Messages, SysUtils, Classes, Controls, Graphics, GraphUtil;
+  Forms, Windows, SysUtils, Classes, Controls, Graphics, GraphUtil;
 
 type
   TSpinDiskMap = class(TGraphicControl)

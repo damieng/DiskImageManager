@@ -16,8 +16,7 @@ interface
 uses
   DiskMap, DskImage, Utils, About, Options, SectorProperties, FormatAnalysis,
   Classes, Graphics, Registry, SysUtils, Forms, Dialogs, Menus, ComCtrls,
-  ExtCtrls, ImgList, Controls, Messages, LCLIntf, LCLType, LMessages, Clipbrd, FileUtil,
-  StrUtils;
+  ExtCtrls, Controls, LCLIntf, LCLType, Clipbrd, FileUtil, StrUtils;
 
 type
   // Must match the imagelist, put sides last
@@ -320,7 +319,8 @@ function TfrmMain.GetTitle(Data: TTreeNode): string;
 var
   CurNode: TTreeNode;
 begin
-  CurNode := tvwMain.Selected;
+  Result := '';
+  CurNode := Data;
   while (CurNode <> nil) do
   begin
     if ((CurNode.ImageIndex <> 2) and (CurNode.ImageIndex <> 7)) or
@@ -769,7 +769,10 @@ var
   Idx: integer;
   SecData, SecHex: string;
 begin
+  SecData := '';
+  SecHex := '';
   lvwMain.Font := SectorFont;
+
   with lvwMain.Columns do
   begin
     Clear;
@@ -1270,6 +1273,7 @@ function GetListViewAsText(ForListView: TListView): string;
 var
   CIdx, RIdx: integer;
 begin
+  Result := '';
   // Headings
   for CIdx := 0 to ForListView.Columns.Count - 1 do
     Result := Result + ForListView.Columns[CIdx].Caption + TAB;

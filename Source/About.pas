@@ -14,7 +14,7 @@ unit About;
 interface
 
 uses
-  LCLIntf, LCLType, LMessages, Controls, Forms, ExtCtrls, StdCtrls,
+  LCLIntf, LCLType, Controls, Forms, ExtCtrls, StdCtrls,
   Graphics, Classes, SysUtils;
 
 type

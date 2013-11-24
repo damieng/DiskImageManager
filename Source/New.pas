@@ -15,7 +15,7 @@ interface
 
 uses
   DskImage, Main,
-  LCLIntf, LCLType, LMessages, Messages, SysUtils, Variants, Classes, Controls, Forms,
+  LCLIntf, LCLType, SysUtils, Variants, Classes, Controls, Forms,
   StdCtrls, ComCtrls, ExtCtrls, Dialogs, Buttons;
 
 type
@@ -349,7 +349,7 @@ procedure TfrmNew.lvwFormatsChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
 begin
   if (lvwFormats.Selected <> nil) then
-    SetCurrentFormat(lvwFormats.Selected.ImageIndex);
+    SetCurrentFormat(Item.ImageIndex);
 end;
 
 procedure TfrmNew.SetCurrentFormat(ItemIndex: integer);
