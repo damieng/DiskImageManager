@@ -9,5 +9,8 @@ lib/
 *.or
 *.ppu
 
+#ignore user specific files
+*.lps
+
 #exclude executable output in windows
 *.exe
