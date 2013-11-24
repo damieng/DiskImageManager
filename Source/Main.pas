@@ -144,7 +144,6 @@ type
     procedure RefreshListTrack(OptionalSide: TObject);
     procedure RefreshListSector(Track: TDSKTrack);
     procedure RefreshListSectorData(Sector: TDSKSector);
-    procedure RefreshListSides(Disk: TDSKDisk);
     procedure RefreshListSpecification(Specification: TDSKSpecification);
     procedure UpdateMenus;
 
@@ -190,7 +189,7 @@ begin
   begin
     FileName := ParamStr(Idx);
     if (ExtractFileExt(FileName) = '.dsk') and (FileExistsUTF8(FileName)) then
-       LoadImage(FileName);
+      LoadImage(FileName);
   end;
 end;
 
@@ -223,7 +222,7 @@ end;
 procedure TfrmMain.AddWorkspaceImage(Image: TDSKImage);
 var
   SIdx, TIdx, EIdx: integer;
-  ImageNode, SidesNode, SideNode, TrackNode, TracksNode: TTreeNode;
+  ImageNode, SideNode, TrackNode, TracksNode: TTreeNode;
 begin
   tvwMain.Items.BeginUpdate;
 
@@ -239,10 +238,9 @@ begin
       AddTree(ImageNode, 'Specification', Ord(itSpecification),
         Image.Disk.Specification);
     // Add the sides
-    SidesNode := AddTree(ImageNode, 'Sides', Ord(itSides), Image.Disk);
     for SIdx := 0 to Image.Disk.Sides - 1 do
     begin
-      SideNode := AddTree(SidesNode, Format('Side %d', [SIdx + 1]),
+      SideNode := AddTree(ImageNode, Format('Side %d', [SIdx + 1]),
         Ord(itSide0) + SIdx, Image.Disk.Side[SIdx]);
       AddTree(SideNode, 'Map', Ord(itAnalyse), Image.Disk.Side[SIdx]);
       // Add the tracks
@@ -301,8 +299,8 @@ begin
   begin
     AllowImageFile := True;
     if (TObject(tvwMain.Selected.Data).ClassType = TDSKSector) or
-       (TObject(tvwMain.Selected.Data).ClassType = TDSKTrack) then
-       tvwMain.PopupMenu := popSector;
+      (TObject(tvwMain.Selected.Data).ClassType = TDSKTrack) then
+      tvwMain.PopupMenu := popSector;
   end;
 
   // Set main menu options
@@ -359,7 +357,6 @@ begin
             itDiskCorrupt: RefreshListImage(Data);
             itSpecification: RefreshListSpecification(Data);
             itTracksAll: RefreshListTrack(Data);
-            itSides: RefreshListSides(Data);
             itTrack: RefreshListSector(Data);
             itAnalyse: AnalyseMap(Data);
             itFiles: RefreshListFiles(Data);
@@ -391,6 +388,8 @@ begin
 end;
 
 procedure TfrmMain.RefreshListImage(Image: TDSKImage);
+var
+  SIdx: integer;
 begin
   SetListSimple;
   if Image <> nil then
@@ -404,8 +403,12 @@ begin
       AddListInfo('Sides', StrInt(Disk.Sides));
       if Disk.Sides > 0 then
       begin
-        AddListInfo('Tracks per side', StrInt(Disk.Side[0].Tracks));
-        AddListInfo('Track total', StrInt(Disk.TrackTotal));
+        if Disk.Sides > 1 then
+        begin
+          for SIdx := 0 to Disk.Sides - 1 do
+            AddListInfo(SysUtils.Format('Tracks on side %d', [SIdx]), StrInt(Disk.Side[SIdx].Tracks));
+        end;
+        AddListInfo('Tracks total', StrInt(Disk.TrackTotal));
         AddListInfo('Formatted capacity', SysUtils.Format('%d KB',
           [Disk.FormattedCapacity div BytesPerKB]));
         if Disk.IsTrackSizeUniform then
@@ -597,35 +600,6 @@ begin
     Subitems.Add(StrHex(Track.Filler));
   end;
   Result := NewListItem;
-end;
-
-procedure TfrmMain.RefreshListSides(Disk: TDSKDisk);
-var
-  Idx: integer;
-begin
-  with lvwMain.Columns do
-  begin
-    with Add do
-    begin
-      Caption := 'Side';
-      Alignment := taRightJustify;
-      AutoSize := True;
-    end;
-    with Add do
-    begin
-      Caption := 'Tracks';
-      Alignment := taRightJustify;
-      AutoSize := True;
-    end;
-    with Add do
-    begin
-      Caption := '';
-      Alignment := taRightJustify;
-      AutoSize := True;
-    end;
-  end;
-  for Idx := 0 to Disk.Sides - 1 do
-    AddListSides(Disk.Side[Idx]);
 end;
 
 function TfrmMain.AddListSides(Side: TDSKSide): TListItem;
@@ -1202,7 +1176,7 @@ function TfrmMain.GetSelectedSector(Sender: TObject): TDSKSector;
 begin
   Result := nil;
   if (Sender = lvwMain) and (lvwMain.Selected <> nil) then
-     Result := TDSKSector(lvwMain.Selected.Data);
+    Result := TDSKSector(lvwMain.Selected.Data);
 end;
 
 procedure TfrmMain.itmSectorBlankDataClick(Sender: TObject);
@@ -1356,4 +1330,4 @@ begin
   itmWrite.Enabled := FSamDiskEnabled;
 end;
 
-end.
+end.
