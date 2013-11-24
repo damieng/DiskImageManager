@@ -75,7 +75,9 @@
       <Unit5>
         <Filename Value="New.pas"/>
         <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmNew"/>
         <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
         <UnitName Value="New"/>
       </Unit5>
       <Unit6>
