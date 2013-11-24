@@ -15,7 +15,7 @@ interface
 
 uses
   DiskMap, Utils,
-  Graphics, Forms, ComCtrls, StdCtrls, Classes, Controls, ExtCtrls, Registry, Dialogs;
+  Graphics, Forms, ComCtrls, StdCtrls, Controls, ExtCtrls, Registry, Dialogs;
 
 type
 

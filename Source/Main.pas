@@ -14,9 +14,9 @@ unit Main;
 interface
 
 uses
-  DiskMap, DskImage, Utils, About, Options, SectorProperties, FormatAnalysis,
+  DiskMap, DskImage, Utils, About, Options, SectorProperties,
   Classes, Graphics, Registry, SysUtils, Forms, Dialogs, Menus, ComCtrls,
-  ExtCtrls, Controls, LCLIntf, LCLType, Clipbrd, FileUtil, StrUtils;
+  ExtCtrls, Controls, Clipbrd, FileUtil, StrUtils;
 
 type
   // Must match the imagelist, put sides last

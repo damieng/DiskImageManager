@@ -14,8 +14,7 @@ unit New;
 interface
 
 uses
-  DskImage, Main,
-  LCLIntf, LCLType, SysUtils, Variants, Classes, Controls, Forms,
+  DskImage, Main, SysUtils, Classes, Forms,
   StdCtrls, ComCtrls, ExtCtrls, Dialogs, Buttons;
 
 type

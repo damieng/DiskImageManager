@@ -15,8 +15,7 @@ interface
 
 uses
   DskImage, Utils,
-  LCLIntf, LCLType, SysUtils, Classes, Graphics, Forms, Controls, StdCtrls,
-  Buttons, ComCtrls, ExtCtrls, CheckLst, Dialogs;
+  SysUtils, Classes, Forms, StdCtrls, ComCtrls, ExtCtrls, CheckLst, Dialogs;
 
 type
   TfrmSector = class(TForm)
@@ -273,4 +272,4 @@ begin
   lblPadHex.Caption := IntToHex(udPad.Position, 2);
 end;
 
-end.
+end.

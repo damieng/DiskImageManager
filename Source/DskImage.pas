@@ -15,7 +15,7 @@ interface
 
 uses
   DSKFormat, Utils,
-  Classes, Dialogs, SysUtils, LCLIntf, LCLType, Math;
+  Classes, Dialogs, SysUtils, Math;
 
 const
   MaxSectorSize = 32768;

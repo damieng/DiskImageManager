@@ -14,8 +14,7 @@ unit About;
 interface
 
 uses
-  LCLIntf, LCLType, Controls, Forms, ExtCtrls, StdCtrls,
-  Graphics, Classes, SysUtils;
+  LCLIntf, Forms, ExtCtrls, StdCtrls, Graphics;
 
 type
   TfrmAbout = class(TForm)
@@ -91,4 +90,4 @@ begin
   timFade.Enabled := True;
 end;
 
-end.
+end.

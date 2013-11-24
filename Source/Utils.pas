@@ -14,7 +14,7 @@ unit Utils;
 interface
 
 uses
-  Classes, Graphics, LCLIntf, LCLType, SysUtils;
+  Classes, Graphics, LCLIntf, SysUtils;
 
 const
   BytesPerKB: integer = 1024;
