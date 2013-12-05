@@ -118,6 +118,7 @@ type
     function GetSelectedSector(Sender: TObject): TDSKSector;
     function GetTitle(Data: TTreeNode): string;
     function GetCurrentImage: TDSKImage;
+    function IsDiskNode(Node: TTreeNode): boolean;
   public
     SectorFont: TFont;
     RestoreWindow, RestoreWorkspace: boolean;
@@ -322,8 +323,7 @@ begin
   CurNode := Data;
   while (CurNode <> nil) do
   begin
-    if ((CurNode.ImageIndex <> 2) and (CurNode.ImageIndex <> 7)) or
-      (CurNode = tvwMain.Selected) then
+    if (CurNode.ImageIndex <> 2) or (CurNode = tvwMain.Selected) then
       Result := CurNode.Text + ' > ' + Result;
     CurNode := CurNode.Parent;
   end;
@@ -807,16 +807,25 @@ end;
 procedure TfrmMain.CloseImage(Image: TDSKImage);
 var
   Idx: integer;
+  Previous: TTreeNode;
 begin
+  Previous := nil;
   for Idx := 0 to tvwMain.Items.Count - 1 do
-    if ((tvwMain.Items[Idx].Data = Image) and
-      (tvwMain.Items[Idx].ImageIndex = 0)) then
+  begin
+    if IsDiskNode(tvwMain.Items[Idx]) then
     begin
-      TDSKImage(tvwMain.Items[Idx].Data).Free;
-      tvwMain.Items[Idx].Delete;
-      RefreshList;
-      exit;
+      if tvwMain.Items[Idx].Data = Image then
+      begin
+        TDSKImage(tvwMain.Items[Idx].Data).Free;
+        tvwMain.Items[Idx].Delete;
+        RefreshList;
+        if (tvwMain.Selected = nil) and (Previous <> nil) then
+           Previous.Selected := true;
+        exit;
+      end;
+      Previous := tvwMain.Items[Idx];
     end;
+  end;
 end;
 
 // Get the current image
@@ -1031,6 +1040,12 @@ begin
   CloseAll(True);
 end;
 
+function TfrmMain.IsDiskNode(Node: TTreeNode): boolean;
+begin
+ Result := (node.ImageIndex = Ord(itDisk)) or
+           (node.ImageIndex = Ord(itDiskCorrupt));
+end;
+
 function TfrmMain.CloseAll(AllowCancel: boolean): boolean;
 var
   Image: TDSKImage;
@@ -1042,10 +1057,9 @@ begin
   else
     Buttons := [mbYes, mbNo];
 
-  while (tvwMain.Items.GetFirstNode <> nil) do
+  while tvwMain.Items.GetFirstNode <> nil do
   begin
-    if (tvwMain.Items.GetFirstNode.ImageIndex = Ord(itDisk)) or
-      (tvwMain.Items.GetFirstNode.ImageIndex = Ord(itDiskCorrupt)) then
+    if IsDiskNode(tvwMain.Items.GetFirstNode) then
     begin
       Image := TDSKImage(tvwMain.Items.GetFirstNode.Data);
       if Image.IsChanged and not Image.Corrupt then

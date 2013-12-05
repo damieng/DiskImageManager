@@ -1,7 +1,7 @@
 object frmNew: TfrmNew
-  Left = 960
+  Left = 1355
   Height = 294
-  Top = 818
+  Top = 546
   Width = 513
   BorderStyle = bsDialog
   Caption = 'New'
