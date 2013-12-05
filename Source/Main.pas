@@ -264,6 +264,9 @@ begin
   tvwMain.Items.EndUpdate;
 
   ImageNode.Expanded := True;
+  if (Image.Disk.Sides = 1) then
+    SideNode.Expanded := True;
+
   tvwMain.Selected := imageNode;
 end;
 
