@@ -1329,8 +1329,8 @@ end;
 procedure TfrmMain.SetSamDiskEnabled(Enabled: boolean);
 begin
   FSamDiskEnabled := Enabled;
-  itmRead.Enabled := FSamDiskEnabled;
-  itmWrite.Enabled := FSamDiskEnabled;
+  itmRead.Visible := FSamDiskEnabled;
+  itmWrite.Visible := FSamDiskEnabled;
 end;
 
 end.
