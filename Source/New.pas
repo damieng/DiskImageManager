@@ -197,24 +197,24 @@ begin
   lvwWarnings.Items.Clear;
 
   // Boot warnings
-  if (BootSectorSize > 0) then
+  if BootSectorSize > 0 then
   begin
-    if (cboBootMachine.ItemIndex = 3) then
+    if cboBootMachine.ItemIndex = 3 then
     begin
-      if (CurrentFormat.FirstSector <> 65) then
+      if CurrentFormat.FirstSector <> 65 then
       begin
         NewWarn := lvwWarnings.Items.Add;
         NewWarn.Caption := 'Boot on CPC requires first sector ID of 65';
       end;
 
-      if (chkWriteDiskSpec.Checked) then
+      if chkWriteDiskSpec.Checked then
       begin
         NewWarn := lvwWarnings.Items.Add;
         NewWarn.Caption := 'CPC boot sector overwrites disk specification';
       end;
     end;
 
-    if (CurrentFormat.ResTracks < 1) then
+    if CurrentFormat.ResTracks < 1 then
     begin
       NewWarn := lvwWarnings.Items.Add;
       NewWarn.Caption := 'Boot requires a reserved track';
@@ -234,7 +234,7 @@ begin
     NewWarn.Caption := 'Format requires disk specification on PCW/+3';
   end;
 
-  if (CurrentFormat.DirBlocks = 0) then
+  if CurrentFormat.DirBlocks = 0 then
   begin
     NewWarn := lvwWarnings.Items.Add;
     NewWarn.Caption := 'File system has no directory blocks';
@@ -246,19 +246,19 @@ begin
     NewWarn.Caption := 'Disk spec should use a reserved track';
   end;
 
-  if (CurrentFormat.SectorSize > 512) then
+  if CurrentFormat.SectorSize > 512 then
   begin
     NewWarn := lvwWarnings.Items.Add;
     NewWarn.Caption := '512 bytes per sector limit in +3DOS';
   end;
 
-  if (CurrentFormat.Interleave = 0) then
+  if CurrentFormat.Interleave = 0 then
   begin
     NewWarn := lvwWarnings.Items.Add;
     NewWarn.Caption := 'Interleave can not be 0';
   end;
 
-  if (CurrentFormat.SectorSize * CurrentFormat.SectorsPerTrack > 6144) then
+  if CurrentFormat.SectorSize * CurrentFormat.SectorsPerTrack > 6144 then
   begin
     NewWarn := lvwWarnings.Items.Add;
     NewWarn.Caption := '6144 bytes per track limit on +3';
@@ -309,14 +309,14 @@ begin
       TracksPerSide := CurrentFormat.TracksPerSide;
       Checksum := 0;
 
-      if (TracksPerSide > 50) then
+      if TracksPerSide > 50 then
         Track := dsTrackDouble
       else
         Track := dsTrackSingle;
       Write;
     end;
 
-  if (BootSectorSize > 0) then
+  if BootSectorSize > 0 then
     with NewImage.Disk.Side[0].Track[0].Sector[0] do
     begin
       CopySize := (CurrentFormat.SectorSize - BootOffset);
@@ -344,6 +344,7 @@ begin
     with lvwFormats.Items.Add do
     begin
       Format := TDSKFormatSpecification.Create(Idx);
+      ImageIndex := Idx;
       Caption := Format.Name;
       SubItems.Add(StrInt(Format.GetCapacityBytes div 1024));
       SubItems.Add(StrInt(Format.GetUsableBytes div 1024));
@@ -363,7 +364,7 @@ end;
 procedure TfrmNew.lvwFormatsChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
 begin
-  if (lvwFormats.Selected <> nil) then
+  if lvwFormats.Selected <> nil then
     SetCurrentFormat(Item.ImageIndex);
 end;
 
@@ -375,32 +376,29 @@ end;
 
 // Temp hack until we persist the formatters properly
 function TfrmNew.IsPlus3Format: boolean;
-var
-  IsFormat: boolean;
 begin
-  IsFormat := True;
+  Result := True;
   with CurrentFormat do
   begin
     if Sides <> dsSideSingle then
-      IsFormat := False;
+      Result := False;
     if TracksPerSide <> 40 then
-      IsFormat := False;
+      Result := False;
     if SectorsPerTrack <> 9 then
-      IsFormat := False;
+      Result := False;
     if SectorSize <> 512 then
-      IsFormat := False;
+      Result := False;
     if GapRW <> 42 then
-      IsFormat := False;
+      Result := False;
     if GapFormat <> 82 then
-      IsFormat := False;
+      Result := False;
     if ResTracks <> 1 then
-      IsFormat := False;
+      Result := False;
     if DirBlocks <> 2 then
-      IsFormat := False;
+      Result := False;
     if BlockSize <> 1024 then
-      IsFormat := False;
+      Result := False;
   end;
-  Result := IsFormat;
 end;
 
 procedure TfrmNew.cboSidesChange(Sender: TObject);
@@ -454,7 +452,7 @@ end;
 procedure TfrmNew.FormShow(Sender: TObject);
 begin
   SetCurrentFormat(0);
-  //lvwFormats.Items[0].Selected := True;
+  lvwFormats.Items[0].Selected := True;
 end;
 
 procedure TfrmNew.chkWriteDiskSpecClick(Sender: TObject);
@@ -514,7 +512,7 @@ var
   BootFile: TFileStream;
 begin
   dlgOpenBoot.FileName := lblBinFile.Caption;
-  if (dlgOpenBoot.Execute) then
+  if dlgOpenBoot.Execute then
   begin
     lblBinFile.Caption := dlgOpenBoot.FileName;
 
@@ -535,7 +533,7 @@ procedure TfrmNew.UpdateFileDetails;
 var
   Available: word;
 begin
-  Available := (CurrentFormat.SectorSize - BootOffset);
+  Available := CurrentFormat.SectorSize - BootOffset;
 
   if lvwBootDetails.Items.Count > 0 then
   begin
