@@ -312,6 +312,13 @@ begin
   itmSave.Enabled := AllowImageFile;
   itmSaveCopyAs.Enabled := AllowImageFile;
 
+  // Hide disk map if no longer selected
+  if (lvwMain.Selected = nil) and (DiskMap.Visible) then
+  begin
+     DiskMap.Visible := false;
+     lvwMain.Visible := true;
+  end;
+
   RefreshList;
 end;
 
