@@ -39,6 +39,7 @@ object frmMain: TfrmMain
       Indent = 19
       ReadOnly = True
       RowSelect = True
+      ScrollBars = ssAutoBoth
       ShowRoot = False
       TabOrder = 1
       OnChange = tvwMainChange
