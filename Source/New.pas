@@ -14,8 +14,8 @@ unit New;
 interface
 
 uses
-  DskImage, Main, SysUtils, Classes, Forms,
-  StdCtrls, ComCtrls, ExtCtrls, Dialogs, Buttons;
+  DskImage, Main, Utils,
+  SysUtils, Classes, Forms, StdCtrls, ComCtrls, ExtCtrls, Dialogs, Buttons;
 
 type
   TfrmNew = class(TForm)
@@ -120,7 +120,6 @@ type
   private
     IsLoading: boolean;
     CurrentFormat: TDSKFormatSpecification;
-
     BootSectorBin: array[0..MaxSectorSize] of byte;
     BootOffset, BootSectorSize: word;
     BootChecksum: byte;
@@ -152,7 +151,7 @@ end;
 
 procedure TfrmNew.UpdateDetails;
 begin
-  IsLoading := true;
+  IsLoading := True;
   with CurrentFormat do
   begin
     cboSides.ItemIndex := Ord(Sides);
@@ -170,7 +169,7 @@ begin
     udSkewTrack.Position := SkewTrack;
     udSkewSide.Position := SkewSide;
   end;
-  IsLoading := false;
+  IsLoading := False;
   UpdateSummary;
 end;
 
@@ -178,7 +177,8 @@ procedure TfrmNew.UpdateSummary;
 var
   NewWarn: TListItem;
 begin
-  if IsLoading then exit;
+  if IsLoading then
+    exit;
   // Set summary details
   if lvwSummary.Items.Count > 0 then
   begin
@@ -337,8 +337,20 @@ end;
 procedure TfrmNew.FormCreate(Sender: TObject);
 var
   Idx: integer;
+  Format: TDSKFormatSpecification;
 begin
-  CurrentFormat := TDSKFormatSpecification.Create;
+  lvwFormats.BeginUpdate;
+  for Idx := 0 to 8 do
+    with lvwFormats.Items.Add do
+    begin
+      Format := TDSKFormatSpecification.Create(Idx);
+      Caption := Format.Name;
+      SubItems.Add(StrInt(Format.GetCapacityBytes div 1024));
+      SubItems.Add(StrInt(Format.GetUsableBytes div 1024));
+    end;
+  lvwFormats.EndUpdate;
+
+  CurrentFormat := TDSKFormatSpecification.Create(1);
   for Idx := 0 to Length(DSKSpecSides) - 2 do
     cboSides.Items.Add(DSKSpecSides[TDSKSpecSide(Idx)]);
 
@@ -357,96 +369,7 @@ end;
 
 procedure TfrmNew.SetCurrentFormat(ItemIndex: integer);
 begin
-  // Amstrad PCW/Spectrum +3 CF2 (start from this)
-  with CurrentFormat do
-  begin
-    Sides := dsSideSingle;
-    TracksPerSide := 40;
-    SectorsPerTrack := 9;
-    SectorSize := 512;
-    GapRW := 42;
-    GapFormat := 82;
-    ResTracks := 1;
-    DirBlocks := 2;
-    BlockSize := 1024;
-    FillerByte := 229;
-    FirstSector := 1;
-    Interleave := 1;
-    SkewSide := 0;
-    SkewTrack := 0;
-  end;
-
-  // And make appropriate changes
-  case ItemIndex of
-    1: // Amstrad PCW CF2DD
-      with CurrentFormat do
-      begin
-        Sides := dsSideDoubleAlternate;
-        TracksPerSide := 80;
-        DirBlocks := 4;
-        BlockSize := 2048;
-      end;
-    2: // Amstrad CPC System
-      with CurrentFormat do
-      begin
-        FirstSector := 65;
-        Interleave := 2;
-      end;
-    3: // Amstrad CPC data
-      with CurrentFormat do
-      begin
-        ResTracks := 0;
-        FirstSector := 193;
-        Interleave := 2;
-      end;
-    4: // HiForm 203K (Chris Pile)
-      with CurrentFormat do
-      begin
-        TracksPerSide := 42;
-        SectorsPerTrack := 10;
-        GapFormat := 22;
-        GapRW := 12;
-        Interleave := 3;
-      end;
-    5: // Supermat 192K (Ian Collier)
-      with CurrentFormat do
-      begin
-        TracksPerSide := 40;
-        SectorsPerTrack := 10;
-        DirBlocks := 3;
-        GapFormat := 23;
-        GapRW := 12;
-      end;
-    6: // Ultra208 (Chris Pile)
-      with CurrentFormat do
-      begin
-        TracksPerSide := 42;
-        SectorsPerTrack := 10;
-        DirBlocks := 2;
-        ResTracks := 0;
-        Interleave := 3;
-        SkewTrack := 2;
-        GapFormat := 22; // Puts 128 into the spec block!?
-        GapRW := 12;
-      end;
-    7: // Amstrad CPC IBM
-      with CurrentFormat do
-      begin
-        SectorsPerTrack := 8;
-        FirstSector := 1;
-        Interleave := 2;
-        GapFormat := 80;
-      end;
-    8: // SAM Coupe
-      with CurrentFormat do
-      begin
-        Sides := dsSideDoubleAlternate;
-        TracksPerSide := 80;
-        SectorsPerTrack := 10;
-      end;
-  end;
-  CurrentFormat.FDCSectorSize := GetFDCSectorSize(CurrentFormat.SectorSize);
-
+  CurrentFormat := TDSKFormatSpecification.Create(ItemIndex);
   UpdateDetails;
 end;
 

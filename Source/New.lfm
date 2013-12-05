@@ -1,7 +1,7 @@
 object frmNew: TfrmNew
-  Left = 1355
+  Left = 409
   Height = 294
-  Top = 546
+  Top = 377
   Width = 513
   BorderStyle = bsDialog
   Caption = 'New'
@@ -148,18 +148,21 @@ object frmNew: TfrmNew
           Anchors = [akTop, akLeft, akRight, akBottom]
           Columns = <          
             item
+              AutoSize = True
               Caption = 'Name'
-              Width = 260
+              Width = 39
             end          
             item
               Alignment = taRightJustify
+              AutoSize = True
               Caption = 'Size KB'
               Width = 46
             end          
             item
               Alignment = taRightJustify
+              AutoSize = True
               Caption = 'Free KB'
-              Width = 49
+              Width = 167
             end>
           ColumnClick = False
           HideSelection = False

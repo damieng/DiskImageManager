@@ -323,6 +323,7 @@ type
     Sides: TDSKSpecSide;
     TracksPerSide: word;
 
+    constructor Create(Format: integer);
     function GetCapacityBytes: integer;
     function GetDirectoryEntries: integer;
     function GetSectorID(Side: byte; LogicalTrack: word; Sector: byte): byte;
@@ -791,8 +792,8 @@ begin
                 TRKInfoBlock, DSKInfoBlock.Disk_StdTrackSize);
             diExtendedDSK:
               if not (Compress and (Sectors = 0)) then
-                DiskFile.WriteBuffer(TRKInfoBlock, DSKInfoBlock.Disk_ExtTrackSize[
-                  (TIdx * Disk.Sides) + SIdx] * 256);
+                DiskFile.WriteBuffer(TRKInfoBlock,
+                  DSKInfoBlock.Disk_ExtTrackSize[(TIdx * Disk.Sides) + SIdx] * 256);
           end;
       end;
     end;
@@ -1652,6 +1653,99 @@ begin
     if SIdx < 0 then
       SIdx := SectorsPerTrack + SIdx;
   end;
+end;
+
+constructor TDSKFormatSpecification.Create(Format: integer);
+begin
+  inherited Create();  // Call the parent method
+
+  // Amstrad PCW/Spectrum +3 CF2 (start from this)
+  Name := 'Amstrad PCW/Spectrum +3';
+  Sides := dsSideSingle;
+  TracksPerSide := 40;
+  SectorsPerTrack := 9;
+  SectorSize := 512;
+  GapRW := 42;
+  GapFormat := 82;
+  ResTracks := 1;
+  DirBlocks := 2;
+  BlockSize := 1024;
+  FillerByte := 229;
+  FirstSector := 1;
+  Interleave := 1;
+  SkewSide := 0;
+  SkewTrack := 0;
+
+  // And make appropriate changes
+  case Format of
+    1:
+    begin
+      Name := 'Amstrad PCW CF2DD';
+      Sides := dsSideDoubleAlternate;
+      TracksPerSide := 80;
+      DirBlocks := 4;
+      BlockSize := 2048;
+    end;
+    2:
+    begin
+      Name := 'Amstrad CPC System';
+      FirstSector := 65;
+      Interleave := 2;
+    end;
+    3:
+    begin
+      Name := 'Amstrad CPC data';
+      ResTracks := 0;
+      FirstSector := 193;
+      Interleave := 2;
+    end;
+    4:
+    begin
+      Name := 'HiForm 203/Ian High';
+      TracksPerSide := 42;
+      SectorsPerTrack := 10;
+      GapFormat := 22;
+      GapRW := 12;
+      Interleave := 3;
+    end;
+    5:
+    begin
+      Name := 'SuperMat 192/XCF2';
+      TracksPerSide := 40;
+      SectorsPerTrack := 10;
+      DirBlocks := 3;
+      GapFormat := 23;
+      GapRW := 12;
+    end;
+    6:
+    begin
+      Name := 'Ultra 208/Ian Max';
+      TracksPerSide := 42;
+      SectorsPerTrack := 10;
+      DirBlocks := 2;
+      ResTracks := 0;
+      Interleave := 3;
+      SkewTrack := 2;
+      GapFormat := 22; // Puts 128 into the spec block!?
+      GapRW := 12;
+    end;
+    7:
+    begin
+      Name := 'Amstrad CPC IBM';
+      SectorsPerTrack := 8;
+      FirstSector := 1;
+      Interleave := 2;
+      GapFormat := 80;
+    end;
+    8:
+    begin
+      Name := 'MGT Sam Coupe';
+      Sides := dsSideDoubleAlternate;
+      TracksPerSide := 80;
+      SectorsPerTrack := 10;
+    end;
+  end;
+  self.FDCSectorSize := GetFDCSectorSize(self.SectorSize);
 end;
 
 function GetFDCSectorSize(SectorSize: word): byte;
