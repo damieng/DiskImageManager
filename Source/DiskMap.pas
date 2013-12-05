@@ -104,7 +104,7 @@ var
   TextA: string;
   ErrDE, ErrCM: boolean;
 begin
-  if (Side <> nil) then
+  if Side <> nil then
   begin
     Tracks := Side.Tracks;
     Sectors := GetMaxSectors;
@@ -137,12 +137,12 @@ begin
       Top := TextH div 2;
       Right := Right - TextW;
 
-      if (Sectors > 0) then
-        SectorSize := (Bottom - Top) div (Sectors)
+      if Sectors > 0 then
+        SectorSize := (Bottom - Top) div Sectors
       else
         SectorSize := 0;
 
-      if (Tracks > 0) then
+      if Tracks > 0 then
         TrackSize := (Right - Left) div Tracks
       else
         TrackSize := 0;
@@ -176,7 +176,7 @@ begin
         // Sector markers
         MoveTo(GRect.Left - TextW, Y);
         LineTo(GRect.Right, Y);
-        if ((TrackIdx = 0) and (SectorIdx < Sectors)) then
+        if (TrackIdx = 0) and (SectorIdx < Sectors) then
         begin
           TextA := StrInt(SectorIdx);
           TextOut(GRect.Left - TextWidth(Text) - TextW, Y - (SectorSize div 2) -
@@ -186,7 +186,7 @@ begin
     end;
 
     // Populate the grid
-    if (Side <> nil) then
+    if Side <> nil then
     begin
       Pen.Style := psClear;
       for TrackIdx := 0 to Side.Tracks - 1 do
@@ -203,7 +203,7 @@ begin
               Brush.Color := clRed;
             if ErrCM then
               Brush.Color := $00000BBFF;
-            if (ErrDE and ErrCM) then
+            if ErrDE and ErrCM then
               Brush.Color := clYellow;
             if (Status <> ssFormattedInUse) and DarkBlankSectors then
               Brush.Color := GetShadowColor(Brush.Color);
@@ -219,7 +219,7 @@ end;
 // Set the side to analyse
 procedure TSpinDiskMap.SetSide(NewSide: TDSKSide);
 begin
-  if (NewSide <> FSide) then
+  if NewSide <> FSide then
   begin
     FSide := NewSide;
     Invalidate;
@@ -229,7 +229,7 @@ end;
 // DarkBlankSectors property changes
 procedure TSpinDiskMap.SetDarkBlankSectors(NewDarkBlankSectors: boolean);
 begin
-  if (NewDarkBlankSectors <> FDarkBlankSectors) then
+  if NewDarkBlankSectors <> FDarkBlankSectors then
   begin
     FDarkBlankSectors := NewDarkBlankSectors;
     Invalidate;
@@ -239,7 +239,7 @@ end;
 // TrackMark property change
 procedure TSpinDiskMap.SetTrackMark(NewTrackMark: integer);
 begin
-  if (NewTrackMark <> FTrackMark) then
+  if NewTrackMark <> FTrackMark then
   begin
     FTrackMark := NewTrackMark;
     Invalidate;
@@ -253,14 +253,14 @@ var
 begin
   Result := 0;
   for TrackIdx := 0 to Side.Tracks - 1 do
-    if (Side.Track[TrackIdx].Sectors > Result) then
+    if Side.Track[TrackIdx].Sectors > Result then
       Result := Side.Track[TrackIdx].Sectors;
 end;
 
 // GridColor property change
 procedure TSpinDiskMap.SetGridColor(NewGridColor: TColor);
 begin
-  if (NewGridColor <> FGridColor) then
+  if NewGridColor <> FGridColor then
   begin
     FGridColor := NewGridColor;
     Invalidate;
@@ -269,7 +269,7 @@ end;
 
 procedure TSpinDiskMap.SetBorderStyle(NewBorderStyle: TSpinBorderStyle);
 begin
-  if (NewBorderStyle <> FBorderStyle) then
+  if NewBorderStyle <> FBorderStyle then
   begin
     FBorderStyle := NewBorderStyle;
     Invalidate;
@@ -291,4 +291,4 @@ begin
   Result := True;
 end;
 
-end.
+end.

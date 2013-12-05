@@ -1182,7 +1182,7 @@ var
 begin
   if tvwMain.Selected <> nil then
   begin
-    if (TObject(tvwMain.Selected.Data).ClassType = TDSKTrack) then
+    if TObject(tvwMain.Selected.Data).ClassType = TDSKTrack then
       if ConfirmChange('reset FDC flags for', 'track') then
       begin
         Track := TDSKTrack(tvwMain.Selected.Data);
@@ -1220,13 +1220,13 @@ procedure TfrmMain.itmSectorUnformatClick(Sender: TObject);
 begin
   if tvwMain.Selected <> nil then
   begin
-    if (TObject(tvwMain.Selected.Data).ClassType = TDSKTrack) then
+    if TObject(tvwMain.Selected.Data).ClassType = TDSKTrack then
       if ConfirmChange('unformat', 'track') then
       begin
         TDSKTrack(tvwMain.Selected.Data).Unformat;
         tvwMain.Selected.DeleteChildren;
       end;
-    if (TObject(tvwMain.Selected.Data).ClassType = TDSKSector) then
+    if TObject(tvwMain.Selected.Data).ClassType = TDSKSector then
       if ConfirmChange('unformat', 'sector') then
         TDSKSector(tvwMain.Selected.Data).Unformat;
     UpdateMenus;
@@ -1238,15 +1238,15 @@ var
   Track: TDSKTrack;
   TIdx: integer;
 begin
-  if (tvwMain.Selected <> nil) then
+  if tvwMain.Selected <> nil then
   begin
-    if (TObject(tvwMain.Selected.Data).ClassType = TDSKTrack) then
+    if TObject(tvwMain.Selected.Data).ClassType = TDSKTrack then
     begin
       Track := TDSKTrack(tvwMain.Selected.Data);
       for TIdx := 0 to (Track.Sectors - 1) do
         TfrmSector.Create(Self, Track.Sector[TIdx]);
     end;
-    if (TObject(tvwMain.Selected.Data).ClassType = TDSKSector) then
+    if TObject(tvwMain.Selected.Data).ClassType = TDSKSector then
       TfrmSector.Create(Self, TDSKSector(tvwMain.Selected.Data));
     UpdateMenus;
   end;
@@ -1259,9 +1259,9 @@ begin
     Result := True;
     exit;
   end;
-  Result := (MessageDlg('You are about to ' + Action + ' this ' +
+  Result := MessageDlg('You are about to ' + Action + ' this ' +
     Upon + ' ' + CR + CR + 'Do you know what you are doing?', mtWarning,
-    [mbYes, mbNo], 0) = mrYes);
+    [mbYes, mbNo], 0) = mrYes;
 end;
 
 function GetListViewAsText(ForListView: TListView): string;
