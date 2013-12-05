@@ -1,9 +1,9 @@
 object frmMain: TfrmMain
-  Left = 591
-  Height = 386
-  Top = 277
+  Left = 509
+  Height = 384
+  Top = 243
   Width = 556
-  ClientHeight = 366
+  ClientHeight = 364
   ClientWidth = 556
   Color = clBtnFace
   Menu = mnuMain
@@ -13,23 +13,23 @@ object frmMain: TfrmMain
   LCLVersion = '1.0.14.0'
   object splVertical: TSplitter
     Left = 180
-    Height = 343
+    Height = 341
     Top = 0
     Width = 4
   end
   object pnlLeft: TPanel
     Left = 0
-    Height = 343
+    Height = 341
     Top = 0
     Width = 180
     Align = alLeft
     BevelOuter = bvNone
-    ClientHeight = 343
+    ClientHeight = 341
     ClientWidth = 180
     TabOrder = 0
     object tvwMain: TTreeView
       Left = 0
-      Height = 324
+      Height = 322
       Top = 19
       Width = 180
       Align = alClient
@@ -60,24 +60,24 @@ object frmMain: TfrmMain
   object staBar: TStatusBar
     Left = 0
     Height = 23
-    Top = 343
+    Top = 341
     Width = 556
     AutoHint = True
     Panels = <>
   end
   object pnlRight: TPanel
     Left = 184
-    Height = 343
+    Height = 341
     Top = 0
     Width = 372
     Align = alClient
     BevelOuter = bvNone
-    ClientHeight = 343
+    ClientHeight = 341
     ClientWidth = 372
     TabOrder = 1
     object DiskMap: TSpinDiskMap
       Left = 0
-      Height = 324
+      Height = 322
       Top = 19
       Width = 372
       Align = alClient
@@ -102,7 +102,7 @@ object frmMain: TfrmMain
     end
     object lvwMain: TListView
       Left = 0
-      Height = 324
+      Height = 322
       Top = 19
       Width = 372
       Align = alClient
@@ -140,7 +140,6 @@ object frmMain: TfrmMain
       object itmRead: TMenuItem
         Caption = '&Read from disk...'
         Hint = 'Read image from disk using SamDisk'
-        ShortCut = 16466
       end
       object N1: TMenuItem
         Caption = '-'
@@ -161,7 +160,6 @@ object frmMain: TfrmMain
       object itmWrite: TMenuItem
         Caption = '&Write to disk...'
         Hint = 'Write current image to disk using SamDisk'
-        ShortCut = 16471
       end
       object N2: TMenuItem
         Caption = '-'
@@ -170,7 +168,7 @@ object frmMain: TfrmMain
         Caption = '&Close'
         Enabled = False
         Hint = 'Close the currently selected disk image'
-        ShortCut = 16499
+        ShortCut = 16471
         OnClick = itmCloseClick
       end
       object itmCloseAll: TMenuItem
