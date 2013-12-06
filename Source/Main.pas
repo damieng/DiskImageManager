@@ -14,8 +14,8 @@ unit Main;
 interface
 
 uses
-  DiskMap, DskImage, Utils, About, Options, SectorProperties,
-  Classes, Graphics, Registry, SysUtils, Forms, Dialogs, Menus, ComCtrls,
+  DiskMap, DskImage, Utils, About, Options, SectorProperties, Settings,
+  Classes, Graphics, SysUtils, Forms, Dialogs, Menus, ComCtrls,
   ExtCtrls, Controls, Clipbrd, FileUtil, StrUtils;
 
 type
@@ -120,17 +120,9 @@ type
     function GetCurrentImage: TDSKImage;
     function IsDiskNode(Node: TTreeNode): boolean;
   public
-    SectorFont: TFont;
-    RestoreWindow, RestoreWorkspace: boolean;
-    WarnConversionProblems, RemoveEmptyTracks, WarnSectorChange: boolean;
-    BytesPerLine: integer;
-    UnknownASCII: string;
-    SaveMapX, SaveMapY: integer;
-    SamDiskLocation: string;
+    Settings: TSettings;
 
     procedure AddWorkspaceImage(Image: TDSKImage);
-    procedure LoadSettings;
-    procedure SaveSettings;
     function CloseAll(AllowCancel: boolean): boolean;
     function ConfirmChange(Action: string; Upon: string): boolean;
 
@@ -158,7 +150,6 @@ type
   end;
 
 const
-  RegKey = 'Software\DamienG\DiskImageManager';
   TAB = #9;
   CR = #13;
   LF = #10;
@@ -180,7 +171,9 @@ var
   Idx: integer;
   FileName: string;
 begin
-  LoadSettings;
+  Settings := TSettings.Create(self);
+  Settings.Load;
+
   NextNewFile := 0;
   Caption := Application.Title;
   itmAbout.Caption := 'About ' + Application.Title;
@@ -628,7 +621,7 @@ end;
 
 procedure TfrmMain.lvwMainDblClick(Sender: TObject);
 begin
-  if ((tvwMain.Selected <> nil) and (lvwMain.Selected <> nil)) then
+  if (tvwMain.Selected <> nil) and (lvwMain.Selected <> nil) then
     SelectTree(tvwMain.Items, lvwMain.Selected.Data);
 end;
 
@@ -638,7 +631,7 @@ var
 begin
   for Idx := 0 to Parent.Count - 1 do
   begin
-    if (Parent.Item[Idx].Data = Item) then
+    if Parent.Item[Idx].Data = Item then
       tvwMain.Selected := Parent.Item[Idx]
     else
       SelectTreeChild(Parent.Item[Idx], Item);
@@ -651,7 +644,7 @@ var
 begin
   for Idx := 0 to Parent.Count - 1 do
   begin
-    if (Parent.Items[Idx].Data = Item) then
+    if Parent.Items[Idx].Data = Item then
       tvwMain.Selected := Parent.Items[Idx]
     else
       SelectTreeChild(Parent.Items[Idx], Item);
@@ -753,7 +746,7 @@ var
 begin
   SecData := '';
   SecHex := '';
-  lvwMain.Font := SectorFont;
+  lvwMain.Font := Settings.SectorFont;
 
   with lvwMain.Columns do
   begin
@@ -779,11 +772,11 @@ begin
 
   for Idx := 0 to Sector.DataSize do
   begin
-    if ((Idx mod BytesPerLine = 0) and (Idx > 0)) then
+    if (Idx mod Settings.BytesPerLine = 0) and (Idx > 0) then
     begin
       with lvwMain.Items.Add do
       begin
-        Caption := StrInt(Idx - BytesPerLine);
+        Caption := StrInt(Idx - Settings.BytesPerLine);
         Subitems.Add(SecHex);
         Subitems.Add(SecData);
       end;
@@ -791,12 +784,12 @@ begin
       SecHex := '';
     end;
 
-    if (Idx < Sector.DataSize) then
+    if Idx < Sector.DataSize then
     begin
-      if (Sector.Data[Idx] > 31) then
+      if Sector.Data[Idx] > 31 then
         SecData := SecData + char(Sector.Data[Idx])
       else
-        SecData := SecData + UnknownASCII;
+        SecData := SecData + Settings.UnknownASCII;
       SecHex := SecHex + StrHex(Sector.Data[Idx]) + ' ';
     end;
   end;
@@ -911,129 +904,12 @@ end;
 // Menu: View > Options
 procedure TfrmMain.itmOptionsClick(Sender: TObject);
 begin
-  TfrmOptions.Create(Self).Show;
-end;
-
-// Load system settings
-procedure TfrmMain.LoadSettings;
-var
-  Reg: TRegIniFile;
-  Count, Idx: integer;
-  FileName: TFileName;
-  S: string;
-begin
-  Reg := TRegIniFile.Create(RegKey);
-
-  S := 'DiskMap';
-  DiskMap.DarkBlankSectors := Reg.ReadBool(S, 'DarkBlankSectors', True);
-  DiskMap.Font := FontFromDescription(Reg.ReadString(S, 'Font', 'Tahoma,7pt,,'));
-  DiskMap.Color := TColor(Reg.ReadInteger(S, 'BackgroundColour', integer(clGray)));
-  DiskMap.GridColor := TColor(Reg.ReadInteger(S, 'GridColour', integer(clSilver)));
-  DiskMap.TrackMark := Reg.ReadInteger(S, 'TrackMark', 5);
-
-  S := 'Window';
-  frmMain.Font := FontFromDescription(Reg.ReadString(S, 'Font', 'Tahoma,8pt,,'));
-  RestoreWindow := Reg.ReadBool(S, 'Restore', False);
-  if RestoreWindow then
-  begin
-    Left := Reg.ReadInteger(S, 'Left', Left);
-    Top := Reg.ReadInteger(S, 'Top', Top);
-    Height := Reg.ReadInteger(S, 'Height', Height);
-    Width := Reg.ReadInteger(S, 'Width', Width);
-    tvwMain.Width := Reg.ReadInteger(S, 'TreeWidth', tvwMain.Width);
-  end;
-
-  S := 'SectorView';
-  UnknownASCII := Reg.ReadString(S, 'UnknownASCII', '?');
-  BytesPerLine := Reg.ReadInteger(S, 'BytesPerLine', 8);
-  SectorFont := FontFromDescription(Reg.ReadString(S, 'Font', 'Consolas,8pt,,'));
-  WarnSectorChange := Reg.ReadBool(S, 'WarnSectorChange', True);
-
-  S := 'Workspace';
-  RestoreWorkspace := Reg.ReadBool(S, 'Restore', False);
-  if RestoreWorkspace then
-  begin
-    Count := Reg.ReadInteger(S, '', 0);
-    for Idx := 1 to Count do
-    begin
-      FileName := Reg.ReadString(S, StrInt(Idx), '');
-      if FileExistsUTF8(FileName) then
-        LoadImage(FileName);
-    end;
-  end;
-
-  S := 'Saving';
-  WarnConversionProblems := Reg.ReadBool(S, 'WarnConversionProblems', True);
-  RemoveEmptyTracks := Reg.ReadBool(S, 'RemoveEmptyTracks', False);
-  SaveMapX := Reg.ReadInteger(S, 'MapWidth', 640);
-  SaveMapY := Reg.ReadInteger(S, 'MapHeight', 480);
-
-  S := 'SamDisk';
-  SamDiskEnabled := Reg.ReadBool(S, 'Enabled', False);
-  SamDiskLocation := Reg.ReadString(S, 'Location', '');
-
-  Reg.Free;
-end;
-
-procedure TfrmMain.SaveSettings;
-var
-  Reg: TRegIniFile;
-  Idx, Count: integer;
-  S: string;
-begin
-  Reg := TRegIniFile.Create(RegKey);
-
-  S := 'DiskMap';
-  Reg.WriteInteger(S, 'BackgroundColour', integer(DiskMap.Color));
-  Reg.WriteBool(s, 'DarkBlankSectors', DiskMap.DarkBlankSectors);
-  Reg.WriteInteger(S, 'GridColour', integer(DiskMap.GridColor));
-  Reg.WriteInteger(S, 'TrackMark', DiskMap.TrackMark);
-  Reg.WriteString(S, 'Font', FontToDescription(DiskMap.Font));
-
-  S := 'Window';
-  Reg.WriteBool(S, 'Restore', RestoreWindow);
-  Reg.WriteInteger(S, 'Left', Left);
-  Reg.WriteInteger(S, 'Top', Top);
-  Reg.WriteInteger(S, 'Height', Height);
-  Reg.WriteInteger(S, 'Width', Width);
-  Reg.WriteInteger(S, 'TreeWidth', tvwMain.Width);
-  Reg.WriteString(S, 'Font', FontToDescription(frmMain.Font));
-
-  S := 'SectorView';
-  Reg.WriteString(S, 'UnknownASCII', UnknownASCII);
-  Reg.WriteInteger(S, 'BytesPerLine', BytesPerLine);
-  Reg.WriteString(S, 'Font', FontToDescription(SectorFont));
-  Reg.WriteBool(S, 'WarnSectorChange', WarnSectorChange);
-
-  S := 'Workspace';
-  Count := 1;
-  Reg.EraseSection(S);
-  Reg.WriteBool(S, 'Restore', RestoreWorkspace);
-  for Idx := 0 to tvwMain.Items.Count - 1 do
-    if (tvwMain.Items[Idx].Data <> nil) and
-      (TObject(tvwMain.Items[Idx].Data).ClassType = TDSKImage) then
-    begin
-      Reg.WriteString(S, StrInt(Count), TDSKImage(tvwMain.Items[Idx].Data).FileName);
-      Inc(Count);
-    end;
-  Reg.WriteInteger(S, '', Count - 1);
-
-  S := 'Saving';
-  Reg.WriteBool(S, 'WarnConversionProblems', WarnConversionProblems);
-  Reg.WriteBool(S, 'RemoveEmptyTracks', RemoveEmptyTracks);
-  Reg.WriteInteger(S, 'MapWidth', SaveMapX);
-  Reg.WriteInteger(S, 'MapHeight', SaveMapY);
-
-  S := 'SamDisk';
-  Reg.WriteBool(S, 'Enabled', SamDiskEnabled);
-  Reg.WriteString(S, 'Location', SamDiskLocation);
-
-  Reg.Free;
+  TfrmOptions.Create(self, Settings).Show;
 end;
 
 procedure TfrmMain.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  SaveSettings;
+  Settings.Save;
   if CloseAll(True) then
   begin
     Action := caFree;
@@ -1105,7 +981,7 @@ begin
     case dlgSave.FilterIndex of
       1:
       begin
-        if (not Image.Disk.IsTrackSizeUniform) and Self.WarnConversionProblems then
+        if (not Image.Disk.IsTrackSizeUniform) and Settings.WarnConversionProblems then
           if MessageDlg(
             'This image has variable track sizes that "Standard DSK format" does not support. ' +
             'Save anyway using largest track size?', mtWarning,
@@ -1116,14 +992,14 @@ begin
         else
           Image.SaveFile(dlgSave.FileName, diStandardDSK, Copy, False);
       end;
-      2: Image.SaveFile(dlgSave.FileName, diExtendedDSK, Copy, RemoveEmptyTracks);
+      2: Image.SaveFile(dlgSave.FileName, diExtendedDSK, Copy, Settings.RemoveEmptyTracks);
     end;
 end;
 
 procedure TfrmMain.itmSaveMapAsClick(Sender: TObject);
 begin
   if dlgSaveMap.Execute then
-    DiskMap.SaveMap(dlgSaveMap.FileName, SaveMapX, SaveMapY);
+    DiskMap.SaveMap(dlgSaveMap.FileName, Settings.SaveDiskMapWidth, Settings.SaveDiskMapHeight);
 end;
 
 procedure TfrmMain.itmDarkBlankSectorsPopClick(Sender: TObject);
@@ -1172,7 +1048,7 @@ begin
     SaveImageAs(Image, False)
   else
     Image.SaveFile(Image.FileName, Image.FileFormat, False,
-      (RemoveEmptyTracks and (Image.FileFormat = diExtendedDSK)));
+      (Settings.RemoveEmptyTracks and (Image.FileFormat = diExtendedDSK)));
 end;
 
 procedure TfrmMain.itmSectorResetFDCClick(Sender: TObject);
@@ -1254,7 +1130,7 @@ end;
 
 function TfrmMain.ConfirmChange(Action: string; Upon: string): boolean;
 begin
-  if not WarnSectorChange then
+  if not Settings.WarnSectorChange then
   begin
     Result := True;
     exit;

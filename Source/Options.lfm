@@ -73,9 +73,9 @@ object frmOptions: TfrmOptions
       Height = 321
       Top = 5
       Width = 296
-      ActivePage = tabSamDisk
+      ActivePage = tabMain
       Align = alClient
-      TabIndex = 4
+      TabIndex = 0
       TabOrder = 0
       object tabMain: TTabSheet
         Caption = 'Main'
@@ -90,10 +90,10 @@ object frmOptions: TfrmOptions
           ParentColor = False
         end
         object edtFontMain: TEdit
-          Left = 72
+          Left = 75
           Height = 21
           Top = 13
-          Width = 177
+          Width = 170
           ReadOnly = True
           TabOrder = 3
         end
@@ -117,7 +117,7 @@ object frmOptions: TfrmOptions
         object chkRestoreWindow: TCheckBox
           Left = 8
           Height = 19
-          Top = 48
+          Top = 77
           Width = 192
           Caption = 'Remember window position and size'
           TabOrder = 1
@@ -125,10 +125,34 @@ object frmOptions: TfrmOptions
         object chkRestoreWorkspace: TCheckBox
           Left = 8
           Height = 19
-          Top = 72
+          Top = 101
           Width = 125
           Caption = 'Remember workspace'
           TabOrder = 2
+        end
+        object lblDefaultView: TLabel
+          Left = 8
+          Height = 14
+          Top = 48
+          Width = 52
+          Caption = 'Open view'
+          ParentColor = False
+        end
+        object cboOpenView: TComboBox
+          Left = 75
+          Height = 21
+          Top = 45
+          Width = 170
+          ItemHeight = 13
+          Items.Strings = (
+            'Disk'
+            'Specification'
+            'Map'
+            'Track list'
+            'First sector'
+          )
+          Style = csDropDownList
+          TabOrder = 4
         end
       end
       object tabSectors: TTabSheet
@@ -155,16 +179,16 @@ object frmOptions: TfrmOptions
         object lblNonDisplayLabel: TLabel
           Left = 8
           Height = 14
-          Top = 80
+          Top = 81
           Width = 57
           Caption = 'Non-display'
           ParentColor = False
         end
         object edtFontSector: TEdit
-          Left = 72
+          Left = 75
           Height = 21
           Top = 13
-          Width = 177
+          Width = 173
           ReadOnly = True
           TabOrder = 5
           Text = 'Envy Code R, 10pt'
@@ -187,18 +211,18 @@ object frmOptions: TfrmOptions
           TabOrder = 0
         end
         object edtBytes: TEdit
-          Left = 72
+          Left = 75
           Height = 21
-          Top = 44
+          Top = 45
           Width = 33
           MaxLength = 3
           TabOrder = 1
           Text = '16'
         end
         object udBytes: TUpDown
-          Left = 105
+          Left = 108
           Height = 21
-          Top = 44
+          Top = 45
           Width = 15
           Associate = edtBytes
           Min = 1
@@ -208,9 +232,9 @@ object frmOptions: TfrmOptions
           Wrap = False
         end
         object edtNonDisplay: TEdit
-          Left = 72
+          Left = 75
           Height = 21
-          Top = 76
+          Top = 77
           Width = 17
           MaxLength = 1
           TabOrder = 3
@@ -257,10 +281,10 @@ object frmOptions: TfrmOptions
           ParentColor = False
         end
         object edtFontMap: TEdit
-          Left = 72
+          Left = 75
           Height = 21
           Top = 13
-          Width = 177
+          Width = 173
           ReadOnly = True
           TabOrder = 4
         end
@@ -282,7 +306,7 @@ object frmOptions: TfrmOptions
           TabOrder = 0
         end
         object udTrackMarks: TUpDown
-          Left = 113
+          Left = 108
           Height = 21
           Top = 77
           Width = 15
@@ -294,7 +318,7 @@ object frmOptions: TfrmOptions
           Wrap = False
         end
         object edtTrackMarks: TEdit
-          Left = 80
+          Left = 75
           Height = 21
           Top = 77
           Width = 33
@@ -438,10 +462,10 @@ object frmOptions: TfrmOptions
           TabOrder = 0
         end
         object edtSamDiskLocation: TEdit
-          Left = 64
+          Left = 75
           Height = 21
           Top = 45
-          Width = 177
+          Width = 173
           ReadOnly = True
           TabOrder = 1
         end
