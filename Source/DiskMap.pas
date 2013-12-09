@@ -160,7 +160,7 @@ begin
       // Track markers
       MoveTo(X, GRect.Bottom);
       LineTo(X, GRect.Top);
-      if (TrackIdx mod TrackMark = 0) then
+      if TrackIdx mod TrackMark = 0 then
       begin
         LineTo(X, GRect.Bottom + TextH);
         TextA := StrInt(TrackIdx);
@@ -288,7 +288,7 @@ begin
   RenderBitmap(SaveImage, Rect(0, 0, SaveWidth - 1, SaveHeight - 1));
   SaveImage.SaveToFile(FileName);
   SaveImage.Free;
-  Result := True;
+  Result := true;
 end;
 
-end.
+end.

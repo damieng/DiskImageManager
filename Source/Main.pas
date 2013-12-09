@@ -23,6 +23,8 @@ type
   ItemType = (itDisk, itSpecification, itTracksAll, itTrack, itFiles, itSector,
     itAnalyse, itSides, itSide0, itSide1, itDiskCorrupt, itMessages);
 
+  TListColumnArray = array of TListColumn;
+
   TfrmMain = class(TForm)
     mnuMain: TMainMenu;
     itmDisk: TMenuItem;
@@ -119,6 +121,8 @@ type
     function GetTitle(Data: TTreeNode): string;
     function GetCurrentImage: TDSKImage;
     function IsDiskNode(Node: TTreeNode): boolean;
+    function AddColumn(Caption: string): TListColumn;
+    function AddColumns(Captions: array of string): TListColumnArray;
   public
     Settings: TSettings;
 
@@ -204,12 +208,12 @@ begin
   if NewImage.LoadFile(FileName) then
   begin
     AddWorkspaceImage(NewImage);
-    Result := True;
+    Result := true;
   end
   else
   begin
     NewImage.Free;
-    Result := False;
+    Result := false;
   end;
 end;
 
@@ -288,13 +292,13 @@ procedure TfrmMain.UpdateMenus;
 var
   AllowImageFile: boolean;
 begin
-  AllowImageFile := False;
+  AllowImageFile := false;
   tvwMain.PopupMenu := nil;
 
   // Decide what class operating on
   if (tvwMain.Selected <> nil) and (tvwMain.Selected.Data <> nil) then
   begin
-    AllowImageFile := True;
+    AllowImageFile := true;
     if (TObject(tvwMain.Selected.Data).ClassType = TDSKSector) or
       (TObject(tvwMain.Selected.Data).ClassType = TDSKTrack) then
       tvwMain.PopupMenu := popSector;
@@ -321,7 +325,7 @@ var
 begin
   Result := '';
   CurNode := Data;
-  while (CurNode <> nil) do
+  while CurNode <> nil do
   begin
     if (CurNode.ImageIndex <> 2) or (CurNode = tvwMain.Selected) then
       Result := CurNode.Text + ' > ' + Result;
@@ -444,19 +448,19 @@ end;
 
 procedure TfrmMain.SetListSimple;
 begin
-  lvwMain.ShowColumnHeaders := False;
+  lvwMain.ShowColumnHeaders := false;
   with lvwMain.Columns do
   begin
     Clear;
     with Add do
     begin
       Caption := 'Key';
-      AutoSize := True;
+      AutoSize := true;
     end;
     with Add do
     begin
       Caption := 'Value';
-      AutoSize := True;
+      AutoSize := true;
     end;
   end;
 end;
@@ -502,72 +506,17 @@ var
   Side: TDSKSide;
 begin
   HideSide := (OptionalSide.ClassType = TDSKSide);
-  with lvwMain.Columns do
-  begin
-    with Add do
-    begin
-      Caption := 'Logical';
-      Alignment := taRightJustify;
-      AutoSize := True;
-    end;
-    with Add do
-    begin
-      Caption := 'Physical';
-      Alignment := taRightJustify;
-      AutoSize := True;
-    end;
-    if not HideSide then
-    begin
-      with Add do
-      begin
-        Caption := 'Side';
-        Alignment := taRightJustify;
-        AutoSize := True;
-      end;
-    end;
-    with Add do
-    begin
-      Caption := 'Track size';
-      Alignment := taRightJustify;
-      AutoSize := True;
-    end;
-    with Add do
-    begin
-      Caption := 'Sectors';
-      Alignment := taRightJustify;
-      AutoSize := True;
-    end;
-    with Add do
-    begin
-      Caption := 'Sector size';
-      Alignment := taRightJustify;
-      AutoSize := True;
-    end;
-    with Add do
-    begin
-      Caption := 'Gap';
-      Alignment := taRightJustify;
-      AutoSize := True;
-    end;
-    with Add do
-    begin
-      Caption := 'Filler';
-      Alignment := taRightJustify;
-      AutoSize := True;
-    end;
-    with Add do
-    begin
-      Caption := 'Interleave';
-      Alignment := taRightJustify;
-      AutoSize := True;
-    end;
-    with Add do
-    begin
-      Caption := '';
-      Alignment := taRightJustify;
-      AutoSize := True;
-    end;
-  end;
+  AddColumn('Logical');
+  AddColumn('Physical');
+  if not HideSide then
+    AddColumn('Side');
+  AddColumn('Track side');
+  AddColumn('Sectors');
+  AddColumn('Sector size');
+  AddColumn('Gap');
+  AddColumn('Filler');
+  AddColumn('Interleave');
+  AddColumn('');
 
   if HideSide then
   begin
@@ -656,62 +605,15 @@ var
   Idx: integer;
 begin
   lvwMain.PopupMenu := popSector;
-  with lvwMain.Columns do
+
+  AddColumns(['Sector', 'Track', 'Side', 'ID', 'FDC size', 'FDC flags', 'Data size']);
+  with lvwMain.Columns.Add do
   begin
-    with Add do
-    begin
-      Caption := 'Sector';
-      Alignment := taRightJustify;
-      AutoSize := True;
-    end;
-    with Add do
-    begin
-      Caption := 'Track';
-      Alignment := taRightJustify;
-      AutoSize := True;
-    end;
-    with Add do
-    begin
-      Caption := 'Side';
-      Alignment := taRightJustify;
-      AutoSize := True;
-    end;
-    with Add do
-    begin
-      Caption := 'ID';
-      Alignment := taRightJustify;
-      AutoSize := True;
-    end;
-    with Add do
-    begin
-      Caption := 'FDC size';
-      Alignment := taRightJustify;
-      AutoSize := True;
-    end;
-    with Add do
-    begin
-      Caption := 'FDC flags';
-      Alignment := taRightJustify;
-      AutoSize := True;
-    end;
-    with Add do
-    begin
-      Caption := 'Data size';
-      Alignment := taRightJustify;
-      AutoSize := True;
-    end;
-    with Add do
-    begin
-      Caption := 'Status';
-      AutoSize := True;
-    end;
-    with Add do
-    begin
-      Caption := '';
-      Alignment := taRightJustify;
-      AutoSize := True;
-    end;
+    Caption := 'Status';
+    AutoSize := True;
   end;
+  AddColumn('');
+
   for Idx := 0 to Track.Sectors - 1 do
     AddListSector(Track.Sector[Idx]);
 end;
@@ -911,9 +813,7 @@ procedure TfrmMain.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Settings.Save;
   if CloseAll(True) then
-  begin
-    Action := caFree;
-  end
+    Action := caFree
   else
     Action := caNone;
 end;
@@ -965,7 +865,7 @@ end;
 
 procedure TfrmMain.itmSaveCopyAsClick(Sender: TObject);
 begin
-  if (tvwMain.Selected <> nil) then
+  if tvwMain.Selected <> nil then
     SaveImageAs(GetCurrentImage, True);
 end;
 
@@ -1084,7 +984,7 @@ var
   Sector: TDSKSector;
 begin
   Sector := GetSelectedSector(popSector.PopupComponent);
-  if (Sector <> nil) and ConfirmChange('format', 'sector') then
+  if (Sector <> nil) and (ConfirmChange('format', 'sector')) then
   begin
     Sector.DataSize := Sector.ParentTrack.SectorSize;
     Sector.FillSector(Sector.ParentTrack.Filler);
@@ -1230,4 +1130,21 @@ begin
   itmWrite.Visible := FSamDiskEnabled;
 end;
 
-end.
+function TfrmMain.AddColumn(Caption: string): TListColumn;
+begin
+  Result := lvwMain.Columns.Add;
+  Result.Caption := Caption;
+  Result.Alignment := taRightJustify;
+  Result.AutoSize := true;
+end;
+
+function TfrmMain.AddColumns(Captions: array of string): TListColumnArray;
+var
+  CIdx: integer;
+begin
+  SetLength(Result, Length(Captions));
+  for CIdx := 0 to Length(Captions) - 1 do
+    Result[CIdx] := AddColumn(Captions[CIdx]);
+end;
+
+end.
