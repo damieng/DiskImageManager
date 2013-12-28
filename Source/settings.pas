@@ -81,6 +81,9 @@ begin
     DiskMap.GridColor := DiskMapGridColor;
     DiskMap.Color := DiskMapBackgroundColor;
     DiskMap.TrackMark := DiskMapTrackMark;
+
+    itmRead.Visible := SamDiskEnabled;
+    itmWrite.Visible := SamDiskEnabled;
   end;
 end;
 
@@ -224,4 +227,3 @@ begin
 end;
 
 end.
-

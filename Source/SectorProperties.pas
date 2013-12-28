@@ -130,9 +130,9 @@ begin
   for FIdx := 0 to 7 do
   begin
     cklFDC1.Checked[FIdx] :=
-      ((FSector.FDCStatus[1] and Power2[FIdx + 1]) = Power2[FIdx + 1]);
+      (FSector.FDCStatus[1] and Power2[FIdx + 1]) = Power2[FIdx + 1];
     cklFDC2.Checked[FIdx] :=
-      ((FSector.FDCStatus[2] and Power2[FIdx + 1]) = Power2[FIdx + 1]);
+      (FSector.FDCStatus[2] and Power2[FIdx + 1]) = Power2[FIdx + 1];
   end;
 end;
 
@@ -158,20 +158,20 @@ var
   OldLength: word;
   SecData: array[0..MaxSectorSize] of byte;
 begin
-  if (frmMain.ConfirmChange('change', 'sector')) then
+  if frmMain.ConfirmChange('change', 'sector') then
     with FSector do
     begin
       // Details
       ID := udSectorID.Position;
 
       // Status
-      if ((SecStat = ssFormattedBlank) or (SecStat = ssFormattedFilled)) then
+      if (SecStat = ssFormattedBlank) or (SecStat = ssFormattedFilled) then
         FillSector(udFill.Position);
 
       // Changing size?
-      if (DataSize <> word(udSize.Position)) then
+      if DataSize <> word(udSize.Position))then
       begin
-        if ((DataSize < word(udSize.Position)) and (DataSize > 0)) then
+        if (DataSize < word(udSize.Position)) and (DataSize > 0) then
         begin
           Move(Data, SecData, DataSize);
           OldLength := DataSize;
@@ -186,7 +186,7 @@ begin
       end;
 
       // FDC data Size
-      if (FDCSize <> byte(udFDCSize.Position)) then
+      if FDCSize <> byte(udFDCSize.Position) then
       begin
         FDCSize := byte(udFDCSize.Position);
       end;
@@ -194,12 +194,12 @@ begin
       // FDC status
       FDCStatus[1] := 0;
       for FIdx := 0 to 7 do
-        if (cklFDC1.Checked[FIdx]) then
+        if cklFDC1.Checked[FIdx] then
           FDCStatus[1] := FDCStatus[1] + Power2[FIdx + 1];
 
       FDCStatus[2] := 0;
       for FIdx := 0 to 7 do
-        if (cklFDC2.Checked[FIdx]) then
+        if cklFDC2.Checked[FIdx] then
           FDCStatus[2] := FDCStatus[2] + Power2[FIdx + 1];
 
     end;
@@ -215,17 +215,17 @@ procedure TfrmSector.cboStatusChange(Sender: TObject);
 begin
   SecStat := TDSKSectorStatus(cboStatus.ItemIndex);
 
-  if ((SecStat = ssFormattedInUse) and (FSector.Status <> ssFormattedInUse)) then
+  if (SecStat = ssFormattedInUse) and (FSector.Status <> ssFormattedInUse) then
   begin
     ShowMessage('Sector can not be made in-use when it was not previously');
     cboStatus.ItemIndex := Ord(FSector.Status);
   end;
 
-  if (SecStat = ssUnformatted) then
+  if SecStat = ssUnformatted then
     udSize.Position := 0
   else
-  if (udSize.Position = 0) then
-    if (FSector.DataSize <> 0) then
+  if udSize.Position = 0 then
+    if FSector.DataSize <> 0 then
       udSize.Position := FSector.DataSize
     else
       udSize.Position := FSector.ParentTrack.SectorSize * 256;
@@ -235,9 +235,9 @@ end;
 
 procedure TfrmSector.edtSizeChange(Sender: TObject);
 begin
-  if ((udSize.Position > 0) and (FSector.DataSize = 0)) then
+  if (udSize.Position > 0) and (FSector.DataSize = 0) then
     cboStatus.ItemIndex := Ord(ssFormattedBlank);
-  if (udSize.Position = 0) then
+  if udSize.Position = 0 then
     cboStatus.ItemIndex := Ord(ssUnformatted);
   UpdatePad;
 end;
@@ -246,7 +246,7 @@ procedure TfrmSector.UpdatePad;
 var
   ShowPad: boolean;
 begin
-  ShowPad := ((word(udSize.Position) > FSector.DataSize) and (FSector.DataSize > 0));
+  ShowPad := (word(udSize.Position) > FSector.DataSize) and (FSector.DataSize > 0);
   lblPad.Visible := ShowPad;
   edtPad.Visible := ShowPad;
   udPad.Visible := ShowPad;
@@ -257,8 +257,8 @@ procedure TfrmSector.UpdateFill;
 var
   ShowFill: boolean;
 begin
-  ShowFill := (((SecStat = ssFormattedBlank) or (SecStat = ssFormattedFilled)) or
-    (word(udSize.Position) > FSector.DataSize));
+  ShowFill := ((SecStat = ssFormattedBlank) or (SecStat = ssFormattedFilled)) or
+    (word(udSize.Position) > FSector.DataSize);
   if (cboStatus.ItemIndex = 1) then
     udFill.Position := FSector.ParentTrack.Filler;
   lblFill.Visible := ShowFill;
