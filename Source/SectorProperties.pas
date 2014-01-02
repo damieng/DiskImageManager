@@ -169,7 +169,7 @@ begin
         FillSector(udFill.Position);
 
       // Changing size?
-      if DataSize <> word(udSize.Position))then
+      if DataSize <> word(udSize.Position) then
       begin
         if (DataSize < word(udSize.Position)) and (DataSize > 0) then
         begin
@@ -272,4 +272,4 @@ begin
   lblPadHex.Caption := IntToHex(udPad.Position, 2);
 end;
 
-end.
+end.
