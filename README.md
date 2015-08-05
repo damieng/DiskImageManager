@@ -71,6 +71,12 @@ To be able to build and visually edit the forms you will need to install the sup
 4. Once complete press the **Use >>** button and choose **Install**
 5. On completion a DIM tab should appear next to the RTTI tab in the components area below the Lazarus main menu
 
+##Screenshots
+![Screenshot identifying a disk format and details](https://images.damieng.com/software/sdm-ident.png)
+![Screenshot showing visual map](https://images.damieng.com/software/sdm-map.png)
+![Screenshot with hex sector data and find](https://images.damieng.com/software/sdm-find.png)
+![Screenshot of advanced formatter](https://images.damieng.com/software/sdm-format.png)
+
 ##TODO
 * Extend support for SamDisk DSK extensions
 * Additional disk formats
