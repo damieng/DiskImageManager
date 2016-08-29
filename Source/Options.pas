@@ -87,7 +87,7 @@ type
     procedure Read;
     procedure Write;
   public
-    constructor Create(Owner: TForm; Settings: TSettings);
+    constructor Create(Owner: TForm; Settings: TSettings); reintroduce;
     function Show: boolean;
   end;
 
@@ -95,8 +95,6 @@ var
   frmOptions: TfrmOptions;
 
 implementation
-
-uses Main;
 
 {$R *.lfm}
 

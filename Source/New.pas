@@ -95,8 +95,7 @@ type
     procedure btnCancelClick(Sender: TObject);
     procedure btnFormatClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure lvwFormatsChange(Sender: TObject; Item: TListItem;
-      Change: TItemChange);
+    procedure lvwFormatsChange(Sender: TObject; Item: TListItem; Change: TItemChange);
     procedure cboSidesChange(Sender: TObject);
     procedure edtTracksChange(Sender: TObject);
     procedure edtSectorsChange(Sender: TObject);
@@ -361,8 +360,7 @@ begin
   SetShowAdvanced(False);
 end;
 
-procedure TfrmNew.lvwFormatsChange(Sender: TObject; Item: TListItem;
-  Change: TItemChange);
+procedure TfrmNew.lvwFormatsChange(Sender: TObject; Item: TListItem; Change: TItemChange);
 begin
   if lvwFormats.Selected <> nil then
     SetCurrentFormat(Item.ImageIndex);

@@ -16,7 +16,7 @@ interface
 uses
   DiskMap, DskImage, Utils, About, Options, SectorProperties, Settings,
   Classes, Graphics, SysUtils, Forms, Dialogs, Menus, ComCtrls,
-  ExtCtrls, Controls, Clipbrd, FileUtil, StrUtils, LazFileUtils;
+  ExtCtrls, Controls, Clipbrd, FileUtil, StrUtils;
 
 type
   // Must match the imagelist, put sides last
@@ -1147,4 +1147,4 @@ begin
     Result[CIdx] := AddColumn(Captions[CIdx]);
 end;
 
-end.
+end.
