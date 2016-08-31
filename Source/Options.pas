@@ -67,12 +67,6 @@ type
     udMapY: TUpDown;
     chkWarnSectorChange: TCheckBox;
     pnlTabs: TPanel;
-    tabSamDisk: TTabSheet;
-    chkSamDiskIntegration: TCheckBox;
-    lblSamDiskLocation: TLabel;
-    edtSamDiskLocation: TEdit;
-    btnSamDiskLocation: TButton;
-    dlgSamDiskLocation: TOpenDialog;
     procedure cbxBackColorChanged(Sender: TObject);
     procedure btnFontMainClick(Sender: TObject);
     procedure btnFontMapClick(Sender: TObject);
@@ -81,7 +75,6 @@ type
     procedure edtTrackMarksChange(Sender: TObject);
     procedure btnResetClick(Sender: TObject);
     procedure chkDarkBlankSectorsClick(Sender: TObject);
-    procedure btnSamDiskLocationClick(Sender: TObject);
   private
     Settings: TSettings;
     procedure Read;
@@ -186,8 +179,6 @@ begin
     chkSaveRemoveEmptyTracks.Checked := RemoveEmptyTracks;
     udMapX.Position := SaveDiskMapWidth;
     udMapY.Position := SaveDiskMapHeight;
-    chkSamDiskIntegration.Checked := SamDiskEnabled;
-    edtSamDiskLocation.Text := SamDiskLocation;
     cboOpenView.Text := OpenView;
   end;
 end;
@@ -212,8 +203,6 @@ begin
     RemoveEmptyTracks := chkSaveRemoveEmptyTracks.Checked;
     SaveDiskMapWidth := udMapX.Position;
     SaveDiskMapHeight := udMapY.Position;
-    SamDiskEnabled := chkSamDiskIntegration.Checked;
-    SamDiskLocation := edtSamDiskLocation.Text;
     OpenView := cboOpenView.SelText;
   end;
 end;
@@ -226,19 +215,6 @@ end;
 procedure TfrmOptions.btnResetClick(Sender: TObject);
 begin
   Settings.Reset;
-end;
-
-procedure TfrmOptions.btnSamDiskLocationClick(Sender: TObject);
-begin
-  with dlgSamDiskLocation do
-  begin
-    FileName := Settings.SamDiskLocation;
-    if Execute then
-    begin
-      Settings.SamDiskLocation := FileName;
-      edtSamDiskLocation.Text := FileName;
-    end;
-  end;
 end;
 
 procedure TfrmOptions.chkDarkBlankSectorsClick(Sender: TObject);

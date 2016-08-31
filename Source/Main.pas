@@ -77,8 +77,6 @@ type
     itmFind: TMenuItem;
     itmFindNext: TMenuItem;
     dlgFind: TFindDialog;
-    itmRead: TMenuItem;
-    itmWrite: TMenuItem;
     procedure itmOpenClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure tvwMainChange(Sender: TObject; Node: TTreeNode);
@@ -108,7 +106,6 @@ type
     procedure itmFindNextClick(Sender: TObject);
   private
     NextNewFile: integer;
-    FSamDiskEnabled: boolean;
     function AddTree(Parent: TTreeNode; Text: string; ImageIdx: integer;
       NodeObject: TObject): TTreeNode;
     function AddListInfo(Key: string; Value: string): TListItem;
@@ -116,7 +113,6 @@ type
     function AddListSector(Sector: TDSKSector): TListItem;
     function AddListSides(Side: TDSKSide): TListItem;
     procedure SetListSimple;
-    procedure SetSamDiskEnabled(Enabled: boolean);
     function GetSelectedSector(Sender: TObject): TDSKSector;
     function GetTitle(Data: TTreeNode): string;
     function GetCurrentImage: TDSKImage;
@@ -149,8 +145,6 @@ type
     function LoadImage(FileName: TFileName): boolean;
     procedure CloseImage(Image: TDSKImage);
     function GetNextNewFile: integer;
-
-    property SamDiskEnabled: boolean read FSamDiskEnabled write SetSamDiskEnabled;
   end;
 
 const
@@ -1121,13 +1115,6 @@ end;
 procedure TfrmMain.itmFindNextClick(Sender: TObject);
 begin
   dlgFindFind(Sender);
-end;
-
-procedure TfrmMain.SetSamDiskEnabled(Enabled: boolean);
-begin
-  FSamDiskEnabled := Enabled;
-  itmRead.Visible := FSamDiskEnabled;
-  itmWrite.Visible := FSamDiskEnabled;
 end;
 
 function TfrmMain.AddColumn(Caption: string): TListColumn;

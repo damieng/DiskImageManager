@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 509
+  Left = 363
   Height = 384
-  Top = 243
+  Top = 896
   Width = 556
   ClientHeight = 364
   ClientWidth = 556
@@ -10,7 +10,7 @@ object frmMain: TfrmMain
   OnClose = FormClose
   OnCreate = FormCreate
   ParentFont = True
-  LCLVersion = '1.0.14.0'
+  LCLVersion = '1.6.0.4'
   object splVertical: TSplitter
     Left = 180
     Height = 341
@@ -138,10 +138,6 @@ object frmMain: TfrmMain
         ShortCut = 16463
         OnClick = itmOpenClick
       end
-      object itmRead: TMenuItem
-        Caption = '&Read from disk...'
-        Hint = 'Read image from disk using SamDisk'
-      end
       object N1: TMenuItem
         Caption = '-'
       end
@@ -157,10 +153,6 @@ object frmMain: TfrmMain
         Enabled = False
         Hint = 'Save current disk image to a file with a new name'
         OnClick = itmSaveCopyAsClick
-      end
-      object itmWrite: TMenuItem
-        Caption = '&Write to disk...'
-        Hint = 'Write current image to disk using SamDisk'
       end
       object N2: TMenuItem
         Caption = '-'
