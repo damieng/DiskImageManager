@@ -15,7 +15,7 @@ interface
 
 uses
   Utils, DskImage,
-  Classes, SysUtils, Registry, Graphics, Forms, FileUtil,
+  Classes, Dialogs, SysUtils, IniFiles, Graphics, Forms, FileUtil,
   LazFileUtils;
 
 type TSettings = class(TObject)
@@ -46,10 +46,6 @@ type TSettings = class(TObject)
     RemoveEmptyTracks: boolean;
     SaveDiskMapHeight, SaveDiskMapWidth: integer;
 
-    // SamDisk
-    SamDiskEnabled: boolean;
-    SamDiskLocation: string;
-
     constructor Create(Owner: TForm);
     procedure Load;
     procedure Apply;
@@ -63,9 +59,6 @@ uses Main;
 
 var
   frmMain: TFrmMain;
-
-const
-    RegKey = 'Software\DamienG\DiskImageManager';
 
 constructor TSettings.Create(Owner: TForm);
 begin
@@ -88,12 +81,12 @@ end;
 // Load system settings
 procedure TSettings.Load;
 var
-  Reg: TRegIniFile;
+  Reg: TIniFile;
   Count, Idx: integer;
   FileName: TFileName;
   S: string;
 begin
-  Reg := TRegIniFile.Create(RegKey);
+  Reg := TIniFile.Create(ChangeFileExt(Application.ExeName, '.ini'));
 
   S := 'DiskMap';
   DarkBlankSectors := Reg.ReadBool(S, 'DarkBlankSectors', True);
@@ -140,10 +133,6 @@ begin
   SaveDiskMapWidth := Reg.ReadInteger(S, 'MapWidth', 640);
   SaveDiskMapHeight := Reg.ReadInteger(S, 'MapHeight', 480);
 
-  S := 'SamDisk';
-  SamDiskEnabled := Reg.ReadBool(S, 'Enabled', False);
-  SamDiskLocation := Reg.ReadString(S, 'Location', '');
-
   Reg.Free;
 
   Apply;
@@ -152,11 +141,11 @@ end;
 
 procedure TSettings.Save;
 var
-  Reg: TRegIniFile;
+  Reg: TIniFile;
   Idx, Count: integer;
   S: string;
 begin
-  Reg := TRegIniFile.Create(RegKey);
+  Reg := TIniFile.Create(ChangeFileExt(Application.ExeName, '.ini'));
 
   S := 'DiskMap';
   Reg.WriteInteger(S, 'BackgroundColour', integer(DiskMapBackgroundColor));
@@ -203,24 +192,12 @@ begin
   Reg.WriteInteger(S, 'MapWidth', SaveDiskMapWidth);
   Reg.WriteInteger(S, 'MapHeight', SaveDiskMapHeight);
 
-  S := 'SamDisk';
-  Reg.WriteBool(S, 'Enabled', SamDiskEnabled);
-  Reg.WriteString(S, 'Location', SamDiskLocation);
-
   Reg.Free;
 end;
 
 procedure TSettings.Reset;
-var
-  Reg: TRegIniFile;
 begin
-  Reg := TRegIniFile.Create(RegKey);
-  Reg.EraseSection('DiskMap');
-  Reg.EraseSection('SectorView');
-  Reg.EraseSection('Window');
-  Reg.EraseSection('Workspace');
-  Reg.Free;
-
+  DeleteFile(ChangeFileExt(Application.ExeName, '.ini'));
   Load;
 end;
 
