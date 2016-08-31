@@ -29,3 +29,6 @@ lib/
 
 # Application bundle for Mac OS
 *.app/
+
+# Other useless files
+*.ini

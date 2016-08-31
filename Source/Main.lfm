@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 363
+  Left = 413
   Height = 384
-  Top = 896
+  Top = 911
   Width = 556
   ClientHeight = 364
   ClientWidth = 556
@@ -43,6 +43,7 @@ object frmMain: TfrmMain
       ShowRoot = False
       TabOrder = 1
       OnChange = tvwMainChange
+      OnDblClick = tvwMainDblClick
       Options = [tvoAutoItemHeight, tvoKeepCollapsedNodes, tvoReadOnly, tvoRowSelect, tvoShowButtons, tvoShowLines, tvoToolTips, tvoThemedDraw]
     end
     object pnlTreeLabel: TPanel
@@ -674,6 +675,7 @@ object frmMain: TfrmMain
     top = 176
     object itmSectorProperties: TMenuItem
       Caption = 'Properties'
+      Default = True
       OnClick = itmSectorPropertiesClick
     end
     object N6: TMenuItem

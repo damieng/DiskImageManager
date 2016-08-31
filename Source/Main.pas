@@ -106,6 +106,7 @@ type
     procedure itmFindClick(Sender: TObject);
     procedure dlgFindFind(Sender: TObject);
     procedure itmFindNextClick(Sender: TObject);
+    procedure tvwMainDblClick(Sender: TObject);
   private
     NextNewFile: integer;
     function AddTree(Parent: TTreeNode; Text: string; ImageIdx: integer;
@@ -1117,6 +1118,11 @@ end;
 procedure TfrmMain.itmFindNextClick(Sender: TObject);
 begin
   dlgFindFind(Sender);
+end;
+
+procedure TfrmMain.tvwMainDblClick(Sender: TObject);
+begin
+  itmSectorPropertiesClick(Sender);
 end;
 
 function TfrmMain.AddColumn(Caption: string): TListColumn;
