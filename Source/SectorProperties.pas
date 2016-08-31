@@ -22,6 +22,7 @@ type
   { TfrmSector }
 
   TfrmSector = class(TForm)
+    bevIdentity: TBevel;
     pnlTab: TPanel;
     pnlButtons: TPanel;
     pagTabs: TPageControl;
@@ -50,7 +51,6 @@ type
     lblFDC: TLabel;
     lblDetails: TLabel;
     lblIdentity: TLabel;
-    bevIdentity: TBevel;
     lblFill: TLabel;
     edtFill: TEdit;
     udFill: TUpDown;
