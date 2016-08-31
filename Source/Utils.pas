@@ -37,7 +37,7 @@ function CompareBlockStart(A: array of char; B: string; Start: integer): boolean
 
 function FontToDescription(ThisFont: TFont): string;
 function FontFromDescription(Description: string): TFont;
-function FontDescription(ThisFont: TFont): string;
+function FontHumanReadable(ThisFont: TFont): string;
 function FontCopy(ThisFont: TFont): TFont;
 
 procedure DrawBorder(Canvas: TCanvas; var Rect: TRect; BorderStyle: TSpinBorderStyle);
@@ -201,7 +201,7 @@ begin
 end;
 
 // Font as human readable description
-function FontDescription(ThisFont: TFont): string;
+function FontHumanReadable(ThisFont: TFont): string;
 begin
   Result := Trim(StringReplace(FontToDescription(ThisFont), ',', ' ', [rfReplaceAll]));
 end;

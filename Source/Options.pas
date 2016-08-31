@@ -76,6 +76,7 @@ type
     procedure btnResetClick(Sender: TObject);
     procedure chkDarkBlankSectorsClick(Sender: TObject);
   private
+    FontMain, FontSector: TFont;
     Settings: TSettings;
     procedure Read;
     procedure Write;
@@ -106,12 +107,12 @@ procedure TfrmOptions.btnFontMainClick(Sender: TObject);
 begin
   with dlgFont do
   begin
-    Font := Settings.WindowFont;
+    Font := FontMain;
     Options := Options - [fdFixedPitchOnly];
     if Execute then
     begin
-      Settings.WindowFont := Font;
-      edtFontMain.Text := FontDescription(Settings.WindowFont);
+      edtFontMain.Text := FontHumanReadable(Font);
+      FontMain := Font;
     end;
   end;
 end;
@@ -120,13 +121,12 @@ procedure TfrmOptions.btnFontMapClick(Sender: TObject);
 begin
   with dlgFont do
   begin
-    Font := Settings.DiskMapFont;
+    Font := DiskMap.Font;
     Options := Options - [fdFixedPitchOnly];
     if Execute then
     begin
-      Settings.DiskMapFont := Font;
-      edtFontMap.Text := FontDescription(Settings.DiskMapFont);
-      DiskMap.Font := Settings.DiskMapFont;
+      edtFontMap.Text := FontHumanReadable(Font);
+      DiskMap.Font := Font;
     end;
   end;
 end;
@@ -135,12 +135,12 @@ procedure TfrmOptions.btnFontSectorClick(Sender: TObject);
 begin
   with dlgFont do
   begin
-    Font := Settings.SectorFont;
+    Font := FontSector;
     Options := Options + [fdFixedPitchOnly];
     if Execute then
     begin
-      Settings.SectorFont := Font;
-      edtFontSector.Text := FontDescription(Settings.SectorFont);
+      edtFontSector.Text := FontHumanReadable(Font);
+      FontSector := Font;
     end;
   end;
 end;
@@ -163,9 +163,15 @@ procedure TfrmOptions.Read;
 begin
   with Settings do
   begin
-    edtFontMain.Text := FontDescription(WindowFont);
-    edtFontSector.Text := FontDescription(SectorFont);
-    edtFontMap.Text := FontDescription(DiskMapFont);
+    FontMain := WindowFont;
+    edtFontMain.Text := FontHumanReadable(WindowFont);
+
+    FontSector := SectorFont;
+    edtFontSector.Text := FontHumanReadable(SectorFont);
+
+    DiskMap.Font := DiskMapFont;
+    edtFontMap.Text := FontHumanReadable(DiskMapFont);
+
     chkRestoreWindow.Checked := RestoreWindow;
     chkRestoreWorkspace.Checked := RestoreWorkspace;
     udBytes.Position := BytesPerLine;
@@ -187,13 +193,14 @@ procedure TfrmOptions.Write;
 begin
   with Settings do
   begin
-    WindowFont := FontFromDescription(edtFontMain.Text);
-    SectorFont := FontFromDescription(edtFontSector.Text);
+    WindowFont := FontMain;
+    SectorFont := FontSector;
+    DiskMapFont := DiskMap.Font;
+
     DiskMapBackgroundColor := cbxBack.ButtonColor;
     DarkBlankSectors := chkDarkBlankSectors.Checked;
     DiskMapGridColor := cbxGrid.ButtonColor;
     DiskMapTrackMark := udTrackMarks.Position;
-    DiskMapFont := FontFromDescription(edtFontMap.Text);
     RestoreWindow := chkRestoreWindow.Checked;
     BytesPerLine := udBytes.Position;
     UnknownASCII := edtNonDisplay.Text;
@@ -215,6 +222,7 @@ end;
 procedure TfrmOptions.btnResetClick(Sender: TObject);
 begin
   Settings.Reset;
+  Read;
 end;
 
 procedure TfrmOptions.chkDarkBlankSectorsClick(Sender: TObject);

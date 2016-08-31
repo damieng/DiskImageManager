@@ -47,7 +47,7 @@ object frmOptions: TfrmOptions
       TabOrder = 1
     end
     object btnReset: TButton
-      Left = 3
+      Left = 5
       Height = 23
       Top = 0
       Width = 75
@@ -73,9 +73,9 @@ object frmOptions: TfrmOptions
       Height = 321
       Top = 5
       Width = 296
-      ActivePage = tabMain
+      ActivePage = tabDiskMap
       Align = alClient
-      TabIndex = 0
+      TabIndex = 2
       TabOrder = 0
       object tabMain: TTabSheet
         Caption = 'Main'
@@ -162,25 +162,25 @@ object frmOptions: TfrmOptions
         ImageIndex = 1
         object lblFontSectorLabel: TLabel
           Left = 8
-          Height = 14
+          Height = 13
           Top = 16
-          Width = 23
+          Width = 22
           Caption = 'Font'
           ParentColor = False
         end
         object lblBytesLabel: TLabel
           Left = 8
-          Height = 14
+          Height = 13
           Top = 48
-          Width = 48
+          Width = 47
           Caption = 'Bytes/line'
           ParentColor = False
         end
         object lblNonDisplayLabel: TLabel
           Left = 8
-          Height = 14
+          Height = 13
           Top = 81
-          Width = 57
+          Width = 56
           Caption = 'Non-display'
           ParentColor = False
         end
@@ -188,10 +188,9 @@ object frmOptions: TfrmOptions
           Left = 75
           Height = 21
           Top = 13
-          Width = 173
+          Width = 170
           ReadOnly = True
           TabOrder = 5
-          Text = 'Envy Code R, 10pt'
         end
         object btnFontSector: TButton
           Left = 249
@@ -266,17 +265,17 @@ object frmOptions: TfrmOptions
         end
         object lblFontMapLabel: TLabel
           Left = 8
-          Height = 14
+          Height = 13
           Top = 16
-          Width = 23
+          Width = 22
           Caption = 'Font'
           ParentColor = False
         end
         object lblTrackMarksLabel: TLabel
           Left = 8
-          Height = 14
+          Height = 13
           Top = 81
-          Width = 58
+          Width = 57
           Caption = 'Track marks'
           ParentColor = False
         end
@@ -284,7 +283,7 @@ object frmOptions: TfrmOptions
           Left = 75
           Height = 21
           Top = 13
-          Width = 173
+          Width = 170
           ReadOnly = True
           TabOrder = 4
         end
