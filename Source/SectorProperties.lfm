@@ -1,46 +1,46 @@
 object frmSector: TfrmSector
-  Left = 1275
-  Height = 437
-  Top = 293
-  Width = 374
+  Left = 735
+  Height = 467
+  Top = 961
+  Width = 373
   BorderStyle = bsDialog
   Caption = 'Sector Properties'
-  ClientHeight = 437
-  ClientWidth = 374
+  ClientHeight = 467
+  ClientWidth = 373
   Color = clBtnFace
   Font.CharSet = ANSI_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
   Position = poScreenCenter
-  LCLVersion = '1.0.14.0'
+  LCLVersion = '1.6.0.4'
   object pnlTab: TPanel
     Left = 0
-    Height = 407
+    Height = 437
     Top = 0
-    Width = 374
+    Width = 373
     Align = alClient
     BevelOuter = bvNone
     BorderWidth = 5
-    ClientHeight = 407
-    ClientWidth = 374
+    ClientHeight = 437
+    ClientWidth = 373
     TabOrder = 0
     object pagTabs: TPageControl
       Left = 5
-      Height = 397
+      Height = 427
       Top = 5
-      Width = 364
+      Width = 363
       ActivePage = tabSector
       Align = alClient
       TabIndex = 0
       TabOrder = 0
       object tabSector: TTabSheet
         Caption = 'Sector'
-        ClientHeight = 358
-        ClientWidth = 358
+        ClientHeight = 401
+        ClientWidth = 355
         object lblStatus: TLabel
           Left = 8
-          Height = 14
+          Height = 13
           Top = 145
           Width = 35
           Caption = 'Status:'
@@ -49,18 +49,18 @@ object frmSector: TfrmSector
         end
         object lblSize: TLabel
           Left = 8
-          Height = 14
+          Height = 13
           Top = 173
-          Width = 24
+          Width = 23
           Caption = 'Size:'
           FocusControl = edtSize
           ParentColor = False
         end
         object lblImage: TLabel
           Left = 8
-          Height = 14
+          Height = 13
           Top = 32
-          Width = 36
+          Width = 34
           Caption = 'Image:'
           FocusControl = edtImage
           Font.CharSet = ANSI_CHARSET
@@ -72,36 +72,36 @@ object frmSector: TfrmSector
         end
         object lblFDC1: TLabel
           Left = 8
-          Height = 14
+          Height = 13
           Top = 232
-          Width = 36
+          Width = 35
           Caption = 'Byte 1:'
           FocusControl = cklFDC1
           ParentColor = False
         end
         object lblFDC2: TLabel
           Left = 182
-          Height = 14
+          Height = 13
           Top = 232
-          Width = 36
+          Width = 35
           Caption = 'Byte 2:'
           FocusControl = cklFDC2
           ParentColor = False
         end
         object lblSectorID: TLabel
           Left = 8
-          Height = 14
+          Height = 13
           Top = 118
-          Width = 16
+          Width = 15
           Caption = 'ID:'
           FocusControl = edtSectorID
           ParentColor = False
         end
         object lblPhysical: TLabel
           Left = 8
-          Height = 14
+          Height = 13
           Top = 56
-          Width = 43
+          Width = 42
           Caption = 'Physical:'
           FocusControl = edtPhysical
           Font.CharSet = ANSI_CHARSET
@@ -115,19 +115,19 @@ object frmSector: TfrmSector
           Left = 56
           Height = 2
           Top = 94
-          Width = 281
+          Width = 278
           Anchors = [akTop, akLeft, akRight]
         end
         object bevFDC: TBevel
           Left = 144
           Height = 2
           Top = 214
-          Width = 193
+          Width = 190
           Anchors = [akTop, akLeft, akRight]
         end
         object lblFDC: TLabel
           Left = 8
-          Height = 14
+          Height = 13
           Top = 208
           Width = 125
           Caption = 'Floppy controller flags'
@@ -141,7 +141,7 @@ object frmSector: TfrmSector
         end
         object lblDetails: TLabel
           Left = 8
-          Height = 14
+          Height = 13
           Top = 88
           Width = 39
           Caption = 'Details'
@@ -155,7 +155,7 @@ object frmSector: TfrmSector
         end
         object lblIdentity: TLabel
           Left = 8
-          Height = 14
+          Height = 13
           Top = 8
           Width = 46
           Caption = 'Identity'
@@ -171,14 +171,14 @@ object frmSector: TfrmSector
           Left = 56
           Height = 2
           Top = 14
-          Width = 281
+          Width = 278
           Anchors = [akTop, akLeft, akRight]
         end
         object lblFill: TLabel
           Left = 248
-          Height = 14
+          Height = 13
           Top = 121
-          Width = 18
+          Width = 16
           Alignment = taRightJustify
           Caption = 'Fill:'
           FocusControl = edtFill
@@ -186,16 +186,18 @@ object frmSector: TfrmSector
           Visible = False
         end
         object lblFillHex: TLabel
-          Left = 323
-          Height = 1
+          Left = 325
+          Height = 13
           Top = 121
-          Width = 1
+          Width = 12
+          Caption = 'FF'
           FocusControl = edtFill
           ParentColor = False
+          Visible = False
         end
         object lblSizeBytes: TLabel
           Left = 128
-          Height = 14
+          Height = 13
           Top = 173
           Width = 27
           Caption = 'bytes'
@@ -203,9 +205,9 @@ object frmSector: TfrmSector
         end
         object lblPad: TLabel
           Left = 242
-          Height = 14
+          Height = 13
           Top = 149
-          Width = 23
+          Width = 22
           Alignment = taRightJustify
           Caption = 'Pad:'
           FocusControl = edtPad
@@ -213,18 +215,22 @@ object frmSector: TfrmSector
           Visible = False
         end
         object lblPadHex: TLabel
-          Left = 326
-          Height = 1
+          Left = 325
+          Height = 13
           Top = 149
-          Width = 1
+          Width = 12
+          Caption = 'FF'
+          Color = clDefault
           FocusControl = edtPad
           ParentColor = False
+          Transparent = False
+          Visible = False
         end
         object lblFDCSize: TLabel
           Left = 219
-          Height = 14
+          Height = 13
           Top = 173
-          Width = 46
+          Width = 45
           Alignment = taRightJustify
           Caption = 'FDC size:'
           FocusControl = edtFDCSize
@@ -232,9 +238,10 @@ object frmSector: TfrmSector
         end
         object cklFDC2: TCheckListBox
           Left = 182
-          Height = 110
+          Height = 140
           Top = 248
           Width = 163
+          Anchors = [akTop, akRight, akBottom]
           Items.Strings = (
             'Data address mark missing'
             'Bad cylinder'
@@ -245,7 +252,7 @@ object frmSector: TfrmSector
             'Data address mark deleted'
             'Unused'
           )
-          ItemHeight = 18
+          ItemHeight = 17
           TabOrder = 14
           Data = {
             080000000000000000000000
@@ -253,9 +260,10 @@ object frmSector: TfrmSector
         end
         object cklFDC1: TCheckListBox
           Left = 8
-          Height = 110
+          Height = 140
           Top = 248
           Width = 163
+          Anchors = [akTop, akLeft, akBottom]
           Items.Strings = (
             'ID address mark missing'
             'Write protected during write'
@@ -266,7 +274,7 @@ object frmSector: TfrmSector
             'Unused'
             'End of cylinder'
           )
-          ItemHeight = 18
+          ItemHeight = 17
           TabOrder = 13
           Data = {
             080000000000000000000000
@@ -274,7 +282,7 @@ object frmSector: TfrmSector
         end
         object edtSectorID: TEdit
           Left = 56
-          Height = 22
+          Height = 21
           Top = 115
           Width = 33
           MaxLength = 3
@@ -283,22 +291,22 @@ object frmSector: TfrmSector
         end
         object udSectorID: TUpDown
           Left = 89
-          Height = 22
+          Height = 21
           Top = 115
           Width = 15
           Associate = edtSectorID
-          Min = 0
           Max = 255
+          Min = 0
           Position = 0
           TabOrder = 3
           Wrap = False
         end
         object cboStatus: TComboBox
           Left = 56
-          Height = 17
+          Height = 21
           Top = 142
           Width = 145
-          ItemHeight = 0
+          ItemHeight = 13
           Items.Strings = (
             'Unformatted'
             'Formatted unused'
@@ -311,7 +319,7 @@ object frmSector: TfrmSector
         end
         object edtSize: TEdit
           Left = 56
-          Height = 22
+          Height = 21
           Top = 169
           Width = 49
           MaxLength = 5
@@ -321,42 +329,41 @@ object frmSector: TfrmSector
         end
         object udSize: TUpDown
           Left = 105
-          Height = 22
+          Height = 21
           Top = 169
           Width = 15
           Associate = edtSize
-          Min = 0
-          Max = 32767
           Increment = 256
+          Max = 32767
+          Min = 0
           Position = 0
           TabOrder = 12
           Wrap = False
         end
         object edtImage: TEdit
           Left = 56
-          Height = 22
+          Height = 13
           Top = 32
-          Width = 283
+          Width = 280
           Anchors = [akTop, akLeft, akRight]
           BorderStyle = bsNone
-          Color = clBtnFace
+          Color = clNone
           ReadOnly = True
           TabOrder = 0
         end
         object edtPhysical: TEdit
           Left = 56
-          Height = 22
+          Height = 13
           Top = 56
-          Width = 283
+          Width = 280
           Anchors = [akTop, akLeft, akRight]
           BorderStyle = bsNone
-          Color = clBtnFace
           ReadOnly = True
           TabOrder = 1
         end
         object edtFill: TEdit
           Left = 272
-          Height = 22
+          Height = 21
           Top = 118
           Width = 33
           MaxLength = 3
@@ -367,12 +374,12 @@ object frmSector: TfrmSector
         end
         object udFill: TUpDown
           Left = 305
-          Height = 22
+          Height = 21
           Top = 118
           Width = 15
           Associate = edtFill
-          Min = 0
           Max = 255
+          Min = 0
           Position = 0
           TabOrder = 5
           Visible = False
@@ -380,7 +387,7 @@ object frmSector: TfrmSector
         end
         object edtPad: TEdit
           Left = 272
-          Height = 22
+          Height = 21
           Top = 145
           Width = 33
           MaxLength = 3
@@ -391,12 +398,12 @@ object frmSector: TfrmSector
         end
         object udPad: TUpDown
           Left = 305
-          Height = 22
+          Height = 21
           Top = 145
           Width = 15
           Associate = edtPad
-          Min = 0
           Max = 255
+          Min = 0
           Position = 0
           TabOrder = 8
           Visible = False
@@ -404,7 +411,7 @@ object frmSector: TfrmSector
         end
         object edtFDCSize: TEdit
           Left = 272
-          Height = 22
+          Height = 21
           Top = 169
           Width = 33
           MaxLength = 3
@@ -414,13 +421,13 @@ object frmSector: TfrmSector
         end
         object udFDCSize: TUpDown
           Left = 305
-          Height = 22
+          Height = 21
           Top = 169
           Width = 16
           Associate = edtFDCSize
-          Min = 0
-          Max = 255
           Increment = 256
+          Max = 255
+          Min = 0
           Position = 0
           TabOrder = 11
           Wrap = False
@@ -431,15 +438,15 @@ object frmSector: TfrmSector
   object pnlButtons: TPanel
     Left = 0
     Height = 30
-    Top = 407
-    Width = 374
+    Top = 437
+    Width = 373
     Align = alBottom
     BevelOuter = bvNone
     ClientHeight = 30
-    ClientWidth = 374
+    ClientWidth = 373
     TabOrder = 1
     object btnOK: TButton
-      Left = 132
+      Left = 131
       Height = 23
       Top = 0
       Width = 75
@@ -451,7 +458,7 @@ object frmSector: TfrmSector
       TabOrder = 0
     end
     object btnCancel: TButton
-      Left = 212
+      Left = 211
       Height = 23
       Top = 0
       Width = 75
@@ -462,7 +469,7 @@ object frmSector: TfrmSector
       TabOrder = 1
     end
     object btnApply: TButton
-      Left = 292
+      Left = 291
       Height = 23
       Top = 0
       Width = 75

@@ -18,6 +18,9 @@ uses
   SysUtils, Classes, Forms, StdCtrls, ComCtrls, ExtCtrls, CheckLst, Dialogs;
 
 type
+
+  { TfrmSector }
+
   TfrmSector = class(TForm)
     pnlTab: TPanel;
     pnlButtons: TPanel;
