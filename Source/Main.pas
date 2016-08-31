@@ -25,6 +25,8 @@ type
 
   TListColumnArray = array of TListColumn;
 
+  { TfrmMain }
+
   TfrmMain = class(TForm)
     mnuMain: TMainMenu;
     itmDisk: TMenuItem;

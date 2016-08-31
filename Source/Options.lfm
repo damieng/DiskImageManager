@@ -450,10 +450,4 @@ object frmOptions: TfrmOptions
     left = 248
     top = 272
   end
-  object dlgSamDiskLocation: TOpenDialog
-    Filter = 'SamDisk executable|SamDisk.exe'
-    Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
-    left = 248
-    top = 216
-  end
 end

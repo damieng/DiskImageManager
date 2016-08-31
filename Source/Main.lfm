@@ -249,7 +249,6 @@ object frmMain: TfrmMain
   object dlgOpen: TOpenDialog
     DefaultExt = '.*.dsk'
     Filter = 'Disk Images (*.DSK)|*.DSK|All files|*.*'
-    InitialDir = 'c:\collected\emulation\spectrum\dsk'
     Options = [ofHideReadOnly, ofAllowMultiSelect, ofPathMustExist, ofFileMustExist, ofEnableSizing]
     left = 440
     top = 112
