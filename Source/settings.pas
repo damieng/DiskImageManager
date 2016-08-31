@@ -118,13 +118,13 @@ begin
   RestoreWorkspace := Reg.ReadBool(S, 'Restore', False);
   if RestoreWorkspace then
   begin
-    Count := Reg.ReadInteger(S, '', 0);
-    for Idx := 1 to Count do
-    begin
-      FileName := Reg.ReadString(S, StrInt(Idx), '');
-      if FileExistsUTF8(FileName) then
+    Idx := 1;
+    repeat
+      FileName := Reg.ReadString(S, StrInt(Idx), '*end');
+      if (FileName <> '*end') and (FileExistsUTF8(FileName)) then
         frmMain.LoadImage(FileName);
-    end;
+      inc(Idx);
+    until FileName = '*end';
   end;
 
   S := 'Saving';
@@ -184,7 +184,6 @@ begin
         Reg.WriteString(S, StrInt(Count), TDSKImage(tvwMain.Items[Idx].Data).FileName);
         Inc(Count);
       end;
-  Reg.WriteInteger(S, '', Count - 1);
 
   S := 'Saving';
   Reg.WriteBool(S, 'WarnConversionProblems', WarnConversionProblems);
