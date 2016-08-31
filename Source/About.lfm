@@ -1,7 +1,7 @@
 object frmAbout: TfrmAbout
-  Left = 452
+  Left = 601
   Height = 88
-  Top = 181
+  Top = 545
   Width = 341
   AlphaBlend = True
   AlphaBlendValue = 50
@@ -15,8 +15,8 @@ object frmAbout: TfrmAbout
   Font.Name = 'Tahoma'
   OnCreate = FormCreate
   OnShow = FormShow
-  Position = poScreenCenter
-  LCLVersion = '1.0.14.0'
+  Position = poOwnerFormCenter
+  LCLVersion = '1.6.0.4'
   object imgAppIcon: TImage
     Left = 4
     Height = 48
@@ -152,10 +152,10 @@ object frmAbout: TfrmAbout
     Width = 265
   end
   object lblVersion: TLabel
-    Left = 302
-    Height = 14
+    Left = 303
+    Height = 13
     Top = 32
-    Width = 27
+    Width = 26
     Alignment = taRightJustify
     Anchors = [akTop, akRight]
     Caption = '0.0.0'
@@ -177,9 +177,9 @@ object frmAbout: TfrmAbout
   object lblWeb: TLabel
     Cursor = crHandPoint
     Left = 12
-    Height = 14
+    Height = 13
     Top = 67
-    Width = 230
+    Width = 229
     Caption = 'https://github.com/damieng/DiskImageManager'
     Font.CharSet = ANSI_CHARSET
     Font.Color = clBlue

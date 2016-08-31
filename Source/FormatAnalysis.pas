@@ -44,13 +44,14 @@ begin
  	Result := 'Unformatted'
  else
  begin
+   Result := '';
     Protection := DetectProtection(Disk.Side[0]);
     if (Disk.IsUniform(True)) then
       Format := DetectUniformFormat(Disk);
     if (Format <> '') then
     	Result := Format;
     if (Protection <> '') then
-    	Result := Result + Protection;
+    	Result := Trim(Result + ' ' + Protection);
     if (Result = '') then
       Result := 'Unknown';
   end;

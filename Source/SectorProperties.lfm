@@ -12,7 +12,7 @@ object frmSector: TfrmSector
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
-  Position = poScreenCenter
+  Position = poMainFormCenter
   LCLVersion = '1.6.0.4'
   object pnlTab: TPanel
     Left = 0

@@ -6,6 +6,8 @@
     <General>
       <Flags>
         <MainUnitHasUsesSectionForAllUnits Value="False"/>
+        <MainUnitHasCreateFormStatements Value="False"/>
+        <MainUnitHasTitleStatement Value="False"/>
       </Flags>
       <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
@@ -21,12 +23,10 @@
       <EnableI18N LFM="False"/>
     </i18n>
     <VersionInfo>
-      <AutoIncrementBuild Value="True"/>
       <MinorVersionNr Value="1"/>
       <RevisionNr Value="9"/>
       <BuildNr Value="100"/>
-      <Attributes pvaDebug="True"/>
-      <StringTable CompanyName="Damien Guard" ProductVersion=""/>
+      <StringTable ProductVersion=""/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>
