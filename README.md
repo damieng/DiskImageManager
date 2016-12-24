@@ -84,7 +84,7 @@ To be able to build and visually edit the forms you will need to install the sup
 * Allow file catalog and extract of files
 
 ##Licence
-Copyright 2002-2013 Damien Guard.
+Copyright 2002-2016 Damien Guard.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
