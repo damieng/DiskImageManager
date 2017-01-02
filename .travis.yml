@@ -10,11 +10,11 @@ env:
 
 matrix:
   include:
-  - os: osx
+#  - os: osx # App doesn't work any more...
   - os: linux
-    env: LAZ_OPT="--os=win32 --cpu=i386"
+    env: LAZ_OPT="--os=win32 --cpu=i386" LAZ_ENV=wine WINEARCH=win32
   - os: linux
-    env: LAZ_OPT="--os=win64 --cpu=x86_64"
+    env: LAZ_OPT="--os=win64 --cpu=x86_64" LAZ_ENV=wine WINEARCH=win64
 
 install:
 - "./.travis.install.py"
@@ -28,13 +28,28 @@ notifications:
     on_failure: change
 
 before_deploy:
-- "./package-assets.sh"
+  - "mkdir assets"
+  - "tar -zcvf assets/DiskImageManager-macOS.tar.gz out/i386-darwin/*.app | true"
+  - "cp out/i386-win32/DiskImageManager.exe assets/DiskImageManager-Win32.exe | true"
+  - "cp out/x86_64-win64/DiskImageManager.exe assets/DiskImageManager-Win64.exe | true"
+  - "export ASSET_FILE=$(ls assets/*)"
 
 deploy:
+- provider: releases
+  api_key:
+    secure: LdIAtqU1+52Lrm05MSe8rokToctpKRbEaeaUKAQyxZVVO3NrmOZrjotkJl0J/xbd8AJoY2HnaPRGvCQSipwFV+Q7c8Uo8YwV47WYHbCwTnlxmVxmnvBvBHlLUZIXjWNsAiwYApIwDUcAEP+x8cT6TcceV+/I0sjUiw3ikMatavk=
+  overwrite: true
+  skip_cleanup: true
+  file: "${ASSET_FILE}"
+  file_glob: true
+  on:
+    tags: true
+    repo: damieng/DiskImageManager
 - provider: s3
   bucket: damieng-deploy
   upload-dir: DiskImageManager
   local_dir: assets
+  skip_cleanup: true
   access_key_id:
     secure: BUEOkzKcGnRAJNoxJ2gwxm19XvsqUfqcIJM/WaoaCJQQP0gd2cUJGDhZIpngSMA4R/3mYCtZt3gCsWC68Gs1HUB7cmSvj+XFmcxGsO7p7JxfhDp5msoiqvYpcVuDKepaQLncNvh8rCPRQBiLBusRkoHrWJsnV6Zjo/UuGj16s0M=
   secret_access_key:
