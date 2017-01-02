@@ -82,7 +82,7 @@ end;
 procedure TSettings.Load;
 var
   Reg: TIniFile;
-  Count, Idx: integer;
+  Idx: integer;
   FileName: TFileName;
   S: string;
 begin
