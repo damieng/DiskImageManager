@@ -29,7 +29,7 @@ notifications:
 
 before_deploy:
   - "mkdir assets"
-  - "tar -zcvf assets/DiskImageManager-macOS.tar.gz out/i386-darwin/*.app | true"
+#  - "tar -zcvf assets/DiskImageManager-macOS.tar.gz out/i386-darwin/*.app | true"
   - "cp out/i386-win32/DiskImageManager.exe assets/DiskImageManager-Win32.exe | true"
   - "cp out/x86_64-win64/DiskImageManager.exe assets/DiskImageManager-Win64.exe | true"
   - "export ASSET_FILE=$(ls assets/*)"
