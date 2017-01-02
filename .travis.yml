@@ -1,0 +1,41 @@
+language: generic
+sudo: required
+dist: trusty
+
+env:
+  global:
+  - LAZ_VER=1.6.2
+  - WINEPREFIX=~/.winelaz
+  - DISPLAY=:99.0
+
+matrix:
+  include:
+  - os: osx
+  - os: linux
+    env: LAZ_OPT="--os=win32 --cpu=i386"
+  - os: linux
+    env: LAZ_OPT="--os=win64 --cpu=x86_64"
+
+install:
+- "./.travis.install.py"
+
+script:
+- lazbuild $LAZ_OPT ./Source/DiskImageManager.lpi
+
+notifications:
+  email:
+    on_success: false
+    on_failure: change
+
+before_deploy:
+- "./package-assets.sh"
+
+deploy:
+- provider: s3
+  bucket: damieng-deploy
+  upload-dir: DiskImageManager
+  local_dir: assets
+  access_key_id:
+    secure: BUEOkzKcGnRAJNoxJ2gwxm19XvsqUfqcIJM/WaoaCJQQP0gd2cUJGDhZIpngSMA4R/3mYCtZt3gCsWC68Gs1HUB7cmSvj+XFmcxGsO7p7JxfhDp5msoiqvYpcVuDKepaQLncNvh8rCPRQBiLBusRkoHrWJsnV6Zjo/UuGj16s0M=
+  secret_access_key:
+    secure: Z3v/tG0s1XWMCjz4JNkN2GlCTIsnbCUCYABhOcaytd0aiSLmW3l6YaRK+t/Vk0opbXzqkPGLbAEfyHHf7e8C5gc8TjkktZzzup3p7B7xOkmk3f9bYEqlYmen26+TfUsFxb43FaueYg7EylZ7VyQ/mLYj+vmz/fTbOL8xjw616bo=
