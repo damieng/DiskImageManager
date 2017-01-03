@@ -10,26 +10,6 @@ interface
 
 uses DskImage, SysUtils;
 
-const
-	// Copy protection ID strings
-  ProtAlkatrazP3: String = ' THE ALKATRAZ PROTECTION SYSTEM   (C) 1987  Appleby Associates';
-	ProtFrontier: String = 'W DISK PROTECTION SYSTEM. (C) 1990 BY NEW FRONTIER SOFT.';
-  ProtHexagon: String = 'GON DISK PROTECTION c 1989 A.R.P';
-  ProtPaulOwen : String = 'PAUL OWENS' + #128 + 'PROTECTION SYS';
-  ProtSpeedLock1988: String = 'SPEEDLOCK DISC PROTECTION SYSTEMS (C) 1988 SPEEDLOCK ASSOCIATES';
-  ProtSpeedLock1989: String = 'SPEEDLOCK DISC PROTECTION SYSTEMS (C) 1989 SPEEDLOCK ASSOCIATES';
-  ProtSpeedLock1987P3: String = 'SPEEDLOCK +3 DISC PROTECTION SYSTEM COPYRIGHT 1987 SPEEDLOCK ASSOCIATES';
-  ProtSpeedLock1988P3: String = 'SPEEDLOCK +3 DISC PROTECTION SYSTEM COPYRIGHT 1988 SPEEDLOCK ASSOCIATES';
-  ProtThreeInchType1: String = '***Loader Copyright Three Inch Software 1988, All Rights Reserved. Three Inch Software, 73 Surbiton Road, Kingston upon Thames, KT1 2HG***';
-  ProtThreeInchType2: String = '***Loader Copyright Three Inch Software 1988, All Rights Reserved. 01-546 2754';
-  ProtPMSLoader: String = 'P.M.S.LOADER [C]1987';
-
-  // War In Middle Earth (CPC)
-  ProtLaserLoad: String = 'Laser Load   By C.J.Pink For Consult Computer    Systems';
-
-  // Bataille d'Angletter, La (CPC)
-  ProtEREHerbulot: String = 'PROTECTION      Remi HERBULOT   ';
-
 function AnalyseFormat(Disk: TDSKDisk): String;
 function DetectUniformFormat(Disk: TDSKDisk): String;
 function DetectProtection(Side: TDSKSide): String;
@@ -158,113 +138,181 @@ end;
 // and structural characteristics.
 function DetectProtection(Side: TDSKSide): String;
 var
-	TIdx, SIdx: Integer;
+	TIdx, SIdx, Offset: Integer;
   Sector: TDSKSector;
 begin
+  if Side.Tracks < 2 then
+     exit;
+
   // Alkatraz copy-protection
-  if StrInByteArray(Side.Track[0].Sector[0].Data,ProtAlkatrazP3,320) then
-    Result := 'Alkatraz +3 copy-protection (signed)';
-
-  // Frontier copy-protection
-  if (Side.Tracks > 10) and (Side.Track[1].Sectors > 0) then
-     	if Side.Track[0].Sector[0].DataSize > 1 then
-        if (StrInByteArray(Side.Track[1].Sector[0].Data,ProtFrontier,16)) then
-      		Result := 'Frontier copy-protection (signed)'
-        else
-          if (Side.Track[9].Sectors = 1) then
-            if (Side.Track[0].Sector[0].DataSize = 4096) then
-              if (Side.Track[0].Sector[0].FDCStatus[1] = 0) then
-                Result := 'Frontier copy-protection (probably, unsigned)';
-
-  // Hexagon
-  if (Side.Tracks > 1) and (Side.Track[1].Sectors = 1) then
-  	if (Side.Track[1].Sector[0].DataSize = 6144) and
-    	(Side.Track[1].Sector[0].FDCStatus[1] = 32) and
-      (Side.Track[1].Sector[0].FDCStatus[2] = 96) then
-      	Result := 'Hexagon copy-protection (probably, unsigned)';
-
-	if (Side.Tracks > 1) and (Side.Track[0].Sectors = 10) then
-   	if (Side.Track[0].Sector[8].DataSize = 512) then
-     	if (StrInByteArray(Side.Track[0].Sector[8].Data,ProtHexagon,40)) then
-       	Result := 'Hexagon copy-protection (signed)';
-
-  // Paul Owens
-  if (Side.Track[0].Sectors = 9) then
-    if (Side.Tracks > 10) then
-      if (Side.Track[1].Sectors = 0) then
-        if (StrInByteArray(Side.Track[0].Sector[2].Data,ProtPaulOwen,7)) then
-          Result := 'Paul Owens copy-protection (signed)'
-        else
-          if (Side.Track[2].Sectors = 6) then
-            if (Side.Track[2].Sector[0].DataSize = 256) then
-              Result := 'Paul Owens copy-protection (probably, unsigned)';
-
-  // Speedlock variants
-  if (Side.Tracks > 1) and (Side.Track[0].Sectors > 0) then
+  Offset := StrBufPos(Side.Track[0].Sector[0].Data,' THE ALKATRAZ PROTECTION SYSTEM   (C) 1987  Appleby Associates');
+  if Offset > -1 then
   begin
-    // Speedlock +3 1987
-    if (StrInByteArray(Side.Track[0].Sector[0].Data,ProtSpeedlock1987P3,304)) or
-    	(StrInByteArray(Side.Track[0].Sector[0].Data,ProtSpeedlock1987P3,301)) then
-      Result := 'Speedlock +3 1987 copy-protection (signed)'
-    else
-      if (Side.Track[0].Sectors = 9) and
-        (Side.Track[1].Sectors = 5) and
-        (Side.Track[1].Sector[0].DataSize = 1024) and
-        (Side.Track[0].Sector[6].FDCStatus[2] = 64) and
-        (Side.Track[0].Sector[8].FDCStatus[2] = 0) then
-        Result := 'Speedlock +3 1987 copy-protection (probably, unsigned)';
-
-    // Speedlock +3 1988
-    if (StrInByteArray(Side.Track[0].Sector[0].Data,ProtSpeedlock1988P3,304)) then
-      Result := 'Speedlock +3 1988 copy-protection (signed)'
-    else
-      if (Side.Track[0].Sectors = 9) and (Side.Tracks > 1) then
-        if (Side.Track[1].Sectors = 5) and
-          (Side.Track[1].Sector[0].DataSize = 1024) and
-          (Side.Track[0].Sector[6].FDCStatus[2] = 64) and
-          (Side.Track[0].Sector[8].FDCStatus[2] = 64) then
-          Result := 'Speedlock +3 1988 copy-protection (probably, unsigned)';
-
-    // Speedlock 1988
-  	if (StrInByteArray(Side.Track[0].Sector[0].Data,ProtSpeedlock1988,129)) then
-      Result := 'Speedlock 1988 copy-protection (signed)';
-
-    // Speedlock 1989
-   	if (StrInByteArray(Side.Track[0].Sector[0].Data,ProtSpeedlock1989,176)) then
-      Result := 'Speedlock 1989 copy-protection (signed)'
-    else
-      if (Side.Track[0].Sectors > 7) and
-        (Side.Tracks > 40) and
-        (Side.Track[1].Sectors = 1) and
-        (Side.Track[1].Sector[0].ID = 193) and
-        (Side.Track[1].Sector[0].FDCStatus[1] = 32) then
-        Result := 'Speedlock 1989 copy-protection (probably, unsigned)';
+    Result := 'Alkatraz +3 (signed at ' + StrInt(Offset) + ')';
+    exit;
   end;
 
+  // Frontier copy-protection
+  if (Side.Tracks > 10) and (Side.Track[1].Sectors > 0) and (Side.Track[0].Sector[0].DataSize > 1) then
+  begin
+    Offset := StrBufPos(Side.Track[1].Sector[0].Data,'W DISK PROTECTION SYSTEM. (C) 1990 BY NEW FRONTIER SOFT.');
+    if Offset > - 1 then
+    begin
+      Result := 'Frontier (signed at ' + StrInt(Offset) + ')';
+      exit;
+    end;
+
+    if (Side.Track[9].Sectors = 1) and (Side.Track[0].Sector[0].DataSize = 4096) and (Side.Track[0].Sector[0].FDCStatus[1] = 0) then
+      Result := 'Frontier (probably, unsigned)';
+  end;
+
+  // Hexagon
+  if (Side.Track[0].Sectors = 10) and (Side.Track[0].Sector[8].DataSize = 512) then
+  begin
+    Offset := StrBufPos(Side.Track[0].Sector[8].Data,'GON DISK PROTECTION c 1989 A.R.P');
+    if Offset > -1 then
+    begin
+      Result := 'Hexagon (signed at ' + StrInt(Offset) + ')';
+      exit;
+    end;
+
+    if (Side.Track[1].Sectors = 1) and
+       (Side.Track[1].Sector[0].FDCSize = 6) and
+       (Side.Track[1].Sector[0].FDCStatus[1] = 32) and
+       (Side.Track[1].Sector[0].FDCStatus[2] = 96) then
+        Result := 'Hexagon (probably, unsigned)';
+  end;
+
+  // Paul Owens
+  if (Side.Track[0].Sectors = 9) and (Side.Tracks > 10) and (Side.Track[1].Sectors = 0) then
+  begin
+    Offset := StrBufPos(Side.Track[0].Sector[2].Data,'PAUL OWENS' + #128 + 'PROTECTION SYS');
+    if Offset > -1 then
+    begin
+      Result := 'Paul Owens (signed at ' + StrInt(Offset) + ')';
+      exit;
+    end
+    else
+      if (Side.Track[2].Sectors = 6) and (Side.Track[2].Sector[0].DataSize = 256) then
+        Result := 'Paul Owens (probably, unsigned)';
+  end;
+
+  // Speedlock +3 1987
+  Offset := StrBufPos(Side.Track[0].Sector[0].Data,'SPEEDLOCK +3 DISC PROTECTION SYSTEM COPYRIGHT 1987 SPEEDLOCK ASSOCIATES');
+  if Offset > -1 then
+  begin
+    Result := 'Speedlock +3 1987 (signed at ' + StrInt(Offset) + ')';
+    exit;
+  end;
+
+  if (Side.Track[0].Sectors = 9) and
+     (Side.Track[1].Sectors = 5) and
+     (Side.Track[1].Sector[0].DataSize = 1024) and
+     (Side.Track[0].Sector[6].FDCStatus[2] = 64) and
+     (Side.Track[0].Sector[8].FDCStatus[2] = 0) then
+       Result := 'Speedlock +3 1987 (probably, unsigned)';
+
+   // Speedlock +3 1988
+  Offset := StrBufPos(Side.Track[0].Sector[0].Data,'SPEEDLOCK +3 DISC PROTECTION SYSTEM COPYRIGHT 1988 SPEEDLOCK ASSOCIATES');
+  if Offset > -1 then
+  begin
+    Result := 'Speedlock +3 1988 (signed at ' + StrInt(Offset) + ')';
+    exit;
+  end;
+  if (Side.Track[0].Sectors = 9) and
+     (Side.Track[1].Sectors = 5) and
+     (Side.Track[1].Sector[0].DataSize = 1024) and
+     (Side.Track[0].Sector[6].FDCStatus[2] = 64) and
+     (Side.Track[0].Sector[8].FDCStatus[2] = 64) then
+     Result := 'Speedlock +3 1988 (probably, unsigned)';
+
+  // Speedlock 1988
+  Offset := StrBufPos(Side.Track[0].Sector[0].Data,'SPEEDLOCK DISC PROTECTION SYSTEMS (C) 1988 SPEEDLOCK ASSOCIATES');
+  if Offset > -1 then
+  begin
+   Result := 'Speedlock 1988 (signed at ' + StrInt(Offset) + ')';
+   exit;
+  end;
+
+  // Speedlock 1989
+  Offset := StrBufPos(Side.Track[0].Sector[0].Data,'SPEEDLOCK DISC PROTECTION SYSTEMS (C) 1989 SPEEDLOCK ASSOCIATES');
+  if Offset > -1 then
+  begin
+    Result := 'Speedlock 1989 (signed at ' + StrInt(Offset) + ')';
+    exit;
+  end;
+  if (Side.Track[0].Sectors > 7) and
+    (Side.Tracks > 40) and
+    (Side.Track[1].Sectors = 1) and
+    (Side.Track[1].Sector[0].ID = 193) and
+    (Side.Track[1].Sector[0].FDCStatus[1] = 32) then
+    Result := 'Speedlock 1989 (probably, unsigned)';
+
   // Three Inch Loader
-  if (StrInByteArray(Side.Track[0].Sector[0].Data,ProtThreeInchType1,41)) then
-    Result := 'Three Inch Loader type 1 copy-protection (signed)';
+  Offset := StrBufPos(Side.Track[0].Sector[0].Data,'***Loader Copyright Three Inch Software 1988, All Rights Reserved. Three Inch Software, 73 Surbiton Road, Kingston upon Thames, KT1 2HG***');
+  if Offset > -1 then
+  begin
+    Result := 'Three Inch Loader type 1 (signed at ' + StrInt(Offset) + ')';
+    exit;
+  end;
 
- 	if (StrInByteArray(Side.Track[0].Sector[0].Data,ProtThreeInchType2,41)) then
-    Result := 'Three Inch Loader type 2 copy-protection (signed)';
+  if Side.Track[0].Sectors > 7 then
+  begin
+    Offset := StrBufPos(Side.Track[0].Sector[7].Data,'***Loader Copyright Three Inch Software 1988, All Rights Reserved. Three Inch Software, 73 Surbiton Road, Kingston upon Thames, KT1 2HG***');
+    if Offset > -1 then
+    begin
+      Result := 'Three Inch Loader type 1-0-7 (signed at ' + StrInt(Offset) + ')';
+      exit;
+    end;
+  end;
 
-  // Laser loader
-  if (Side.Track[0].Sectors > 2) and
-  	(StrInByteArray(Side.Track[0].Sector[2].Data,ProtLaserLoad,3)) then
-    Result := 'Laser Load by C.J. Pink (signed)';
+  Offset := StrBufPos(Side.Track[0].Sector[0].Data,'***Loader Copyright Three Inch Software 1988, All Rights Reserved. 01-546 2754');
+  if Offset > -1 then
+  begin
+    Result := 'Three Inch Loader type 2 (signed at ' + StrInt(Offset) + ')';
+    exit;
+  end;
+
+  // Microprose Soccer
+  if (Side.Tracks > 1) and (Side.Track[1].Sectors > 4) then
+  begin
+    Offset := StrBufPos(Side.Track[1].Sector[4].Data,'Loader ' + #127 + '1988 Three Inch Software');
+    if Offset > -1 then
+    begin
+      Result := 'Three Inch Loader type 3-1-4 (signed at ' + StrInt(Offset) + ')';
+      exit;
+    end;
+  end;
+
+  // Laser loader (War in Middle Earth CPC)
+  if (Side.Track[0].Sectors > 2) then
+  begin
+    Offset := StrBufPos(Side.Track[0].Sector[2].Data,'Laser Load   By C.J.Pink For Consult Computer    Systems');
+    if Offset > -1 then
+      Result := 'Laser Load by C.J. Pink (signed at ' + StrInt(Offset) + ')';
+  end;
 
   // P.M.S.Loader
-  if (StrInByteArray(Side.Track[0].Sector[0].Data,ProtPMSLoader,191)) then
-     Result := 'P.M.S. Loader 1987 (signed)'
-  else
-      if ((Side.Tracks > 2) and Side.Track[0].IsFormatted) then
-         if (not Side.Track[1].IsFormatted and Side.Track[2].IsFormatted) then
-            Result := 'P.M.S. Loader 1987 (probably, unsigned)';
+  Offset := StrBufPos(Side.Track[0].Sector[0].Data,'P.M.S.LOADER [C]1987');
+  if Offset > -1 then
+  begin
+     Result := 'P.M.S. Loader 1987 (signed at ' + StrInt(Offset) + ')';
+     exit;
+  end;
+  if ((Side.Tracks > 2) and Side.Track[0].IsFormatted) and
+     (not Side.Track[1].IsFormatted and Side.Track[2].IsFormatted) then
+       Result := 'P.M.S. Loader 1987 (probably, unsigned)';
 
+  /// ERE/Remi HERBULOT (La Bataille D'Angleterre CPC)
   if (Side.Track[0].Sectors > 4) then
-     if (StrInByteArray(Side.Track[0].Sector[5].Data, ProtEREHerbulot, 0)) then
-        Result := 'ERE/Remi HERBULOT (signed)';
-     // TODO: Some heuristics if we find more instances of this
+  begin
+    Offset := StrBufPos(Side.Track[0].Sector[5].Data,'PROTECTION      Remi HERBULOT   ');
+    if Offset > 0 then
+    begin
+      Result := 'ERE/Remi HERBULOT (signed at ' + StrInt(Offset) + ')';
+      exit;
+    end;
+  end;
 
   // Players?
   for TIdx := 0 to Side.Tracks - 1 do
@@ -274,14 +322,13 @@ begin
       begin
         Sector := Side.Track[TIdx].Sector[SIdx];
         if (Sector.ID <> SIdx) or (Sector.FDCSize <> SIdx) then
-           break;
+         break;
       end;
-      Result := Format('Players (maybe, super-sized track %d)',[TIdx]);
+      Result := Format('Players (maybe, super-sized %d byte track %d)',[Side.GetLargestTrackSize(), TIdx]);
     end;
 
   // Unknown copy protection
-  if (Result = '') and (not side.ParentDisk.IsUniform(true)) and
-  	(side.ParentDisk.HasFDCErrors) then
+  if (Result = '') and (not side.ParentDisk.IsUniform(true)) and (side.ParentDisk.HasFDCErrors) then
     begin
       Result := 'Unknown copy protection';
     end;
@@ -295,6 +342,7 @@ var
 begin
 	LowIdx := 255;
   NextLowIdx := 255;
+  Interleave := 0;
 
   if (Track.Sectors < 3) then
   begin

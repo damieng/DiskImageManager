@@ -128,6 +128,8 @@ type
     constructor Create(ParentDisk: TDSKDisk);
     destructor Destroy; override;
 
+    function GetLargestTrackSize: integer;
+
     property HighTrackCount: byte read GetHighTrackCount;
     property ParentDisk: TDSKDisk read FParentDisk;
     property Tracks: byte read GetTracks write SetTracks;
@@ -921,21 +923,23 @@ function TDSKDisk.BootableOn: string;
 var
   Mod256: integer;
 begin
-  Result := 'None';
+  Result := '';
   if HasFirstSector then
   begin
     if Side[0].Track[0].Sector[0].Status = ssFormattedInUse then
     begin
       Mod256 := Side[0].Track[0].Sector[0].GetModChecksum(256);
       case Mod256 of
-        1: Result := 'Amstrad PCW 9512';
-        3: Result := 'Spectrum +3';
+          1: Result := 'Amstrad PCW 9512';
+          3: Result := 'Spectrum +3';
         255: Result := 'Amstrad PCW 8256';
-        else
-          if Side[0].Track[0].Sector[0].ID = 65 then
-            Result := 'Amstrad CPC 664/6128'
-          else
-            Result := SysUtils.Format('Unknown (%d)', [Mod256]);
+       else
+         case Side[0].Track[0].LowSectorID of
+             65: Result := 'Amstrad CPC 664/6128';
+            193: Result := ''; // CPC Data is not bootable
+            else
+               Result := SysUtils.Format('Unknown (%d checksum)', [Mod256]);
+         end;
       end;
     end;
     with Side[0].Track[0].Sector[0] do
@@ -1022,6 +1026,19 @@ begin
   Result := Tracks;
   while (not Track[Result - 1].IsFormatted) and (Result > 1) do
     Result := Result - 1;
+end;
+
+function TDSKSide.GetLargestTrackSize: integer;
+var
+  Idx, Size: integer;
+begin
+  Result := 0;
+  for Idx := 0 to Tracks -1 do
+  begin
+    Size := Track[Idx].GetTrackSizeFromSectors();
+    if Size > Result then
+       Result := Size;
+  end;
 end;
 
 procedure TDSKSide.SetTracks(NewTracks: byte);

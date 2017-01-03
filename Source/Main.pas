@@ -418,7 +418,10 @@ begin
           [Disk.FormattedCapacity div BytesPerKB]));
         if Disk.IsTrackSizeUniform then
           AddListInfo('Track size', SysUtils.Format(
-            '%d bytes', [Disk.Side[0].Track[0].Size]));
+            '%d bytes', [Disk.Side[0].Track[0].Size]))
+        else
+          AddListInfo('Largest track size', SysUtils.Format(
+            '%d bytes', [Disk.Side[0].GetLargestTrackSize()]));
         if Disk.IsUniform(False) then
           AddListInfo('Uniform layout', 'Yes')
         else
@@ -511,7 +514,7 @@ begin
   AddColumn('Physical');
   if not HideSide then
     AddColumn('Side');
-  AddColumn('Track side');
+  AddColumn('Track size');
   AddColumn('Sectors');
   AddColumn('Sector size');
   AddColumn('Gap');

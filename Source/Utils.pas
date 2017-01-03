@@ -29,8 +29,8 @@ function StrHex(I: integer): string;
 function IntStr(S: string): integer;
 function StrBlockClean(S: array of char; Start, Len: integer): string;
 function StrYesNo(IsEmpty: boolean): string;
-function StrInByteArray(ByteArray: array of byte; SubString: string;
-  Start: integer): boolean;
+function StrInByteArray(ByteArray: array of byte; SubString: string; Start: integer): boolean;
+function StrBufPos(ByteArray: array of byte; SubString: string): integer;
 
 function CompareBlock(A: array of char; B: string): boolean;
 function CompareBlockStart(A: array of char; B: string; Start: integer): boolean;
@@ -214,15 +214,38 @@ begin
     Result := 'No';
 end;
 
-function StrInByteArray(ByteArray: array of byte; SubString: string;
-  Start: integer): boolean;
+function StrBufPos(ByteArray: array of byte; SubString: string): integer;
+var
+  BIdx, SIdx, Last: integer;
+begin
+  Last := Length(ByteArray) - Length(SubString);
+  Result := -1;
+
+  for BIdx := 0 to Last do
+  begin
+    Result := BIdx;
+    for SIdx := 1 to Length(SubString) do
+    begin
+      if ByteArray[BIdx + SIdx - 1] <> byte(SubString[SIdx]) then
+      begin
+        Result := -1;
+        break;
+      end;
+    end;
+    if Result <> -1 then break;
+  end;
+end;
+
+
+function StrInByteArray(ByteArray: array of byte; SubString: string; Start: integer): boolean;
 var
   Idx, Last: integer;
 begin
   Result := True;
   Idx := 0;
   Last := Length(ByteArray) - Length(SubString) - 1;
-  while ((Result) and (Start + Idx < Last) and (Idx < Length(SubString))) do
+
+  while (Result) and (Start + Idx < Last) and (Idx < Length(SubString)) do
   begin
     if ByteArray[Start + Idx] <> byte(SubString[Idx + 1]) then
       Result := False;
