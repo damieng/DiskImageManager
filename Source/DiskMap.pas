@@ -179,7 +179,7 @@ begin
         if (TrackIdx = 0) and (SectorIdx < Sectors) then
         begin
           TextA := StrInt(SectorIdx);
-          TextOut(GRect.Left - TextWidth(Text) - TextW, Y - (SectorSize div 2) -
+          TextOut(GRect.Left - TextWidth(TextA) - TextW, Y - (SectorSize div 2) -
             (TextHeight(Text) div 2), TextA);
         end;
       end;
@@ -291,4 +291,4 @@ begin
   Result := true;
 end;
 
-end.
+end.
