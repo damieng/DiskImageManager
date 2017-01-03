@@ -666,7 +666,7 @@ object frmMain: TfrmMain
     end
   end
   object dlgSaveMap: TSaveDialog
-    Filter = 'Bitmap Image (*.BMP)|*.BMP|PNG Image (*.PNG)|*.PNG'
+    Filter = 'PNG Image (*.png)|*.png|Bitmap Image (*.bmp)|*.bmp'
     left = 504
     top = 112
   end

@@ -22,9 +22,13 @@ const
   ProtSpeedLock1988P3: String = 'SPEEDLOCK +3 DISC PROTECTION SYSTEM COPYRIGHT 1988 SPEEDLOCK ASSOCIATES';
   ProtThreeInchType1: String = '***Loader Copyright Three Inch Software 1988, All Rights Reserved. Three Inch Software, 73 Surbiton Road, Kingston upon Thames, KT1 2HG***';
   ProtThreeInchType2: String = '***Loader Copyright Three Inch Software 1988, All Rights Reserved. 01-546 2754';
+  ProtPMSLoader: String = 'P.M.S.LOADER [C]1987';
 
-  // War In Middle Earth (Side A - Amstrad)
+  // War In Middle Earth (CPC)
   ProtLaserLoad: String = 'Laser Load   By C.J.Pink For Consult Computer    Systems';
+
+  // Bataille d'Angletter, La (CPC)
+  ProtEREHerbulot: String = 'PROTECTION      Remi HERBULOT   ';
 
 function AnalyseFormat(Disk: TDSKDisk): String;
 function DetectUniformFormat(Disk: TDSKDisk): String;
@@ -248,6 +252,19 @@ begin
   if (Side.Track[0].Sectors > 2) and
   	(StrInByteArray(Side.Track[0].Sector[2].Data,ProtLaserLoad,3)) then
     Result := 'Laser Load by C.J. Pink (signed)';
+
+  // P.M.S.Loader
+  if (StrInByteArray(Side.Track[0].Sector[0].Data,ProtPMSLoader,191)) then
+     Result := 'P.M.S. Loader 1987 (signed)'
+  else
+      if ((Side.Tracks > 2) and Side.Track[0].IsFormatted) then
+         if (not Side.Track[1].IsFormatted and Side.Track[2].IsFormatted) then
+            Result := 'P.M.S. Loader 1987 (probably, unsigned)';
+
+  if (Side.Track[0].Sectors > 4) then
+     if (StrInByteArray(Side.Track[0].Sector[5].Data, ProtEREHerbulot, 0)) then
+        Result := 'ERE/Remi HERBULOT (signed)';
+     // TODO: Some heuristics if we find more instances of this
 
   // Players?
   for TIdx := 0 to Side.Tracks - 1 do

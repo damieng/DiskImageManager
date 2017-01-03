@@ -95,6 +95,7 @@ type
 
     function BootableOn: string;
     function DetectFormat: string;
+    function DetectCopyProtection: string;
     function GetLogicalTrack(LogicalTrack: word): TDSKTrack;
     function HasFDCErrors: boolean;
     function HasFirstSector: boolean;
@@ -908,7 +909,12 @@ end;
 
 function TDSKDisk.DetectFormat: string;
 begin
-  Result := AnalyseFormat(self);
+  Result := DetectUniformFormat(self);
+end;
+
+function TDSKDisk.DetectCopyProtection: string;
+begin
+  Result := DetectProtection(self.Side[0]);
 end;
 
 function TDSKDisk.BootableOn: string;
@@ -1751,4 +1757,4 @@ begin
       Result := Idx;
 end;
 
-end.
+end.

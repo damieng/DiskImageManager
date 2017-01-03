@@ -394,6 +394,7 @@ end;
 procedure TfrmMain.RefreshListImage(Image: TDSKImage);
 var
   SIdx: integer;
+  Protection: string;
 begin
   SetListSimple;
   if Image <> nil then
@@ -426,6 +427,9 @@ begin
         else
           AddListInfo('Uniform layout', 'No');
         AddListInfo('Format analysis', Disk.DetectFormat);
+        Protection := Disk.DetectCopyProtection();
+        if Protection <> '' then
+          AddListInfo('Copy protection', Protection);
         if Disk.BootableOn <> '' then
           AddListInfo('Boot sector', Disk.BootableOn);
         if disk.HasFDCErrors then
@@ -894,7 +898,13 @@ begin
 end;
 
 procedure TfrmMain.itmSaveMapAsClick(Sender: TObject);
+var
+  DefaultFileName: string;
 begin
+  DefaultFileName := DiskMap.Side.ParentDisk.ParentImage.FileName;
+  if DiskMap.Side.Side > 0 then
+    DefaultFileName := DefaultFileName + ' Side ' + StrInt(DiskMap.Side.Side);
+  dlgSaveMap.FileName := ExtractFileNameOnly(DefaultFileName);
   if dlgSaveMap.Execute then
     DiskMap.SaveMap(dlgSaveMap.FileName, Settings.SaveDiskMapWidth, Settings.SaveDiskMapHeight);
 end;
