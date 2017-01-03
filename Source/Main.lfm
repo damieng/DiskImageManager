@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 496
+  Left = 423
   Height = 384
-  Top = 1309
+  Top = 910
   Width = 556
   ClientHeight = 364
   ClientWidth = 556
