@@ -58,10 +58,8 @@ end;
 
 // Get string as an integer
 function IntStr(S: string): integer;
-var
-  Temp: integer;
 begin
-  Val(S, Result, Temp);
+  Val(S, Result);
 end;
 
 // Extract ASCII string from a char array

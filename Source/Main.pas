@@ -219,6 +219,7 @@ var
   SIdx, TIdx, EIdx: integer;
   ImageNode, SideNode, TrackNode, TracksNode: TTreeNode;
 begin
+  SideNode := nil;
   tvwMain.Items.BeginUpdate;
 
   if Image.Corrupt then
@@ -259,7 +260,7 @@ begin
   tvwMain.Items.EndUpdate;
 
   ImageNode.Expanded := True;
-  if (Image.Disk.Sides = 1) then
+  if (Image.Disk.Sides = 1) and (SideNode <> nil) then
     SideNode.Expanded := True;
 
   tvwMain.Selected := imageNode;
@@ -1150,6 +1151,7 @@ function TfrmMain.AddColumns(Captions: array of string): TListColumnArray;
 var
   CIdx: integer;
 begin
+  Result := TListColumnArray.Create;
   SetLength(Result, Length(Captions));
   for CIdx := 0 to Length(Captions) - 1 do
     Result[CIdx] := AddColumn(Captions[CIdx]);

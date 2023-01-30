@@ -29,6 +29,7 @@ begin
  else
  begin
    Result := '';
+   Format := '';
     Protection := DetectProtection(Disk.Side[0]);
     if (Disk.IsUniform(True)) then
       Format := DetectUniformFormat(Disk);
@@ -46,6 +47,7 @@ var
 	FirstTrack: TDSKTrack;
 begin
   FirstTrack := Disk.Side[0].Track[0];
+  Result := '';
 
 	// Amstrad formats (9 sectors, 512 size, SS or DS)
   if (FirstTrack.Sectors = 9) and
@@ -141,6 +143,7 @@ var
 	TIdx, SIdx, Offset: Integer;
   Sector: TDSKSector;
 begin
+  Result := '';
   if Side.Tracks < 2 then
      exit;
 
