@@ -938,9 +938,15 @@ begin
 end;
 
 procedure TfrmMain.itmSaveClick(Sender: TObject);
+var
+  selectedImage: TDSKImage;
 begin
   if tvwMain.Selected <> nil then
-    SaveImage(GetCurrentImage);
+  begin
+    selectedImage := GetCurrentImage;
+    SaveImage(selectedImage);
+    tvwMain.Selected.Text := ExtractFileName(selectedImage.FileName);
+  end;
 end;
 
 procedure TfrmMain.SaveImage(Image: TDSKImage);
@@ -950,6 +956,7 @@ begin
   else
     Image.SaveFile(Image.FileName, Image.FileFormat, False, (Settings.RemoveEmptyTracks and (Image.FileFormat = diExtendedDSK)));
   RefreshList();
+
 end;
 
 procedure TfrmMain.itmSectorResetFDCClick(Sender: TObject);
