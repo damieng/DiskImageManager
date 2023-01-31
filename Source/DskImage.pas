@@ -772,7 +772,7 @@ begin
               SIB_Size := FDCSize;
               SIB_FDC1 := FDCStatus[1];
               SIB_FDC2 := FDCStatus[2];
-              if (FileFormat = diExtendedDSK) then
+              if (SaveFileFormat = diExtendedDSK) then
                 SIB_DataLength := DataSize;
             end;
 
@@ -783,7 +783,7 @@ begin
 
         // Write the whole track out
         if Size > 0 then
-          case FileFormat of
+          case SaveFileFormat of
             diStandardDSK: DiskFile.WriteBuffer(TRKInfoBlock, DSKInfoBlock.Disk_StdTrackSize);
             diExtendedDSK:
               if not (Compress and (Sectors = 0)) then
@@ -1743,7 +1743,7 @@ begin
       Interleave := 2;
       GapFormat := 80;
     end;
-    else
+    8:
     begin
       Name := 'MGT Sam Coupe';
       Sides := dsSideDoubleAlternate;
