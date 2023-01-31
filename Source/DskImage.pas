@@ -51,8 +51,7 @@ type
 
     procedure SetIsChanged(NewValue: boolean);
     function LoadFileDSK(DiskFile: TFileStream): boolean;
-    function SaveFileDSK(DiskFile: TFileStream; SaveFileFormat: TDSKImageFormat;
-      Compress: boolean): boolean;
+    function SaveFileDSK(DiskFile: TFileStream; SaveFileFormat: TDSKImageFormat; Compress: boolean): boolean;
   public
     FileFormat: TDSKImageFormat;
     Messages: TStringList;
@@ -61,10 +60,8 @@ type
     destructor Destroy; override;
 
     function LoadFile(LoadFileName: TFileName): boolean;
-    function SaveFile(SaveFileName: TFileName; SaveFileFormat: TDSKImageFormat;
-      Copy: boolean; Compress: boolean): boolean;
-    function FindText(From: TDSKSector; Text: string;
-      CaseSensitive: boolean): TDSKSector;
+    function SaveFile(SaveFileName: TFileName; SaveFileFormat: TDSKImageFormat; Copy: boolean; Compress: boolean): boolean;
+    function FindText(From: TDSKSector; Text: string; CaseSensitive: boolean): TDSKSector;
     function GetNextLogicalSector(Sector: TDSKSector): TDSKSector;
 
     property Creator: string read FCreator write FCreator;
@@ -402,8 +399,7 @@ begin
   FIsChanged := NewValue;
 end;
 
-function TDSKImage.FindText(From: TDSKSector; Text: string;
-  CaseSensitive: boolean): TDSKSector;
+function TDSKImage.FindText(From: TDSKSector; Text: string; CaseSensitive: boolean): TDSKSector;
 var
   NextSector: TDSKSector;
 begin
@@ -517,8 +513,7 @@ begin
 
   if DSKInfoBlock.Disk_NumTracks > MaxTracks then
   begin
-    Messages.Add(SysUtils.Format('Image indicates %d tracks, my limit is %d.',
-      [DSKInfoBlock.Disk_NumTracks, MaxTracks]));
+    Messages.Add(SysUtils.Format('Image indicates %d tracks, my limit is %d.', [DSKInfoBlock.Disk_NumTracks, MaxTracks]));
     Corrupt := True;
   end;
 
@@ -556,20 +551,17 @@ begin
           ReadSize := SizeT + 256;
           if TOff + ReadSize > FileSize then
           begin
-            Messages.Add(SysUtils.Format(
-              'Side %d track %d indicated %d bytes of data' +
-              ' but file had only %d bytes left.',
-              [SIdx, TIdx, SizeT, FileSize - TOff]));
+            Messages.Add(SysUtils.Format('Side %d track %d indicated %d bytes of data' +
+              ' but file had only %d bytes left.', [SIdx, TIdx, SizeT, FileSize - TOff]));
             Corrupt := True;
             ReadSize := FileSize - TOff;
           end;
 
           if ReadSize > SizeOf(TRKInfoBlock) then
           begin
-            Messages.Add(SysUtils.Format(
-              'Side %d track %d indicated %d bytes of data' +
-              ' which is more than the %d bytes I can handle.',
-              [SIdx, TIdx, SizeT, SizeOf(TRKInfoBlock.SectorData)]));
+            Messages.Add(SysUtils.Format('Side %d track %d indicated %d bytes of data' +
+              ' which is more than the %d bytes I can handle.', [SIdx, TIdx, SizeT,
+              SizeOf(TRKInfoBlock.SectorData)]));
             Corrupt := True;
             DiskFile.ReadBuffer(TRKInfoBlock, SizeOf(TRKInfoBlock));
             DiskFile.Seek(ReadSize - SizeOf(TRKInfoBlock), soCurrent);
@@ -582,8 +574,7 @@ begin
           // Test to make sure this was a track
           if TRKInfoBlock.TrackData <> DiskInfoTrack then
           begin
-            MessageDlg(SysUtils.Format(
-              'Side %d track %d not found at offset %d to %d. Load aborted.',
+            MessageDlg(SysUtils.Format('Side %d track %d not found at offset %d to %d. Load aborted.',
               [SIdx, TIdx, TOff, DiskFile.Position]), mtError, [mbOK], 0);
             exit;
           end;
@@ -628,8 +619,7 @@ begin
               AdvertisedSize := DataSize;
               if DataSize > MaxSectorSize then
               begin
-                Messages.Add(SysUtils.Format(
-                  'Side %d track %d sector %d exceeds %d byte size limit.',
+                Messages.Add(SysUtils.Format('Side %d track %d sector %d exceeds %d byte size limit.',
                   [TIdx, SIdx, EIdx, MaxSectorSize]));
                 Corrupt := True;
                 DataSize := MaxSectorSize;
@@ -655,12 +645,11 @@ begin
   Result := True;
 end;
 
-function TDSKImage.SaveFile(SaveFileName: TFileName; SaveFileFormat: TDSKImageFormat;
-  Copy: boolean; Compress: boolean): boolean;
+function TDSKImage.SaveFile(SaveFileName: TFileName; SaveFileFormat: TDSKImageFormat; Copy: boolean; Compress: boolean): boolean;
 var
   DiskFile: TFileStream;
 begin
-  Result := false;
+  Result := False;
   if Corrupt then
   begin
     MessageDlg('Image is corrupt. Save aborted.', mtError, [mbOK], 0);
@@ -670,25 +659,24 @@ begin
   DiskFile := TFileStream.Create(SaveFileName, fmCreate or fmOpenWrite);
 
   case SaveFileFormat of
-    diStandardDSK: Result := SaveFileDSK(DiskFile, FileFormat, False);
-    diExtendedDSK: Result := SaveFileDSK(DiskFile, FileFormat, Compress);
+    diStandardDSK: Result := SaveFileDSK(DiskFile, diStandardDSK, False);
+    diExtendedDSK: Result := SaveFileDSK(DiskFile, diExtendedDSK, Compress);
   end;
 
   DiskFile.Free;
   if not Result then
     MessageDlg('Could not save file. Save aborted.', mtError, [mbOK], 0)
   else
-    if not Copy then
-    begin
-      FIsChanged := False;
-      FileName := SaveFileName;
-      Self.FileFormat := SaveFileFormat;
-    end;
+  if not Copy then
+  begin
+    FIsChanged := False;
+    FileName := SaveFileName;
+    Self.FileFormat := SaveFileFormat;
+  end;
 end;
 
 // Save a DSK file
-function TDSKImage.SaveFileDSK(DiskFile: TFileStream; SaveFileFormat: TDSKImageFormat;
-  Compress: boolean): boolean;
+function TDSKImage.SaveFileDSK(DiskFile: TFileStream; SaveFileFormat: TDSKImageFormat; Compress: boolean): boolean;
 var
   DSKInfoBlock: TDSKInfoBlock;
   TRKInfoBlock: TTRKInfoBlock;
@@ -696,7 +684,7 @@ var
   SIdx, TIdx, EIdx, EOff: integer;
   TrackSize: word;
 begin
-  Result := false;
+  Result := False;
 
   FillChar(DSKInfoBlock, SizeOf(DSKInfoBlock), 0);
 
@@ -729,16 +717,16 @@ begin
             if (Compress and (Disk.Side[SIdx].Track[TIdx].Sectors = 0)) then
               Disk_ExtTrackSize[(TIdx * Disk_NumSides) + SIdx] := 0
             else
-              if Disk.Side[SIdx].Track[TIdx].Size > 0 then
-              begin
-                TrackSize := (Disk.Side[SIdx].Track[TIdx].Size div 256) + 1;
-                // Track info 256
-                if Disk.Side[SIdx].Track[TIdx].Size mod 256 > 0 then
-                  TrackSize := TrackSize + 1;
-                Disk_ExtTrackSize[(TIdx * Disk_NumSides) + SIdx] := TrackSize;
-              end
-              else
-                Disk_ExtTrackSize[(TIdx * Disk_NumSides) + SIdx] := 0;
+            if Disk.Side[SIdx].Track[TIdx].Size > 0 then
+            begin
+              TrackSize := (Disk.Side[SIdx].Track[TIdx].Size div 256) + 1;
+              // Track info 256
+              if Disk.Side[SIdx].Track[TIdx].Size mod 256 > 0 then
+                TrackSize := TrackSize + 1;
+              Disk_ExtTrackSize[(TIdx * Disk_NumSides) + SIdx] := TrackSize;
+            end
+            else
+              Disk_ExtTrackSize[(TIdx * Disk_NumSides) + SIdx] := 0;
       end;
     end;
   end;
@@ -782,8 +770,7 @@ begin
                 SIB_DataLength := DataSize;
             end;
 
-            Move(SCTInfoBlock, TRKInfoBlock.SectorInfoList[EIdx *
-              SizeOf(SCTInfoBlock)], SizeOf(SCTInfoBlock));
+            Move(SCTInfoBlock, TRKInfoBlock.SectorInfoList[EIdx * SizeOf(SCTInfoBlock)], SizeOf(SCTInfoBlock));
             Move(Data, TRKInfoBlock.SectorData[EOff], DataSize);
             EOff := EOff + DataSize;
           end;
@@ -824,7 +811,7 @@ procedure TDSKDisk.Format(Formatter: TDSKFormatSpecification);
 var
   SIdx, TIdx: integer;
 begin
-  FParentImage.IsChanged := true;
+  FParentImage.IsChanged := True;
   Sides := Formatter.GetSidesCount;
   for SIdx := 0 to Formatter.GetSidesCount - 1 do
     for TIdx := 0 to Formatter.TracksPerSide - 1 do
@@ -901,12 +888,12 @@ function TDSKDisk.IsTrackSizeUniform: boolean;
 var
   SIdx, TIdx, LastSize: integer;
 begin
-  Result := true;
+  Result := True;
   LastSize := Side[0].Track[0].Size;
   for SIdx := 0 to Sides - 1 do
     for TIdx := 0 to Side[SIdx].Tracks - 1 do
       if LastSize <> Side[SIdx].Track[TIdx].Size then
-        Result := false;
+        Result := False;
 end;
 
 function TDSKDisk.DetectFormat: string;
@@ -930,16 +917,16 @@ begin
     begin
       Mod256 := Side[0].Track[0].Sector[0].GetModChecksum(256);
       case Mod256 of
-          1: Result := 'Amstrad PCW 9512';
-          3: Result := 'Spectrum +3';
+        1: Result := 'Amstrad PCW 9512';
+        3: Result := 'Spectrum +3';
         255: Result := 'Amstrad PCW 8256';
-       else
-         case Side[0].Track[0].LowSectorID of
-             65: Result := 'Amstrad CPC 664/6128';
+        else
+          case Side[0].Track[0].LowSectorID of
+            65: Result := 'Amstrad CPC 664/6128';
             193: Result := ''; // CPC Data is not bootable
             else
-               Result := SysUtils.Format('Unknown (%d checksum)', [Mod256]);
-         end;
+              Result := SysUtils.Format('Unknown (%d checksum)', [Mod256]);
+          end;
       end;
     end;
     with Side[0].Track[0].Sector[0] do
@@ -952,13 +939,13 @@ function TDSKDisk.HasFDCErrors: boolean;
 var
   SIdx, TIdx, EIdx: integer;
 begin
-  Result := false;
+  Result := False;
   for SIdx := 0 to Sides - 1 do
     for TIdx := 0 to Side[SIdx].Tracks - 1 do
       for EIdx := 0 to Side[SIdx].Track[TIdx].Sectors - 1 do
         with Side[SIdx].Track[TIdx].Sector[EIdx] do
           if (FDCStatus[1] <> 0) or (FDCStatus[2] <> 0) then
-            Result := true;
+            Result := True;
 end;
 
 function TDSKDisk.IsUniform(IgnoreEmptyTracks: boolean): boolean;
@@ -966,7 +953,7 @@ var
   SIdx, TIdx, EIdx: integer;
   CheckTracks, CheckSectors, CheckSectorSize: integer;
 begin
-  Result := true;
+  Result := True;
   if HasFirstSector then
   begin
     CheckTracks := Side[0].Tracks;
@@ -975,15 +962,15 @@ begin
     for SIdx := 0 to Sides - 1 do
     begin
       if CheckTracks <> Side[SIdx].Tracks then
-        Result := false;
+        Result := False;
       for TIdx := 0 to Side[SIdx].Tracks - 1 do
       begin
         if not ((Side[SIdx].Track[TIdx].Sectors = 0) and IgnoreEmptyTracks) then
           if CheckSectors <> Side[SIdx].Track[TIdx].Sectors then
-            Result := false;
+            Result := False;
         for EIdx := 0 to Side[SIdx].Track[TIdx].Sectors - 1 do
           if CheckSectorSize <> Side[SIdx].Track[TIdx].Sector[EIdx].DataSize then
-            Result := false;
+            Result := False;
       end;
     end;
   end;
@@ -991,11 +978,11 @@ end;
 
 function TDSKDisk.HasFirstSector: boolean;
 begin
-  Result := false;
+  Result := False;
   if Sides > 0 then
     if Side[0].Tracks > 0 then
       if Side[0].Track[0].Sectors > 0 then
-        Result := true;
+        Result := True;
 end;
 
 
@@ -1033,11 +1020,11 @@ var
   Idx, Size: integer;
 begin
   Result := 0;
-  for Idx := 0 to Tracks -1 do
+  for Idx := 0 to Tracks - 1 do
   begin
     Size := Track[Idx].GetTrackSizeFromSectors();
     if Size > Result then
-       Result := Size;
+      Result := Size;
   end;
 end;
 
@@ -1181,7 +1168,7 @@ begin
   inherited Create;
   FParentTrack := ParentTrack;
   ResetFDC;
-  IsChanged := false;
+  IsChanged := False;
 end;
 
 destructor TDSKSector.Destroy;
@@ -1230,7 +1217,7 @@ begin
     if FDCStatus[Idx] <> 0 then
     begin
       FDCStatus[Idx] := 0;
-      IsChanged := true;
+      IsChanged := True;
     end;
 end;
 
@@ -1239,7 +1226,7 @@ begin
   if GetFillByte <> Filler then
   begin
     FillChar(Data, DataSize, Filler);
-    IsChanged := true;
+    IsChanged := True;
   end;
 end;
 
@@ -1278,7 +1265,7 @@ begin
   SIdx := 1;
   for Idx := 0 to DataSize - 1 do
   begin
-    CharFound := false;
+    CharFound := False;
     TestChar := char(Data[Idx]);
 
     if (CaseSensitive) and (TestChar = Text[SIdx]) then
@@ -1323,8 +1310,7 @@ begin
   Result := TDSKFile.Create(Self);
   for Idx := 0 to FParentDisk.Specification.DirectoryBlocks - 1 do
   begin
-    DirBlock := FParentDisk.GetLogicalTrack(FParentDisk.Specification.FReservedTracks +
-      Idx).Sector[0];
+    DirBlock := FParentDisk.GetLogicalTrack(FParentDisk.Specification.FReservedTracks + Idx).Sector[0];
     with Result do
     begin
       Move(DirBlock.Data[Offset * DirEntSize], DirEnt, DirEntSize);
@@ -1365,7 +1351,7 @@ procedure TDSKSpecification.SetBlockSize(NewBlockSize: integer);
 begin
   if NewBlockSize <> FBlockSize then
   begin
-    FIsChanged := true;
+    FIsChanged := True;
     FBlockSize := NewBlockSize;
   end;
 end;
@@ -1374,7 +1360,7 @@ procedure TDSKSpecification.SetChecksum(NewChecksum: byte);
 begin
   if NewChecksum <> FChecksum then
   begin
-    FIsChanged := true;
+    FIsChanged := True;
     FChecksum := NewChecksum;
   end;
 end;
@@ -1383,7 +1369,7 @@ procedure TDSKSpecification.SetDirectoryBlocks(NewDirectoryBlocks: byte);
 begin
   if NewDirectoryBlocks <> FDirectoryBlocks then
   begin
-    FIsChanged := true;
+    FIsChanged := True;
     FDirectoryBlocks := NewDirectoryBlocks;
   end;
 end;
@@ -1392,7 +1378,7 @@ procedure TDSKSpecification.SetFormat(NewFormat: TDSKSpecFormat);
 begin
   if NewFormat <> FFormat then
   begin
-    FIsChanged := true;
+    FIsChanged := True;
     FFormat := NewFormat;
   end;
 end;
@@ -1401,7 +1387,7 @@ procedure TDSKSpecification.SetGapFormat(NewGapFormat: byte);
 begin
   if NewGapFormat <> FGapFormat then
   begin
-    FIsChanged := true;
+    FIsChanged := True;
     FGapFormat := NewGapFormat;
   end;
 end;
@@ -1410,7 +1396,7 @@ procedure TDSKSpecification.SetGapReadwrite(NewGapReadWrite: byte);
 begin
   if NewGapReadWrite <> FGapReadWrite then
   begin
-    FIsChanged := true;
+    FIsChanged := True;
     FGapReadWrite := NewGapReadWrite;
   end;
 end;
@@ -1419,7 +1405,7 @@ procedure TDSKSpecification.SetReservedTracks(NewReservedTracks: byte);
 begin
   if NewReservedTracks <> FReservedTracks then
   begin
-    FIsChanged := true;
+    FIsChanged := True;
     FReservedTracks := NewReservedTracks;
   end;
 end;
@@ -1428,7 +1414,7 @@ procedure TDSKSpecification.SetSectorsPerTrack(NewSectorsPerTrack: byte);
 begin
   if NewSectorsPerTrack <> FSectorsPerTrack then
   begin
-    FIsChanged := true;
+    FIsChanged := True;
     FSectorsPerTrack := NewSectorsPerTrack;
   end;
 end;
@@ -1437,7 +1423,7 @@ procedure TDSKSpecification.SetFDCSectorSize(NewFDCSectorSize: byte);
 begin
   if NewFDCSectorSize <> FFDCSectorSize then
   begin
-    FIsChanged := true;
+    FIsChanged := True;
     FFDCSectorSize := NewFDCSectorSize;
   end;
 end;
@@ -1446,7 +1432,7 @@ procedure TDSKSpecification.SetSectorSize(NewSectorSize: word);
 begin
   if NewSectorSize <> FSectorSize then
   begin
-    FIsChanged := true;
+    FIsChanged := True;
     FSectorSize := NewSectorSize;
   end;
 end;
@@ -1455,7 +1441,7 @@ procedure TDSKSpecification.SetSide(NewSide: TDSKSpecSide);
 begin
   if NewSide <> FSide then
   begin
-    FIsChanged := true;
+    FIsChanged := True;
     FSide := NewSide;
   end;
 end;
@@ -1464,7 +1450,7 @@ procedure TDSKSpecification.SetTrack(NewTrack: TDSKSpecTrack);
 begin
   if NewTrack <> FTrack then
   begin
-    FIsChanged := true;
+    FIsChanged := True;
     FTrack := NewTrack;
   end;
 end;
@@ -1473,7 +1459,7 @@ procedure TDSKSpecification.SetTracksPerSide(NewTracksPerSide: byte);
 begin
   if NewTracksPerSide <> FTracksPerSide then
   begin
-    FIsChanged := true;
+    FIsChanged := True;
     FTracksPerSide := NewTracksPerSide;
   end;
 end;
@@ -1534,7 +1520,7 @@ end;
 
 function TDSKSpecification.Write: boolean;
 begin
-  Result := false;
+  Result := False;
   if FParentDisk.HasFirstSector then
     with FParentDisk.Side[0].Track[0].Sector[0] do
     begin
@@ -1567,7 +1553,7 @@ begin
       Data[13] := 0;
       Data[14] := 0;
       Data[15] := FChecksum;
-      Result := true;
+      Result := True;
     end;
 end;
 
@@ -1601,8 +1587,7 @@ begin
     Result := 2;
 end;
 
-function TDSKFormatSpecification.GetSectorID(Side: byte; LogicalTrack: word;
-  Sector: byte): byte;
+function TDSKFormatSpecification.GetSectorID(Side: byte; LogicalTrack: word; Sector: byte): byte;
 var
   TrackSkewIdx: integer;
 begin
@@ -1630,8 +1615,7 @@ begin
     dsSideDoubleReverse:
     begin
       if (Side = 1) then
-        TrackSkewIdx := ((TracksPerSide - LogicalTrack) * SkewTrack) +
-          (SkewSide * Side);
+        TrackSkewIdx := ((TracksPerSide - LogicalTrack) * SkewTrack) + (SkewSide * Side);
     end;
   end;
 

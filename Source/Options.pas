@@ -94,8 +94,8 @@ implementation
 
 constructor TfrmOptions.Create(Owner: TForm; Settings: TSettings);
 begin
- inherited Create(Owner);
- self.Settings := Settings;
+  inherited Create(Owner);
+  self.Settings := Settings;
 end;
 
 procedure TfrmOptions.cbxBackColorChanged(Sender: TObject);

@@ -18,7 +18,8 @@ uses
   Classes, Dialogs, SysUtils, IniFiles, Graphics, Forms, FileUtil,
   LazFileUtils;
 
-type TSettings = class(TObject)
+type
+  TSettings = class(TObject)
   public
     // Disk map
     DarkBlankSectors: boolean;
@@ -51,7 +52,7 @@ type TSettings = class(TObject)
     procedure Apply;
     procedure Save;
     procedure Reset;
-end;
+  end;
 
 implementation
 
@@ -99,14 +100,14 @@ begin
   WindowFont := FontFromDescription(Reg.ReadString(S, 'Font', 'Tahoma,8pt,,'));
   RestoreWindow := Reg.ReadBool(S, 'Restore', False);
   if RestoreWindow then
-  with frmMain do
-  begin
-    Left := Reg.ReadInteger(S, 'Left', Left);
-    Top := Reg.ReadInteger(S, 'Top', Top);
-    Height := Reg.ReadInteger(S, 'Height', Height);
-    Width := Reg.ReadInteger(S, 'Width', Width);
-    tvwMain.Width := Reg.ReadInteger(S, 'TreeWidth', tvwMain.Width);
-  end;
+    with frmMain do
+    begin
+      Left := Reg.ReadInteger(S, 'Left', Left);
+      Top := Reg.ReadInteger(S, 'Top', Top);
+      Height := Reg.ReadInteger(S, 'Height', Height);
+      Width := Reg.ReadInteger(S, 'Width', Width);
+      tvwMain.Width := Reg.ReadInteger(S, 'TreeWidth', tvwMain.Width);
+    end;
 
   S := 'SectorView';
   UnknownASCII := Reg.ReadString(S, 'UnknownASCII', '?');
@@ -123,7 +124,7 @@ begin
       FileName := Reg.ReadString(S, StrInt(Idx), '*end');
       if (FileName <> '*end') and (FileExistsUTF8(FileName)) then
         frmMain.LoadImage(FileName);
-      inc(Idx);
+      Inc(Idx);
     until FileName = '*end';
   end;
 
@@ -178,8 +179,7 @@ begin
   Reg.WriteBool(S, 'Restore', RestoreWorkspace);
   with frmMain do
     for Idx := 0 to tvwMain.Items.Count - 1 do
-      if (tvwMain.Items[Idx].Data <> nil) and
-        (TObject(tvwMain.Items[Idx].Data).ClassType = TDSKImage) then
+      if (tvwMain.Items[Idx].Data <> nil) and (TObject(tvwMain.Items[Idx].Data).ClassType = TDSKImage) then
       begin
         Reg.WriteString(S, StrInt(Count), TDSKImage(tvwMain.Items[Idx].Data).FileName);
         Inc(Count);

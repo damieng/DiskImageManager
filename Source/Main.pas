@@ -109,8 +109,7 @@ type
     procedure tvwMainDblClick(Sender: TObject);
   private
     NextNewFile: integer;
-    function AddTree(Parent: TTreeNode; Text: string; ImageIdx: integer;
-      NodeObject: TObject): TTreeNode;
+    function AddTree(Parent: TTreeNode; Text: string; ImageIdx: integer; NodeObject: TObject): TTreeNode;
     function AddListInfo(Key: string; Value: string): TListItem;
     function AddListTrack(Track: TDSKTrack; HideSide: boolean): TListItem;
     function AddListSector(Sector: TDSKSector): TListItem;
@@ -205,12 +204,12 @@ begin
   if NewImage.LoadFile(FileName) then
   begin
     AddWorkspaceImage(NewImage);
-    Result := true;
+    Result := True;
   end
   else
   begin
     NewImage.Free;
-    Result := false;
+    Result := False;
   end;
 end;
 
@@ -236,16 +235,14 @@ begin
     // Add the sides
     for SIdx := 0 to Image.Disk.Sides - 1 do
     begin
-      SideNode := AddTree(ImageNode, Format('Side %d', [SIdx + 1]),
-        Ord(itSide0) + SIdx, Image.Disk.Side[SIdx]);
+      SideNode := AddTree(ImageNode, Format('Side %d', [SIdx + 1]), Ord(itSide0) + SIdx, Image.Disk.Side[SIdx]);
       AddTree(SideNode, 'Map', Ord(itAnalyse), Image.Disk.Side[SIdx]);
       // Add the tracks
       TracksNode := AddTree(SideNode, 'Tracks', Ord(itTracksAll), Image.Disk.Side[SIdx]);
       with Image.Disk.Side[SIdx] do
         for TIdx := 0 to Tracks - 1 do
         begin
-          TrackNode := AddTree(TracksNode, Format('Track %d', [TIdx]),
-            Ord(itTrack), Track[TIdx]);
+          TrackNode := AddTree(TracksNode, Format('Track %d', [TIdx]), Ord(itTrack), Track[TIdx]);
           // Add the sectors
           with Image.Disk.Side[SIdx].Track[TIdx] do
             for EIdx := 0 to Sectors - 1 do
@@ -266,8 +263,7 @@ begin
   tvwMain.Selected := imageNode;
 end;
 
-function TfrmMain.AddTree(Parent: TTreeNode; Text: string; ImageIdx: integer;
-  NodeObject: TObject): TTreeNode;
+function TfrmMain.AddTree(Parent: TTreeNode; Text: string; ImageIdx: integer; NodeObject: TObject): TTreeNode;
 var
   NewTreeNode: TTreeNode;
 begin
@@ -290,15 +286,14 @@ procedure TfrmMain.UpdateMenus;
 var
   AllowImageFile: boolean;
 begin
-  AllowImageFile := false;
+  AllowImageFile := False;
   tvwMain.PopupMenu := nil;
 
   // Decide what class operating on
   if (tvwMain.Selected <> nil) and (tvwMain.Selected.Data <> nil) then
   begin
-    AllowImageFile := true;
-    if (TObject(tvwMain.Selected.Data).ClassType = TDSKSector) or
-      (TObject(tvwMain.Selected.Data).ClassType = TDSKTrack) then
+    AllowImageFile := True;
+    if (TObject(tvwMain.Selected.Data).ClassType = TDSKSector) or (TObject(tvwMain.Selected.Data).ClassType = TDSKTrack) then
       tvwMain.PopupMenu := popSector;
   end;
 
@@ -310,8 +305,8 @@ begin
   // Hide disk map if no longer selected
   if (lvwMain.Selected = nil) and (DiskMap.Visible) then
   begin
-     DiskMap.Visible := false;
-     lvwMain.Visible := true;
+    DiskMap.Visible := False;
+    lvwMain.Visible := True;
   end;
 
   RefreshList;
@@ -412,17 +407,15 @@ begin
         if Disk.Sides > 1 then
         begin
           for SIdx := 0 to Disk.Sides - 1 do
-            AddListInfo(SysUtils.Format('Tracks on side %d', [SIdx]), StrInt(Disk.Side[SIdx].Tracks));
+            AddListInfo(SysUtils.Format('Tracks on side %d', [SIdx]),
+              StrInt(Disk.Side[SIdx].Tracks));
         end;
         AddListInfo('Tracks total', StrInt(Disk.TrackTotal));
-        AddListInfo('Formatted capacity', SysUtils.Format('%d KB',
-          [Disk.FormattedCapacity div BytesPerKB]));
+        AddListInfo('Formatted capacity', SysUtils.Format('%d KB', [Disk.FormattedCapacity div BytesPerKB]));
         if Disk.IsTrackSizeUniform then
-          AddListInfo('Track size', SysUtils.Format(
-            '%d bytes', [Disk.Side[0].Track[0].Size]))
+          AddListInfo('Track size', SysUtils.Format('%d bytes', [Disk.Side[0].Track[0].Size]))
         else
-          AddListInfo('Largest track size', SysUtils.Format(
-            '%d bytes', [Disk.Side[0].GetLargestTrackSize()]));
+          AddListInfo('Largest track size', SysUtils.Format('%d bytes', [Disk.Side[0].GetLargestTrackSize()]));
         if Disk.IsUniform(False) then
           AddListInfo('Uniform layout', 'Yes')
         else
@@ -453,19 +446,19 @@ end;
 
 procedure TfrmMain.SetListSimple;
 begin
-  lvwMain.ShowColumnHeaders := false;
+  lvwMain.ShowColumnHeaders := False;
   with lvwMain.Columns do
   begin
     Clear;
     with Add do
     begin
       Caption := 'Key';
-      AutoSize := true;
+      AutoSize := True;
     end;
     with Add do
     begin
       Caption := 'Value';
-      AutoSize := true;
+      AutoSize := True;
     end;
   end;
 end;
@@ -727,7 +720,7 @@ begin
         tvwMain.Items[Idx].Delete;
         RefreshList;
         if (tvwMain.Selected = nil) and (Previous <> nil) then
-           Previous.Selected := true;
+          Previous.Selected := True;
         exit;
       end;
       Previous := tvwMain.Items[Idx];
@@ -830,8 +823,7 @@ end;
 
 function TfrmMain.IsDiskNode(Node: TTreeNode): boolean;
 begin
- Result := (node.ImageIndex = Ord(itDisk)) or
-           (node.ImageIndex = Ord(itDiskCorrupt));
+  Result := (node.ImageIndex = Ord(itDisk)) or (node.ImageIndex = Ord(itDiskCorrupt));
 end;
 
 function TfrmMain.CloseAll(AllowCancel: boolean): boolean;
@@ -851,8 +843,7 @@ begin
     begin
       Image := TDSKImage(tvwMain.Items.GetFirstNode.Data);
       if Image.IsChanged and not Image.Corrupt then
-        case MessageDlg(Format('Save unsaved image "%s" ?', [Image.FileName]),
-            mtWarning, Buttons, 0) of
+        case MessageDlg(Format('Save unsaved image "%s" ?', [Image.FileName]), mtWarning, Buttons, 0) of
           mrYes: SaveImage(Image);
           mrCancel:
           begin
@@ -887,17 +878,16 @@ begin
       1:
       begin
         if (not Image.Disk.IsTrackSizeUniform) and Settings.WarnConversionProblems then
-          if MessageDlg(
-            'This image has variable track sizes that "Standard DSK format" does not support. ' +
-            'Save anyway using largest track size?', mtWarning,
-            [mbYes, mbNo], 0) = mrOk then
+          if MessageDlg('This image has variable track sizes that "Standard DSK format" does not support. ' +
+            'Save anyway using largest track size?', mtWarning, [mbYes, mbNo], 0) = mrOk then
             Image.SaveFile(dlgSave.FileName, diStandardDSK, True, False)
           else
             exit
         else
           Image.SaveFile(dlgSave.FileName, diStandardDSK, Copy, False);
       end;
-      2: Image.SaveFile(dlgSave.FileName, diExtendedDSK, Copy, Settings.RemoveEmptyTracks);
+      2: Image.SaveFile(dlgSave.FileName, diExtendedDSK, Copy,
+          Settings.RemoveEmptyTracks);
     end;
 end;
 
@@ -910,7 +900,8 @@ begin
     DefaultFileName := DefaultFileName + ' Side ' + StrInt(DiskMap.Side.Side);
   dlgSaveMap.FileName := ExtractFileNameOnly(DefaultFileName);
   if dlgSaveMap.Execute then
-    DiskMap.SaveMap(dlgSaveMap.FileName, Settings.SaveDiskMapWidth, Settings.SaveDiskMapHeight);
+    DiskMap.SaveMap(dlgSaveMap.FileName, Settings.SaveDiskMapWidth,
+      Settings.SaveDiskMapHeight);
 end;
 
 procedure TfrmMain.itmDarkBlankSectorsPopClick(Sender: TObject);
@@ -1046,9 +1037,8 @@ begin
     Result := True;
     exit;
   end;
-  Result := MessageDlg('You are about to ' + Action + ' this ' +
-    Upon + ' ' + CR + CR + 'Do you know what you are doing?', mtWarning,
-    [mbYes, mbNo], 0) = mrYes;
+  Result := MessageDlg('You are about to ' + Action + ' this ' + Upon + ' ' + CR + CR +
+    'Do you know what you are doing?', mtWarning, [mbYes, mbNo], 0) = mrYes;
 end;
 
 function GetListViewAsText(ForListView: TListView): string;
@@ -1144,7 +1134,7 @@ begin
   Result := lvwMain.Columns.Add;
   Result.Caption := Caption;
   Result.Alignment := taRightJustify;
-  Result.AutoSize := true;
+  Result.AutoSize := True;
 end;
 
 function TfrmMain.AddColumns(Captions: array of string): TListColumnArray;

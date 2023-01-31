@@ -105,11 +105,9 @@ var
   FIdx: integer;
 begin
   // Physical
-  edtImage.Text := ExtractFileName(
-    FSector.ParentTrack.ParentSide.ParentDisk.ParentImage.FileName);
-  edtPhysical.Text := 'Side ' + IntToStr(FSector.Side + 1) + ' > Track ' +
-    IntToStr(FSector.Track) + ' > Sector ' +
-    IntToStr(FSector.Sector);
+  edtImage.Text := ExtractFileName(FSector.ParentTrack.ParentSide.ParentDisk.ParentImage.FileName);
+  edtPhysical.Text := 'Side ' + IntToStr(FSector.Side + 1) + ' > Track ' + IntToStr(FSector.Track) +
+    ' > Sector ' + IntToStr(FSector.Sector);
   Caption := edtPhysical.Text;
 
   // Details
@@ -132,10 +130,8 @@ begin
   // FDC
   for FIdx := 0 to 7 do
   begin
-    cklFDC1.Checked[FIdx] :=
-      (FSector.FDCStatus[1] and Power2[FIdx + 1]) = Power2[FIdx + 1];
-    cklFDC2.Checked[FIdx] :=
-      (FSector.FDCStatus[2] and Power2[FIdx + 1]) = Power2[FIdx + 1];
+    cklFDC1.Checked[FIdx] := (FSector.FDCStatus[1] and Power2[FIdx + 1]) = Power2[FIdx + 1];
+    cklFDC2.Checked[FIdx] := (FSector.FDCStatus[2] and Power2[FIdx + 1]) = Power2[FIdx + 1];
   end;
 end;
 
@@ -202,8 +198,7 @@ begin
 
       FDCStatus[2] := 0;
       for FIdx := 0 to 7 do
-        if cklFDC2.Checked[FIdx] then
-          FDCStatus[2] := FDCStatus[2] + Power2[FIdx + 1];
+        if cklFDC2.Checked[FIdx] then FDCStatus[2] := FDCStatus[2] + Power2[FIdx + 1];
 
     end;
   frmMain.RefreshList;
@@ -260,8 +255,7 @@ procedure TfrmSector.UpdateFill;
 var
   ShowFill: boolean;
 begin
-  ShowFill := ((SecStat = ssFormattedBlank) or (SecStat = ssFormattedFilled)) or
-    (word(udSize.Position) > FSector.DataSize);
+  ShowFill := ((SecStat = ssFormattedBlank) or (SecStat = ssFormattedFilled)) or (word(udSize.Position) > FSector.DataSize);
   if (cboStatus.ItemIndex = 1) then
     udFill.Position := FSector.ParentTrack.Filler;
   lblFill.Visible := ShowFill;
