@@ -162,7 +162,6 @@
         <IOChecks Value="True"/>
         <OverflowChecks Value="True"/>
       </Checks>
-      <SmallerCode Value="True"/>
     </CodeGeneration>
     <Linking>
       <Debugging>
