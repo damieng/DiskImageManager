@@ -886,8 +886,7 @@ begin
         else
           Image.SaveFile(dlgSave.FileName, diStandardDSK, Copy, False);
       end;
-      2: Image.SaveFile(dlgSave.FileName, diExtendedDSK, Copy,
-          Settings.RemoveEmptyTracks);
+      2: Image.SaveFile(dlgSave.FileName, diExtendedDSK, Copy, Settings.RemoveEmptyTracks);
     end;
 end;
 
@@ -949,8 +948,8 @@ begin
   if Image.FileFormat = diNotYetSaved then
     SaveImageAs(Image, False)
   else
-    Image.SaveFile(Image.FileName, Image.FileFormat, False,
-      (Settings.RemoveEmptyTracks and (Image.FileFormat = diExtendedDSK)));
+    Image.SaveFile(Image.FileName, Image.FileFormat, False, (Settings.RemoveEmptyTracks and (Image.FileFormat = diExtendedDSK)));
+  RefreshList();
 end;
 
 procedure TfrmMain.itmSectorResetFDCClick(Sender: TObject);

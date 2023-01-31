@@ -54,7 +54,7 @@ object frmMain: TfrmMain
       Alignment = taLeftJustify
       BevelOuter = bvLowered
       BorderWidth = 1
-      Caption = 'Workspace'
+      Caption = ' Workspace'
       TabOrder = 0
     end
   end

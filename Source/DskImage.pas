@@ -648,6 +648,7 @@ end;
 function TDSKImage.SaveFile(SaveFileName: TFileName; SaveFileFormat: TDSKImageFormat; Copy: boolean; Compress: boolean): boolean;
 var
   DiskFile: TFileStream;
+  FileSize: int64;
 begin
   Result := False;
   if Corrupt then
@@ -661,9 +662,13 @@ begin
   case SaveFileFormat of
     diStandardDSK: Result := SaveFileDSK(DiskFile, diStandardDSK, False);
     diExtendedDSK: Result := SaveFileDSK(DiskFile, diExtendedDSK, Compress);
+    else
+      MessageDlg(SysUtils.Format('Unknown file format %i', [SaveFileFormat]), mtError, [mbOK], 0);
   end;
 
+  FileSize := DiskFile.Size;
   DiskFile.Free;
+
   if not Result then
     MessageDlg('Could not save file. Save aborted.', mtError, [mbOK], 0)
   else
@@ -672,6 +677,7 @@ begin
     FIsChanged := False;
     FileName := SaveFileName;
     Self.FileFormat := SaveFileFormat;
+    Self.FileSize := FileSize;
   end;
 end;
 
@@ -695,20 +701,6 @@ begin
     Disk_NumSides := Disk.Sides;
     Move(CreatorSig, Disk_Creator, Length(CreatorSig));
     case SaveFileFormat of
-      diStandardDSK:
-      begin
-        DiskInfoBlock := DiskInfoStandard;
-        if Disk.Side[0].Track[0].Size > 0 then
-          Disk_StdTrackSize := Disk.Side[0].Track[0].Size + 256
-        else
-          Disk_StdTrackSize := 0;
-
-        for SIdx := 0 to Disk_NumSides - 1 do
-          for TIdx := 0 to Disk_NumTracks - 1 do
-            if (Disk.Side[SIdx].Track[TIdx].Size > Disk_StdTrackSize) then
-              Disk_StdTrackSize := Disk.Side[SIdx].Track[TIdx].Size + 256;
-      end;
-
       diExtendedDSK:
       begin
         DiskInfoBlock := DiskInfoExtended;
@@ -727,6 +719,20 @@ begin
             end
             else
               Disk_ExtTrackSize[(TIdx * Disk_NumSides) + SIdx] := 0;
+      end;
+
+      else
+      begin
+        DiskInfoBlock := DiskInfoStandard;
+        if Disk.Side[0].Track[0].Size > 0 then
+          Disk_StdTrackSize := Disk.Side[0].Track[0].Size + 256
+        else
+          Disk_StdTrackSize := 0;
+
+        for SIdx := 0 to Disk_NumSides - 1 do
+          for TIdx := 0 to Disk_NumTracks - 1 do
+            if (Disk.Side[SIdx].Track[TIdx].Size > Disk_StdTrackSize) then
+              Disk_StdTrackSize := Disk.Side[SIdx].Track[TIdx].Size + 256;
       end;
     end;
   end;
@@ -778,12 +784,11 @@ begin
         // Write the whole track out
         if Size > 0 then
           case FileFormat of
-            diStandardDSK: DiskFile.WriteBuffer(
-                TRKInfoBlock, DSKInfoBlock.Disk_StdTrackSize);
+            diStandardDSK: DiskFile.WriteBuffer(TRKInfoBlock, DSKInfoBlock.Disk_StdTrackSize);
             diExtendedDSK:
               if not (Compress and (Sectors = 0)) then
-                DiskFile.WriteBuffer(TRKInfoBlock,
-                  DSKInfoBlock.Disk_ExtTrackSize[(TIdx * Disk.Sides) + SIdx] * 256);
+                DiskFile.WriteBuffer(TRKInfoBlock, DSKInfoBlock.Disk_ExtTrackSize[
+                  (TIdx * Disk.Sides) + SIdx] * 256);
           end;
       end;
     end;
@@ -1613,6 +1618,7 @@ begin
     end;
 
     dsSideDoubleReverse:
+    else
     begin
       if (Side = 1) then
         TrackSkewIdx := ((TracksPerSide - LogicalTrack) * SkewTrack) + (SkewSide * Side);
@@ -1737,7 +1743,7 @@ begin
       Interleave := 2;
       GapFormat := 80;
     end;
-    8:
+    else
     begin
       Name := 'MGT Sam Coupe';
       Sides := dsSideDoubleAlternate;

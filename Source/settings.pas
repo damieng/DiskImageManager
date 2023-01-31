@@ -139,7 +139,7 @@ begin
   Apply;
 end;
 
-
+// Save system settings
 procedure TSettings.Save;
 var
   Reg: TIniFile;
