@@ -230,8 +230,7 @@ begin
   begin
     // Optional specification
     if Image.Disk.Specification.Read <> dsFormatInvalid then
-      AddTree(ImageNode, 'Specification', Ord(itSpecification),
-        Image.Disk.Specification);
+      AddTree(ImageNode, 'Specification', Ord(itSpecification), Image.Disk.Specification);
     // Add the sides
     for SIdx := 0 to Image.Disk.Sides - 1 do
     begin
@@ -398,9 +397,9 @@ begin
     begin
       AddListInfo('Creator', Creator);
       if Corrupt then
-        AddListInfo('Format', DSKImageFormats[FileFormat] + ' (Corrupt)')
+        AddListInfo('Image Format', DSKImageFormats[FileFormat] + ' (Corrupt)')
       else
-        AddListInfo('Format', DSKImageFormats[FileFormat]);
+        AddListInfo('Image Format', DSKImageFormats[FileFormat]);
       AddListInfo('Sides', StrInt(Disk.Sides));
       if Disk.Sides > 0 then
       begin

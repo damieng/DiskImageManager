@@ -95,7 +95,7 @@ type
     function DetectCopyProtection: string;
     function GetLogicalTrack(LogicalTrack: word): TDSKTrack;
     function HasFDCErrors: boolean;
-    function HasFirstSector: boolean;
+    function HasSpaceForDPB: boolean;
     function IsTrackSizeUniform: boolean;
     function IsUniform(IgnoreEmptyTracks: boolean): boolean;
     procedure Format(Formatter: TDSKFormatSpecification);
@@ -787,8 +787,8 @@ begin
             diStandardDSK: DiskFile.WriteBuffer(TRKInfoBlock, DSKInfoBlock.Disk_StdTrackSize);
             diExtendedDSK:
               if not (Compress and (Sectors = 0)) then
-                DiskFile.WriteBuffer(TRKInfoBlock, DSKInfoBlock.Disk_ExtTrackSize[
-                  (TIdx * Disk.Sides) + SIdx] * 256);
+                DiskFile.WriteBuffer(TRKInfoBlock, DSKInfoBlock.Disk_ExtTrackSize[(TIdx * Disk.Sides) +
+                  SIdx] * 256);
           end;
       end;
     end;
@@ -916,11 +916,11 @@ var
   Mod256: integer;
 begin
   Result := '';
-  if HasFirstSector then
+  if HasSpaceForDPB then
   begin
-    if Side[0].Track[0].Sector[0].Status = ssFormattedInUse then
+    if Side[0].Track[0].Sector[1].Status = ssFormattedInUse then
     begin
-      Mod256 := Side[0].Track[0].Sector[0].GetModChecksum(256);
+      Mod256 := Side[0].Track[0].Sector[1].GetModChecksum(256);
       case Mod256 of
         1: Result := 'Amstrad PCW 9512';
         3: Result := 'Spectrum +3';
@@ -959,7 +959,7 @@ var
   CheckTracks, CheckSectors, CheckSectorSize: integer;
 begin
   Result := True;
-  if HasFirstSector then
+  if HasSpaceForDPB then
   begin
     CheckTracks := Side[0].Tracks;
     CheckSectors := Side[0].Track[0].Sectors;
@@ -981,7 +981,7 @@ begin
   end;
 end;
 
-function TDSKDisk.HasFirstSector: boolean;
+function TDSKDisk.HasSpaceForDPB: boolean;
 begin
   Result := False;
   if Sides > 0 then
@@ -1475,7 +1475,7 @@ var
 begin
   FFormat := dsFormatInvalid;
   Result := FFormat;
-  if FParentDisk.HasFirstSector then
+  if FParentDisk.HasSpaceForDPB then
     with FParentDisk.Side[0].Track[0].Sector[0] do
     begin
       case Data[0] of
@@ -1502,7 +1502,7 @@ begin
       FSectorsPerTrack := Data[3];
 
       Check := Power(2, (Data[4] + 7));
-      if (Check >= 0) and (Check <= 255) then
+      if (Check >= 0) and (Check <= 512) then
         FSectorSize := Round(Check)
       else
         FSectorSize := 0;
@@ -1510,7 +1510,7 @@ begin
       FReservedTracks := Data[5];
 
       Check := Power(2, Data[6]) * 128;
-      if (Check >= 0) and (Check <= 255) then
+      if (Check >= 0) then
         FBlockSize := Round(Check)
       else
         FBlockSize := 0;
@@ -1526,7 +1526,7 @@ end;
 function TDSKSpecification.Write: boolean;
 begin
   Result := False;
-  if FParentDisk.HasFirstSector then
+  if FParentDisk.HasSpaceForDPB then
     with FParentDisk.Side[0].Track[0].Sector[0] do
     begin
       case FFormat of
@@ -1713,6 +1713,7 @@ begin
       GapFormat := 22;
       GapRW := 12;
       Interleave := 3;
+      BlockSize := 1024;
     end;
     5:
     begin

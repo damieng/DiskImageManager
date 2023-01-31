@@ -24,7 +24,7 @@ var
   Protection: String;
   Format: String;
 begin
- if (not Disk.HasFirstSector) then
+ if (not Disk.HasSpaceForDPB) then
  	Result := 'Unformatted'
  else
  begin

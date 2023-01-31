@@ -15,10 +15,14 @@ interface
 
 uses
   DskImage, Main, Utils,
-  SysUtils, Classes, Forms, StdCtrls, ComCtrls, ExtCtrls, Dialogs, Buttons;
+  SysUtils, Classes, Forms, StdCtrls, ComCtrls, ExtCtrls, Dialogs, Buttons, Math;
 
 type
+
+  { TfrmNew }
+
   TfrmNew = class(TForm)
+    memDPBHex: TMemo;
     pnlInfo: TPanel;
     pnlTabs: TPanel;
     pnlButtons: TPanel;
@@ -129,6 +133,7 @@ type
     procedure UpdateSummary;
     procedure UpdateFileDetails;
     function IsPlus3Format: boolean;
+    function GetFormat: TDSKSpecFormat;
   end;
 
 var
@@ -175,6 +180,7 @@ end;
 procedure TfrmNew.UpdateSummary;
 var
   NewWarn: TListItem;
+  hexDPB: string;
 begin
   if IsLoading then
     exit;
@@ -192,6 +198,31 @@ begin
     else
       lvwsummary.Items[3].SubItems[0] := 'No';
   end;
+
+  // DPB hex preview
+  hexDPB := '';
+  case GetFormat of
+    dsFormatPCW_SS: hexDPB := hexDPB + '00';
+    dsFormatCPC_System: hexDPB := hexDPB + '01';
+    dsFormatCPC_Data: hexDPB := hexDPB + '02';
+    dsFormatPCW_DS: hexDPB := hexDPB + '03';
+  end;
+  case cboSides.ItemIndex of
+    0: hexDPB := hexDPB + ' 00';
+    1: hexDPB := hexDPB + ' 01';
+    2: hexDPB := hexDPB + ' 02';
+  end;
+  hexDPB := hexDPB + ' ' + StrHex(udTracks.Position);
+  hexDPB := hexDPB + ' ' + StrHex(udSectors.Position);
+  hexDPB := hexDPB + ' ' + StrHex(Trunc(Log2(udSecSize.Position) - 7));
+  hexDPB := hexDPB + ' ' + StrHex(udResTracks.Position);
+  hexDPB := hexDPB + ' ' + StrHex(Trunc(Log2(udBlockSize.Position / 128)));
+  hexDPB := hexDPB + ' ' + StrHex(udDirBlocks.Position);
+  hexDPB := hexDPB + ' ' + StrHex(udGapRW.Position);
+  hexDPB := hexDPB + ' ' + StrHex(udGapFormat.Position);
+  hexDPB := hexDPB + ' 00 00 00 00 00';
+  hexDPB := hexDPB + ' ??';
+  memDPBHex.Text := hexDPB;
 
   lvwWarnings.Items.Clear;
 
@@ -233,6 +264,12 @@ begin
     NewWarn.Caption := 'Format requires disk specification on PCW/+3';
   end;
 
+  if CurrentFormat.GetDirectoryEntries > 256 then
+  begin
+    NewWarn := lvwWarnings.Items.Add;
+    NewWarn.Caption := '+3 has a maximum of 256 directory entries';
+  end;
+
   if CurrentFormat.DirBlocks = 0 then
   begin
     NewWarn := lvwWarnings.Items.Add;
@@ -272,6 +309,19 @@ begin
       end;
 end;
 
+function TfrmNew.GetFormat: TDSKSpecFormat;
+begin
+  Result := dsFormatPCW_SS;
+  if (lvwFormats.Selected = nil) then exit;
+
+  if (lvwFormats.Selected.ImageIndex = 2) then
+    Result := dsFormatCPC_System;
+  if (lvwFormats.Selected.ImageIndex = 3) then
+    Result := dsFormatCPC_Data;
+  if (CurrentFormat.Sides <> dsSideSingle) then
+    Result := dsFormatPCW_DS;
+end;
+
 procedure TfrmNew.btnFormatClick(Sender: TObject);
 var
   NewImage: TDSKImage;
@@ -288,14 +338,7 @@ begin
   if chkWriteDiskSpec.Checked then
     with NewImage.Disk.Specification do
     begin
-      Format := dsFormatPCW_SS;
-      if (lvwFormats.Selected.ImageIndex = 2) then
-        Format := dsFormatCPC_System;
-      if (lvwFormats.Selected.ImageIndex = 3) then
-        Format := dsFormatCPC_Data;
-      if (CurrentFormat.Sides <> dsSideSingle) then
-        Format := dsFormatPCW_DS;
-
+      Format := GetFormat;
       Side := CurrentFormat.Sides;
       BlockSize := CurrentFormat.BlockSize;
       DirectoryBlocks := CurrentFormat.DirBlocks;
