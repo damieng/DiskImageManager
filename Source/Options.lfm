@@ -13,7 +13,7 @@ object frmOptions: TfrmOptions
   Font.Height = -11
   Font.Name = 'Tahoma'
   Position = poMainFormCenter
-  LCLVersion = '1.6.0.4'
+  LCLVersion = '2.2.4.0'
   object pnlButtons: TPanel
     Left = 0
     Height = 28
@@ -145,10 +145,11 @@ object frmOptions: TfrmOptions
           Width = 170
           ItemHeight = 13
           Items.Strings = (
-            'Disk'
+            'Image'
             'Specification'
             'Map'
             'Track list'
+            'First track'
             'First sector'
           )
           Style = csDropDownList
@@ -228,7 +229,6 @@ object frmOptions: TfrmOptions
           Min = 1
           Position = 16
           TabOrder = 2
-          Wrap = False
         end
         object edtNonDisplay: TEdit
           Left = 75
@@ -314,7 +314,6 @@ object frmOptions: TfrmOptions
           Min = 1
           Position = 1
           TabOrder = 1
-          Wrap = False
         end
         object edtTrackMarks: TEdit
           Left = 75
@@ -422,7 +421,6 @@ object frmOptions: TfrmOptions
           Min = 1
           Position = 1
           TabOrder = 4
-          Wrap = False
         end
         object udMapY: TUpDown
           Left = 233
@@ -435,7 +433,6 @@ object frmOptions: TfrmOptions
           Min = 1
           Position = 1
           TabOrder = 5
-          Wrap = False
         end
       end
     end
@@ -446,7 +443,7 @@ object frmOptions: TfrmOptions
     Font.Name = 'MS Sans Serif'
     MinFontSize = 0
     MaxFontSize = 0
-    left = 248
-    top = 272
+    Left = 248
+    Top = 272
   end
 end

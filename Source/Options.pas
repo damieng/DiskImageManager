@@ -210,7 +210,7 @@ begin
     RemoveEmptyTracks := chkSaveRemoveEmptyTracks.Checked;
     SaveDiskMapWidth := udMapX.Position;
     SaveDiskMapHeight := udMapY.Position;
-    OpenView := cboOpenView.SelText;
+    OpenView := cboOpenView.Text;
   end;
 end;
 

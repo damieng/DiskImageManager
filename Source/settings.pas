@@ -98,6 +98,7 @@ begin
 
   S := 'Window';
   WindowFont := FontFromDescription(Reg.ReadString(S, 'Font', 'Tahoma,8pt,,'));
+  OpenView := Reg.ReadString(S, 'OpenView', 'Image');
   RestoreWindow := Reg.ReadBool(S, 'Restore', False);
   if RestoreWindow then
     with frmMain do
@@ -166,6 +167,7 @@ begin
     Reg.WriteInteger(S, 'TreeWidth', tvwMain.Width);
     Reg.WriteString(S, 'Font', FontToDescription(Font));
   end;
+  Reg.WriteString(S, 'OpenView', OpenView);
 
   S := 'SectorView';
   Reg.WriteString(S, 'UnknownASCII', UnknownASCII);

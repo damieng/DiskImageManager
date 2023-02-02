@@ -216,7 +216,7 @@ end;
 procedure TfrmMain.AddWorkspaceImage(Image: TDSKImage);
 var
   SIdx, TIdx, EIdx: integer;
-  ImageNode, SideNode, TrackNode, TracksNode: TTreeNode;
+  ImageNode, SideNode, TrackNode, TracksNode, SpecsNode, SectorNode, MapNode: TTreeNode;
 begin
   SideNode := nil;
   tvwMain.Items.BeginUpdate;
@@ -226,27 +226,45 @@ begin
   else
     ImageNode := AddTree(nil, ExtractFileName(Image.FileName), Ord(itDisk), Image);
 
+  tvwMain.Selected := ImageNode;
+
   if Image.Disk.Sides > 0 then
   begin
     // Optional specification
     if Image.Disk.Specification.Read <> dsFormatInvalid then
-      AddTree(ImageNode, 'Specification', Ord(itSpecification), Image.Disk.Specification);
+    begin
+      SpecsNode := AddTree(ImageNode, 'Specification', Ord(itSpecification), Image.Disk.Specification);
+      if Settings.OpenView = 'Specification' then
+        tvwMain.Selected := SpecsNode;
+    end;
     // Add the sides
     for SIdx := 0 to Image.Disk.Sides - 1 do
     begin
       SideNode := AddTree(ImageNode, Format('Side %d', [SIdx + 1]), Ord(itSide0) + SIdx, Image.Disk.Side[SIdx]);
-      AddTree(SideNode, 'Map', Ord(itAnalyse), Image.Disk.Side[SIdx]);
+      if (SIdx = 0) and (Settings.OpenView = 'Track list') then
+        tvwMain.Selected := SideNode;
+
+      MapNode := AddTree(SideNode, 'Map', Ord(itAnalyse), Image.Disk.Side[SIdx]);
+      if (SIdx = 0) and (Settings.OpenView = 'Map') then
+        tvwMain.Selected := MapNode;
+
       // Add the tracks
       TracksNode := AddTree(SideNode, 'Tracks', Ord(itTracksAll), Image.Disk.Side[SIdx]);
       with Image.Disk.Side[SIdx] do
         for TIdx := 0 to Tracks - 1 do
         begin
           TrackNode := AddTree(TracksNode, Format('Track %d', [TIdx]), Ord(itTrack), Track[TIdx]);
+          if (SIdx = 0) and (TIdx = 0) and (Settings.OpenView = 'First track') then
+            tvwMain.Selected := TrackNode;
+
           // Add the sectors
           with Image.Disk.Side[SIdx].Track[TIdx] do
             for EIdx := 0 to Sectors - 1 do
-              AddTree(TrackNode, SysUtils.Format('Sector %d', [EIdx]),
-                Ord(itSector), Sector[EIdx]);
+            begin
+              SectorNode := AddTree(TrackNode, SysUtils.Format('Sector %d', [EIdx]), Ord(itSector), Sector[EIdx]);
+              if (SIdx = 0) and (TIdx = 0) and (EIdx = 0) and (Settings.OpenView = 'First sector') then
+                tvwMain.Selected := SectorNode;
+            end;
         end;
     end;
     //FileNode := AddTree(ImageNode,'Files',Ord(itFiles),Image.Disk.FileSystem);
@@ -258,8 +276,6 @@ begin
   ImageNode.Expanded := True;
   if (Image.Disk.Sides = 1) and (SideNode <> nil) then
     SideNode.Expanded := True;
-
-  tvwMain.Selected := imageNode;
 end;
 
 function TfrmMain.AddTree(Parent: TTreeNode; Text: string; ImageIdx: integer; NodeObject: TObject): TTreeNode;
