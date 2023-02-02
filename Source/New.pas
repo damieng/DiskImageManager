@@ -15,13 +15,14 @@ interface
 
 uses
   DskImage, Main, Utils,
-  SysUtils, Classes, Forms, StdCtrls, ComCtrls, ExtCtrls, Dialogs, Buttons, Math;
+  SysUtils, Classes, Forms, StdCtrls, ComCtrls, ExtCtrls, Dialogs, Buttons, Math, Controls;
 
 type
 
   { TfrmNew }
 
   TfrmNew = class(TForm)
+    lblBlockSizeDec: TLabel;
     memDPBHex: TMemo;
     pnlInfo: TPanel;
     pnlTabs: TPanel;
@@ -56,7 +57,6 @@ type
     lblFiller: TLabel;
     edtFiller: TEdit;
     udFiller: TUpDown;
-    lblFillHex: TLabel;
     udTracks: TUpDown;
     udSectors: TUpDown;
     chkWriteDiskSpec: TCheckBox;
@@ -67,7 +67,6 @@ type
     pnlSummary: TPanel;
     lvwSummary: TListView;
     pnlWarnings: TPanel;
-    chkAdjust: TCheckBox;
     lblFirstSector: TLabel;
     edtFirstSector: TEdit;
     udFirstSector: TUpDown;
@@ -79,8 +78,8 @@ type
     udSkewTrack: TUpDown;
     dlgOpenBoot: TOpenDialog;
     lblBlockSize: TLabel;
-    edtBlockSize: TEdit;
-    udBlockSize: TUpDown;
+    edtBlockShift: TEdit;
+    udBlockShift: TUpDown;
     lblSkewSide: TLabel;
     edtSkewSide: TEdit;
     udSkewSide: TUpDown;
@@ -110,7 +109,6 @@ type
     procedure edtDirBlocksChange(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure chkWriteDiskSpecClick(Sender: TObject);
-    procedure chkAdjustClick(Sender: TObject);
     procedure edtSkewTrackChange(Sender: TObject);
     procedure edtInterleaveChange(Sender: TObject);
     procedure edtFirstSectorChange(Sender: TObject);
@@ -119,7 +117,7 @@ type
     procedure edtSkewSideChange(Sender: TObject);
     procedure tabBootShow(Sender: TObject);
     procedure btnBootClearClick(Sender: TObject);
-    procedure edtBlockSizeChange(Sender: TObject);
+    procedure edtBlockShiftChange(Sender: TObject);
   private
     IsLoading: boolean;
     CurrentFormat: TDSKFormatSpecification;
@@ -127,7 +125,6 @@ type
     BootOffset, BootSectorSize: word;
     BootChecksum: byte;
     BootChecksumRequired: boolean;
-    procedure SetShowAdvanced(ShowAdvanced: boolean);
     procedure SetCurrentFormat(ItemIndex: integer);
     procedure UpdateDetails;
     procedure UpdateSummary;
@@ -145,7 +142,7 @@ implementation
 
 procedure TfrmNew.edtFillerChange(Sender: TObject);
 begin
-  lblFillHex.Caption := Format('%.2x', [udFiller.Position]);
+  udFiller.Position := StrToInt('$' + edtFiller.Text);
 end;
 
 procedure TfrmNew.btnCancelClick(Sender: TObject);
@@ -167,7 +164,7 @@ begin
     udGapFormat.Position := GapFormat;
     udResTracks.Position := ResTracks;
     udDirBlocks.Position := DirBlocks;
-    udBlockSize.Position := BlockSize;
+    udBlockShift.Position := BlockShift;
     udFiller.Position := FillerByte;
     udInterleave.Position := Interleave;
     udSkewTrack.Position := SkewTrack;
@@ -216,7 +213,7 @@ begin
   hexDPB := hexDPB + ' ' + StrHex(udSectors.Position);
   hexDPB := hexDPB + ' ' + StrHex(Trunc(Log2(udSecSize.Position) - 7));
   hexDPB := hexDPB + ' ' + StrHex(udResTracks.Position);
-  hexDPB := hexDPB + ' ' + StrHex(Trunc(Log2(udBlockSize.Position / 128)));
+  hexDPB := hexDPB + ' ' + StrHex(udBlockShift.Position >> 3);
   hexDPB := hexDPB + ' ' + StrHex(udDirBlocks.Position);
   hexDPB := hexDPB + ' ' + StrHex(udGapRW.Position);
   hexDPB := hexDPB + ' ' + StrHex(udGapFormat.Position);
@@ -340,7 +337,7 @@ begin
     begin
       Format := GetFormat;
       Side := CurrentFormat.Sides;
-      BlockSize := CurrentFormat.BlockSize;
+      BlockShift := CurrentFormat.BlockShift;
       DirectoryBlocks := CurrentFormat.DirBlocks;
       GapFormat := CurrentFormat.GapFormat;
       GapReadWrite := CurrentFormat.GapRW;
@@ -400,7 +397,6 @@ begin
   BootOffset := 0;
   BootChecksumRequired := False;
   pagTabs.ActivePage := tabFormat;
-  SetShowAdvanced(False);
 end;
 
 procedure TfrmNew.lvwFormatsChange(Sender: TObject; Item: TListItem; Change: TItemChange);
@@ -437,7 +433,7 @@ begin
       Result := False;
     if DirBlocks <> 2 then
       Result := False;
-    if BlockSize <> 1024 then
+    if BlockShift <> 3 then
       Result := False;
   end;
 end;
@@ -504,16 +500,6 @@ begin
     BootOffset := 0;
   UpdateSummary;
   UpdateFileDetails;
-end;
-
-procedure TfrmNew.chkAdjustClick(Sender: TObject);
-begin
-  SetShowAdvanced(chkAdjust.Checked);
-end;
-
-procedure TfrmNew.SetShowAdvanced(ShowAdvanced: boolean);
-begin
-  tabDetails.TabVisible := ShowAdvanced;
 end;
 
 procedure TfrmNew.edtSkewTrackChange(Sender: TObject);
@@ -628,9 +614,10 @@ begin
   UpdateFileDetails;
 end;
 
-procedure TfrmNew.edtBlockSizeChange(Sender: TObject);
+procedure TfrmNew.edtBlockShiftChange(Sender: TObject);
 begin
-  CurrentFormat.BlockSize := udBlockSize.Position;
+  CurrentFormat.BlockShift := udBlockShift.Position;
+  lblBlockSizeDec.Caption := IntToStr(2 << (udBlockShift.Position + 6));
   UpdateSummary;
 end;
 

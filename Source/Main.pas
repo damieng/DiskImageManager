@@ -478,7 +478,8 @@ begin
     AddListInfo('Gap (format)', StrInt(Specification.GapFormat));
     AddListInfo('Gap (read/write)', StrInt(Specification.GapReadWrite));
     AddListInfo('Sector size', StrInt(Specification.SectorSize));
-    AddListInfo('Block size', StrInt(Specification.BlockSize));
+    AddListInfo('Block shift', StrInt(Specification.BlockShift));
+    AddListInfo('Block size', StrInt(Specification.GetBlockSize));
   end;
 end;
 

@@ -1,7 +1,7 @@
 object frmNew: TfrmNew
-  Left = 388
+  Left = 661
   Height = 294
-  Top = 637
+  Top = 777
   Width = 513
   BorderStyle = bsDialog
   Caption = 'New'
@@ -121,6 +121,7 @@ object frmNew: TfrmNew
     Top = 0
     Width = 299
     Align = alLeft
+    Alignment = taRightJustify
     BevelOuter = bvNone
     BorderWidth = 5
     ClientHeight = 264
@@ -131,11 +132,11 @@ object frmNew: TfrmNew
       Height = 254
       Top = 5
       Width = 289
-      ActivePage = tabDiskSpec
+      ActivePage = tabDetails
       Align = alClient
       Constraints.MinHeight = 254
       Constraints.MinWidth = 281
-      TabIndex = 2
+      TabIndex = 1
       TabOrder = 0
       object tabFormat: TTabSheet
         Caption = 'Basic'
@@ -147,14 +148,14 @@ object frmNew: TfrmNew
           Top = 8
           Width = 257
           AutoSize = False
-          Caption = 'Select from a pre-defined disk format from the list or load definition from a file.'
+          Caption = 'Select from a pre-defined disk format from the list.'
           ParentColor = False
           WordWrap = True
         end
         object lvwFormats: TListView
           Left = 8
-          Height = 159
-          Top = 40
+          Height = 200
+          Top = 24
           Width = 256
           Anchors = [akTop, akLeft, akRight, akBottom]
           Columns = <          
@@ -184,15 +185,6 @@ object frmNew: TfrmNew
           ViewStyle = vsReport
           OnChange = lvwFormatsChange
         end
-        object chkAdjust: TCheckBox
-          Left = 8
-          Height = 19
-          Top = 205
-          Width = 152
-          Caption = 'Allow advanced adjustment'
-          OnClick = chkAdjustClick
-          TabOrder = 1
-        end
       end
       object tabDetails: TTabSheet
         Caption = 'Advanced'
@@ -210,7 +202,7 @@ object frmNew: TfrmNew
         object lblTracks: TLabel
           Left = 8
           Height = 13
-          Top = 35
+          Top = 38
           Width = 72
           Caption = 'Tracks per side'
           ParentColor = False
@@ -218,7 +210,7 @@ object frmNew: TfrmNew
         object lblSectors: TLabel
           Left = 144
           Height = 13
-          Top = 35
+          Top = 38
           Width = 64
           Caption = 'Sectors/track'
           FocusControl = edtSectors
@@ -227,7 +219,7 @@ object frmNew: TfrmNew
         object lblSecSize: TLabel
           Left = 8
           Height = 13
-          Top = 67
+          Top = 62
           Width = 52
           Caption = 'Sector size'
           FocusControl = edtSecSize
@@ -236,7 +228,7 @@ object frmNew: TfrmNew
         object lblGapRW: TLabel
           Left = 8
           Height = 13
-          Top = 139
+          Top = 134
           Width = 72
           Caption = 'Gap read/write'
           FocusControl = edtGapRW
@@ -245,7 +237,7 @@ object frmNew: TfrmNew
         object lblGapFormat: TLabel
           Left = 144
           Height = 13
-          Top = 139
+          Top = 134
           Width = 54
           Caption = 'Gap format'
           FocusControl = edtGapFormat
@@ -254,7 +246,7 @@ object frmNew: TfrmNew
         object lblResTracks: TLabel
           Left = 144
           Height = 13
-          Top = 91
+          Top = 86
           Width = 72
           Caption = 'Reserve tracks'
           FocusControl = edtResTracks
@@ -263,33 +255,25 @@ object frmNew: TfrmNew
         object lblDirBlocks: TLabel
           Left = 8
           Height = 13
-          Top = 171
+          Top = 158
           Width = 76
           Caption = 'Directory blocks'
           FocusControl = edtDirBlocks
           ParentColor = False
         end
         object lblFiller: TLabel
-          Left = 8
+          Left = 144
           Height = 13
-          Top = 203
+          Top = 158
           Width = 47
           Caption = 'Filler byte'
           FocusControl = udFiller
           ParentColor = False
         end
-        object lblFillHex: TLabel
-          Left = 147
-          Height = 13
-          Top = 203
-          Width = 22
-          AutoSize = False
-          ParentColor = False
-        end
         object lblFirstSector: TLabel
           Left = 144
           Height = 13
-          Top = 67
+          Top = 62
           Width = 68
           Caption = 'First sector ID'
           FocusControl = edtFirstSector
@@ -298,7 +282,7 @@ object frmNew: TfrmNew
         object lblInterleave: TLabel
           Left = 8
           Height = 13
-          Top = 91
+          Top = 86
           Width = 50
           Caption = 'Interleave'
           FocusControl = edtInterleave
@@ -307,25 +291,25 @@ object frmNew: TfrmNew
         object lblSkewTrack: TLabel
           Left = 8
           Height = 13
-          Top = 115
+          Top = 110
           Width = 57
           Caption = 'Skew tracks'
           FocusControl = edtSkewTrack
           ParentColor = False
         end
         object lblBlockSize: TLabel
-          Left = 144
+          Left = 8
           Height = 13
-          Top = 171
+          Top = 182
           Width = 45
           Caption = 'Block size'
-          FocusControl = edtBlockSize
+          FocusControl = edtBlockShift
           ParentColor = False
         end
         object lblSkewSide: TLabel
           Left = 144
           Height = 13
-          Top = 115
+          Top = 110
           Width = 52
           Caption = 'Skew sides'
           FocusControl = edtSkewSide
@@ -344,8 +328,10 @@ object frmNew: TfrmNew
         object edtTracks: TEdit
           Left = 88
           Height = 21
-          Top = 32
+          Top = 35
           Width = 33
+          Alignment = taRightJustify
+          MaxLength = 3
           ParentBidiMode = False
           OnChange = edtTracksChange
           TabOrder = 1
@@ -354,8 +340,10 @@ object frmNew: TfrmNew
         object edtSectors: TEdit
           Left = 224
           Height = 21
-          Top = 32
+          Top = 35
           Width = 33
+          Alignment = taRightJustify
+          MaxLength = 3
           ParentBidiMode = False
           OnChange = edtSectorsChange
           TabOrder = 2
@@ -364,8 +352,10 @@ object frmNew: TfrmNew
         object edtSecSize: TEdit
           Left = 88
           Height = 21
-          Top = 64
+          Top = 59
           Width = 33
+          Alignment = taRightJustify
+          MaxLength = 3
           ParentBidiMode = False
           OnChange = edtSecSizeChange
           TabOrder = 3
@@ -374,7 +364,7 @@ object frmNew: TfrmNew
         object udSecSize: TUpDown
           Left = 121
           Height = 21
-          Top = 64
+          Top = 59
           Width = 16
           Associate = edtSecSize
           Increment = 256
@@ -387,8 +377,10 @@ object frmNew: TfrmNew
         object edtGapRW: TEdit
           Left = 88
           Height = 21
-          Top = 136
+          Top = 131
           Width = 33
+          Alignment = taRightJustify
+          MaxLength = 3
           ParentBidiMode = False
           OnChange = edtGapRWChange
           TabOrder = 7
@@ -397,7 +389,7 @@ object frmNew: TfrmNew
         object udGapRW: TUpDown
           Left = 121
           Height = 21
-          Top = 136
+          Top = 131
           Width = 15
           Associate = edtGapRW
           Max = 255
@@ -408,8 +400,10 @@ object frmNew: TfrmNew
         object edtGapFormat: TEdit
           Left = 224
           Height = 21
-          Top = 136
+          Top = 131
           Width = 33
+          Alignment = taRightJustify
+          MaxLength = 3
           ParentBidiMode = False
           OnChange = edtGapFormatChange
           TabOrder = 9
@@ -418,7 +412,7 @@ object frmNew: TfrmNew
         object udGapFormat: TUpDown
           Left = 257
           Height = 21
-          Top = 136
+          Top = 131
           Width = 15
           Associate = edtGapFormat
           Max = 255
@@ -429,8 +423,10 @@ object frmNew: TfrmNew
         object edtResTracks: TEdit
           Left = 224
           Height = 21
-          Top = 88
+          Top = 83
           Width = 33
+          Alignment = taRightJustify
+          MaxLength = 3
           ParentBidiMode = False
           OnChange = edtResTracksChange
           TabOrder = 11
@@ -439,7 +435,7 @@ object frmNew: TfrmNew
         object udResTracks: TUpDown
           Left = 257
           Height = 21
-          Top = 88
+          Top = 83
           Width = 15
           Associate = edtResTracks
           Max = 255
@@ -450,8 +446,10 @@ object frmNew: TfrmNew
         object edtDirBlocks: TEdit
           Left = 88
           Height = 21
-          Top = 168
+          Top = 155
           Width = 33
+          Alignment = taRightJustify
+          MaxLength = 3
           ParentBidiMode = False
           OnChange = edtDirBlocksChange
           TabOrder = 13
@@ -460,7 +458,7 @@ object frmNew: TfrmNew
         object udDirBlocks: TUpDown
           Left = 121
           Height = 21
-          Top = 168
+          Top = 155
           Width = 15
           Associate = edtDirBlocks
           Max = 255
@@ -469,19 +467,21 @@ object frmNew: TfrmNew
           TabOrder = 14
         end
         object edtFiller: TEdit
-          Left = 88
+          Left = 224
           Height = 21
-          Top = 200
+          Top = 155
           Width = 33
+          Alignment = taRightJustify
+          MaxLength = 3
           ParentBidiMode = False
-          OnChange = edtFillerChange
           TabOrder = 15
-          Text = '1'
+          Text = 'E5'
+          TextHint = 'In hexadecimal'
         end
         object udFiller: TUpDown
-          Left = 121
+          Left = 257
           Height = 21
-          Top = 200
+          Top = 155
           Width = 15
           Associate = edtFiller
           Max = 255
@@ -492,7 +492,7 @@ object frmNew: TfrmNew
         object udTracks: TUpDown
           Left = 121
           Height = 21
-          Top = 32
+          Top = 35
           Width = 15
           Associate = edtTracks
           Max = 255
@@ -503,7 +503,7 @@ object frmNew: TfrmNew
         object udSectors: TUpDown
           Left = 257
           Height = 21
-          Top = 32
+          Top = 35
           Width = 15
           Associate = edtSectors
           Max = 255
@@ -514,8 +514,10 @@ object frmNew: TfrmNew
         object edtFirstSector: TEdit
           Left = 224
           Height = 21
-          Top = 64
+          Top = 59
           Width = 33
+          Alignment = taRightJustify
+          MaxLength = 3
           ParentBidiMode = False
           OnChange = edtFirstSectorChange
           TabOrder = 5
@@ -524,7 +526,7 @@ object frmNew: TfrmNew
         object udFirstSector: TUpDown
           Left = 257
           Height = 21
-          Top = 64
+          Top = 59
           Width = 15
           Associate = edtFirstSector
           Max = 255
@@ -535,8 +537,10 @@ object frmNew: TfrmNew
         object edtInterleave: TEdit
           Left = 88
           Height = 21
-          Top = 88
+          Top = 83
           Width = 33
+          Alignment = taRightJustify
+          MaxLength = 3
           ParentBidiMode = False
           OnChange = edtInterleaveChange
           TabOrder = 19
@@ -545,7 +549,7 @@ object frmNew: TfrmNew
         object udInterleave: TUpDown
           Left = 121
           Height = 21
-          Top = 88
+          Top = 83
           Width = 15
           Associate = edtInterleave
           Max = 127
@@ -556,8 +560,10 @@ object frmNew: TfrmNew
         object edtSkewTrack: TEdit
           Left = 88
           Height = 21
-          Top = 112
+          Top = 107
           Width = 33
+          Alignment = taRightJustify
+          MaxLength = 3
           ParentBidiMode = False
           OnChange = edtSkewTrackChange
           TabOrder = 21
@@ -566,7 +572,7 @@ object frmNew: TfrmNew
         object udSkewTrack: TUpDown
           Left = 121
           Height = 21
-          Top = 112
+          Top = 107
           Width = 15
           Associate = edtSkewTrack
           Max = 127
@@ -574,34 +580,38 @@ object frmNew: TfrmNew
           Position = 1
           TabOrder = 22
         end
-        object edtBlockSize: TEdit
-          Left = 224
+        object edtBlockShift: TEdit
+          Left = 88
           Height = 21
-          Top = 168
+          Hint = 'Power of 2 shifted left by this number of bits + 9.'
+          Top = 179
           Width = 33
+          Alignment = taRightJustify
+          MaxLength = 1
           ParentBidiMode = False
-          OnChange = edtBlockSizeChange
+          OnChange = edtBlockShiftChange
           TabOrder = 23
           Text = '0'
         end
-        object udBlockSize: TUpDown
-          Left = 257
+        object udBlockShift: TUpDown
+          Left = 121
           Height = 21
-          Top = 168
+          Top = 179
           Width = 16
-          Associate = edtBlockSize
-          Increment = 128
-          Max = 16384
-          Min = 0
-          Position = 0
+          Associate = edtBlockShift
+          Max = 8
+          Min = 3
+          Position = 3
           TabOrder = 24
           Thousands = False
         end
         object edtSkewSide: TEdit
           Left = 224
           Height = 21
-          Top = 112
+          Top = 107
           Width = 33
+          Alignment = taRightJustify
+          MaxLength = 3
           ParentBidiMode = False
           OnChange = edtSkewSideChange
           TabOrder = 25
@@ -610,13 +620,21 @@ object frmNew: TfrmNew
         object udSkewSide: TUpDown
           Left = 257
           Height = 21
-          Top = 112
+          Top = 107
           Width = 15
           Associate = edtSkewSide
           Max = 127
           Min = -127
           Position = 1
           TabOrder = 26
+        end
+        object lblBlockSizeDec: TLabel
+          Left = 144
+          Height = 13
+          Top = 182
+          Width = 24
+          Caption = '1024'
+          ParentColor = False
         end
       end
       object tabDiskSpec: TTabSheet

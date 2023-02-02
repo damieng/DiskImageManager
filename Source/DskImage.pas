@@ -218,7 +218,7 @@ type
     FParentDisk: TDSKDisk;
     FIsChanged: boolean;
 
-    FBlockSize: integer;
+    FBlockShift: byte;
     FChecksum: byte;
     FDirectoryBlocks: byte;
     FFormat: TDSKSpecFormat;
@@ -232,7 +232,7 @@ type
     FTrack: TDSKSpecTrack;
     FTracksPerSide: byte;
 
-    procedure SetBlockSize(NewBlockSize: integer);
+    procedure SetBlockShift(NewBlockShift: byte);
     procedure SetChecksum(NewChecksum: byte);
     procedure SetDirectoryBlocks(NewDirectoryBlocks: byte);
     procedure SetFDCSectorSize(NewFDCSectorSize: byte);
@@ -251,8 +251,9 @@ type
 
     function Read: TDSKSpecFormat;
     function Write: boolean;
+    function GetBlockSize: integer;
 
-    property BlockSize: integer read FBlockSize write SetBlockSize;
+    property BlockShift: byte read FBlockShift write SetBlockShift;
     property Checksum: byte read FChecksum write SetChecksum;
     property DirectoryBlocks: byte read FDirectoryBlocks write SetDirectoryBlocks;
     property FDCSectorSize: byte read FFDCSectorSize write SetFDCSectorSize;
@@ -306,7 +307,7 @@ type
     procedure BuildSectorIDs;
   public
     Bootable: boolean;
-    BlockSize: word;
+    BlockShift: byte;
     DirBlocks: byte;
     FDCSectorSize: byte;
     FillerByte: byte;
@@ -325,6 +326,7 @@ type
 
     constructor Create(Format: integer);
     function GetCapacityBytes: integer;
+    function GetBlockSize: integer;
     function GetDirectoryEntries: integer;
     function GetSectorID(Side: byte; LogicalTrack: word; Sector: byte): byte;
     function GetSidesCount: byte;
@@ -1352,13 +1354,18 @@ begin
   inherited Destroy;
 end;
 
-procedure TDSKSpecification.SetBlockSize(NewBlockSize: integer);
+procedure TDSKSpecification.SetBlockShift(NewBlockShift: byte);
 begin
-  if NewBlockSize <> FBlockSize then
+  if NewBlockShift <> FBlockShift then
   begin
     FIsChanged := True;
-    FBlockSize := NewBlockSize;
+    FBlockShift := NewBlockShift;
   end;
+end;
+
+function TDSKSpecification.GetBlockSize: integer;
+begin
+  Result := 2 << (BlockShift + 6);
 end;
 
 procedure TDSKSpecification.SetChecksum(NewChecksum: byte);
@@ -1509,11 +1516,7 @@ begin
 
       FReservedTracks := Data[5];
 
-      Check := Power(2, Data[6]) * 128;
-      if (Check >= 0) then
-        FBlockSize := Round(Check)
-      else
-        FBlockSize := 0;
+      FBlockShift := Data[6];
 
       FDirectoryBlocks := Data[7];
       FGapReadWrite := Data[8];
@@ -1548,7 +1551,7 @@ begin
       Data[3] := FSectorsPerTrack;
       Data[4] := Trunc(Log2(FSectorSize) - 7);
       Data[5] := FReservedTracks;
-      Data[6] := Trunc(Log2(FBlockSize / 128));
+      Data[6] := FBlockShift;
       Data[7] := FDirectoryBlocks;
       Data[8] := FGapReadWrite;
       Data[9] := FGapFormat;
@@ -1568,9 +1571,14 @@ begin
   Result := TracksPerSide * GetSidesCount * SectorsPerTrack * SectorSize;
 end;
 
+function TDSKFormatSpecification.GetBlockSize: integer;
+begin
+  Result := 2 << (BlockShift + 6);
+end;
+
 function TDSKFormatSpecification.GetDirectoryEntries: integer;
 begin
-  Result := (DirBlocks * BlockSize) div 32;
+  Result := (DirBlocks * GetBlockSize) div 32;
 end;
 
 function TDSKFormatSpecification.GetUsableBytes: integer;
@@ -1579,8 +1587,8 @@ var
 begin
   UsableTracks := (TracksPerSide * GetSidesCount) - ResTracks;
   UsableSectors := (UsableTracks * SectorsPerTrack);
-  UsableBytes := (UsableSectors * SectorSize) - (DirBlocks * BlockSize);
-  WastedBytes := UsableBytes mod BlockSize;
+  UsableBytes := (UsableSectors * SectorSize) - (DirBlocks * GetBlockSize);
+  WastedBytes := UsableBytes mod GetBlockSize;
   Result := UsableBytes - WastedBytes;
 end;
 
@@ -1675,7 +1683,7 @@ begin
   GapFormat := 82;
   ResTracks := 1;
   DirBlocks := 2;
-  BlockSize := 1024;
+  BlockShift := 3;
   FillerByte := 229;
   FirstSector := 1;
   Interleave := 1;
@@ -1690,7 +1698,7 @@ begin
       Sides := dsSideDoubleAlternate;
       TracksPerSide := 80;
       DirBlocks := 4;
-      BlockSize := 2048;
+      BlockShift := 4;
     end;
     2:
     begin
@@ -1713,7 +1721,6 @@ begin
       GapFormat := 22;
       GapRW := 12;
       Interleave := 3;
-      BlockSize := 1024;
     end;
     5:
     begin

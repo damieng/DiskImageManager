@@ -16,7 +16,7 @@ object frmAbout: TfrmAbout
   OnCreate = FormCreate
   OnShow = FormShow
   Position = poOwnerFormCenter
-  LCLVersion = '1.6.0.4'
+  LCLVersion = '2.2.4.0'
   object imgAppIcon: TImage
     Left = 4
     Height = 48
@@ -207,7 +207,7 @@ object frmAbout: TfrmAbout
     Enabled = False
     Interval = 10
     OnTimer = timFadeTimer
-    left = 64
-    top = 32
+    Left = 144
+    Top = 8
   end
 end
