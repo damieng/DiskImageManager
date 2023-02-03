@@ -37,6 +37,7 @@ type
     BytesPerLine: integer;
     SectorFont: TFont;
     WarnSectorChange: boolean;
+    Mapping: string;
 
     // Workspace
     RestoreWorkspace: boolean;
@@ -115,6 +116,7 @@ begin
   BytesPerLine := Reg.ReadInteger(S, 'BytesPerLine', 8);
   SectorFont := FontFromDescription(Reg.ReadString(S, 'Font', 'Consolas,8pt,,'));
   WarnSectorChange := Reg.ReadBool(S, 'WarnSectorChange', True);
+  Mapping := Reg.ReadString(S, 'Mapping', '1252');
 
   S := 'Workspace';
   RestoreWorkspace := Reg.ReadBool(S, 'Restore', False);
@@ -174,6 +176,7 @@ begin
   Reg.WriteInteger(S, 'BytesPerLine', BytesPerLine);
   Reg.WriteString(S, 'Font', FontToDescription(SectorFont));
   Reg.WriteBool(S, 'WarnSectorChange', WarnSectorChange);
+  Reg.WriteString(S, 'Mapping', Mapping);
 
   S := 'Workspace';
   Count := 1;

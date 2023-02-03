@@ -15,7 +15,7 @@ interface
 
 uses
   DiskMap, Utils, Settings,
-  Graphics, Forms, ComCtrls, StdCtrls, Controls, ExtCtrls, Dialogs;
+  Graphics, Forms, ComCtrls, StdCtrls, Controls, ExtCtrls, Dialogs, StrUtils;
 
 type
 
@@ -23,7 +23,9 @@ type
 
   TfrmOptions = class(TForm)
     cboOpenView: TComboBox;
+    cboHighASCII: TComboBox;
     lblDefaultView: TLabel;
+    lblMapping: TLabel;
     pnlButtons: TPanel;
     pagOptions: TPageControl;
     tabMain: TTabSheet;
@@ -84,6 +86,9 @@ type
     constructor Create(Owner: TForm; Settings: TSettings); reintroduce;
     function Show: boolean;
   end;
+
+const
+  HighASCIIOptions: array[0..3] of string = ('None', '437', '850', '1252');
 
 var
   frmOptions: TfrmOptions;
@@ -178,6 +183,8 @@ begin
     udTrackMarks.Position := DiskMapTrackMark;
     chkDarkBlankSectors.Checked := DarkBlankSectors;
     edtNonDisplay.Text := UnknownASCII;
+    cboHighASCII.ItemIndex := IndexStr(Mapping, HighASCIIOptions);
+
     cbxBack.ButtonColor := DiskMapBackgroundColor;
     cbxGrid.ButtonColor := DiskMapGridColor;
     chkWarnConversionProblems.Checked := WarnConversionProblems;
@@ -204,6 +211,7 @@ begin
     RestoreWindow := chkRestoreWindow.Checked;
     BytesPerLine := udBytes.Position;
     UnknownASCII := edtNonDisplay.Text;
+    Mapping := HighASCIIOptions[cboHighASCII.ItemIndex];
     RestoreWorkspace := chkRestoreWorkspace.Checked;
     WarnConversionProblems := chkWarnConversionProblems.Checked;
     WarnSectorChange := chkWarnSectorChange.Checked;

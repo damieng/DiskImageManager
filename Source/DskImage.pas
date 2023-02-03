@@ -426,8 +426,6 @@ var
   SIdx, NextSectorID: integer;
   CheckSector: TDSKSector;
   CheckTrack: TDSKTrack;
-  Count: integer;
-  isdead: boolean;
 begin
   Result := nil;
   NextSectorId := Sector.ID + 1;
@@ -436,8 +434,6 @@ begin
   while (CheckTrack <> nil) do
   begin
     // Find the next highest sector number on this track
-    isdead := CheckTrack = nil;
-    Count := CheckTrack.Sectors;
     for SIdx := 0 to High(CheckTrack.Sector) do
     begin
       CheckSector := CheckTrack.Sector[SIdx];
