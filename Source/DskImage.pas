@@ -62,7 +62,6 @@ type
     function LoadFile(LoadFileName: TFileName): boolean;
     function SaveFile(SaveFileName: TFileName; SaveFileFormat: TDSKImageFormat; Copy: boolean; Compress: boolean): boolean;
     function FindText(From: TDSKSector; Text: string; CaseSensitive: boolean): TDSKSector;
-    function GetNextLogicalSector(Sector: TDSKSector): TDSKSector;
 
     property Creator: string read FCreator write FCreator;
     property Corrupt: boolean read FCorrupt write FCorrupt;
@@ -94,6 +93,7 @@ type
     function DetectFormat: string;
     function DetectCopyProtection: string;
     function GetLogicalTrack(LogicalTrack: word): TDSKTrack;
+    function GetNextLogicalSector(Sector: TDSKSector): TDSKSector;
     function HasFDCErrors: boolean;
     function HasSpaceForDPB: boolean;
     function IsTrackSizeUniform: boolean;
@@ -408,52 +408,49 @@ begin
   if From = nil then
     NextSector := Disk.Side[0].Track[0].Sector[0]
   else
-    NextSector := GetNextLogicalSector(From);
+    NextSector := Disk.GetNextLogicalSector(From);
 
-  while (NextSector.FindText(Text, CaseSensitive) < 0) do
+  while (NextSector <> nil) and (NextSector.FindText(Text, CaseSensitive) < 0) do
   begin
-    NextSector := GetNextLogicalSector(NextSector);
+    NextSector := Disk.GetNextLogicalSector(NextSector);
   end;
 
-  Result := NextSector;
+  if NextSector = nil then
+    MessageDlg(SysUtils.Format('Cannot find "%s"', [Text]), mtInformation, [mbOK], 0)
+  else
+    Result := NextSector;
 end;
 
-// TODO: Consider ID's and alternate sides
-function TDSKImage.GetNextLogicalSector(Sector: TDSKSector): TDSKSector;
+function TDSKDisk.GetNextLogicalSector(Sector: TDSKSector): TDSKSector;
 var
-  SIdx, TIdx, AIdx: integer;
-  Disk: TDSKDisk;
+  SIdx, NextSectorID: integer;
+  CheckSector: TDSKSector;
+  CheckTrack: TDSKTrack;
+  Count: integer;
+  isdead: boolean;
 begin
-  Disk := Sector.ParentTrack.ParentSide.ParentDisk;
-  SIdx := Sector.Sector;
-  TIdx := Sector.ParentTrack.Track;
-  AIdx := Sector.ParentTrack.ParentSide.Side;
+  Result := nil;
+  NextSectorId := Sector.ID + 1;
+  CheckTrack := Sector.ParentTrack;
 
-  // Next sector
-  Inc(SIdx);
-
-  // At end of sector, next track
-  if SIdx >= Sector.ParentTrack.Sectors then
+  while (CheckTrack <> nil) do
   begin
-    SIdx := 0;
-    Inc(TIdx);
-    // Some tracks are unformatted, skip them
-    while Disk.Side[AIdx].Track[TIdx].Sectors = 0 do
+    // Find the next highest sector number on this track
+    isdead := CheckTrack = nil;
+    Count := CheckTrack.Sectors;
+    for SIdx := 0 to High(CheckTrack.Sector) do
     begin
-      Inc(TIdx);
-      if TIdx = Sector.ParentTrack.ParentSide.Tracks then
-      begin
-        Inc(AIdx);
-        if AIdx = Sector.ParentTrack.ParentSide.ParentDisk.Sides then
-        begin
-          Result := nil;
-          exit;
-        end;
-      end;
+      CheckSector := CheckTrack.Sector[SIdx];
+      if CheckSector.ID >= NextSectorID then
+        if (Result = nil) or (Result.ID > CheckSector.ID) then
+          Result := CheckSector;
     end;
-  end;
+    if (Result <> nil) then exit;
 
-  Result := Sector.ParentTrack.ParentSide.ParentDisk.Side[AIdx].Track[TIdx].Sector[SIdx];
+    // Find the next logical track
+    NextSectorID := 0;
+    CheckTrack := GetLogicalTrack(CheckTrack.Logical + 1);
+  end;
 end;
 
 function TDSKImage.LoadFile(LoadFileName: TFileName): boolean;
@@ -884,11 +881,19 @@ end;
 
 function TDSKDisk.GetLogicalTrack(LogicalTrack: word): TDSKTrack;
 var
-  PhTrack, PhSide: byte;
+  EIdx, TIdx: integer;
 begin
-  PhTrack := (LogicalTrack div Sides);
-  PhSide := LogicalTrack mod Sides;
-  Result := Side[PhSide].Track[phTrack];
+  for EIdx := 0 to Sides - 1 do
+    for TIdx := 0 to Side[EIdx].Tracks - 1 do
+    begin
+      if Side[EIdx].Track[TIdx].Logical = LogicalTrack then
+      begin
+        Result := Side[EIdx].Track[TIdx];
+        exit;
+      end;
+    end;
+
+  Result := nil;
 end;
 
 function TDSKDisk.IsTrackSizeUniform: boolean;

@@ -348,7 +348,7 @@ object frmMain: TfrmMain
     end
   end
   object dlgFind: TFindDialog
-    Options = [frDown, frHideUpDown, frDisableWholeWord]
+    Options = [frDown, frHideUpDown, frDisableWholeWord, frHideEntireScope]
     OnFind = dlgFindFind
     Left = 384
     Top = 112
