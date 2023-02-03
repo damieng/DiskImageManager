@@ -121,6 +121,7 @@ type
     function IsDiskNode(Node: TTreeNode): boolean;
     function AddColumn(Caption: string): TListColumn;
     function AddColumns(Captions: array of string): TListColumnArray;
+    procedure OnApplicationDropFiles(Sender: TObject; const FileNames: array of string);
   public
     Settings: TSettings;
 
@@ -185,6 +186,8 @@ begin
     if (ExtractFileExt(FileName) = '.dsk') and (FileExistsUTF8(FileName)) then
       LoadImage(FileName);
   end;
+
+  Application.AddOnDropFilesHandler(OnApplicationDropFiles);
 end;
 
 procedure TfrmMain.itmOpenClick(Sender: TObject);
@@ -1176,6 +1179,14 @@ begin
   SetLength(Result, Length(Captions));
   for CIdx := 0 to Length(Captions) - 1 do
     Result[CIdx] := AddColumn(Captions[CIdx]);
+end;
+
+procedure TfrmMain.OnApplicationDropFiles(Sender: TObject; const FileNames: array of string);
+var
+  FIdx: integer;
+begin
+  for FIdx := Low(FileNames) to High(FileNames) do
+    LoadImage(FileNames[FIdx]);
 end;
 
 end.

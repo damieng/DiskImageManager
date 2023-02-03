@@ -3,6 +3,7 @@ object frmMain: TfrmMain
   Height = 384
   Top = 725
   Width = 556
+  AllowDropFiles = True
   ClientHeight = 364
   ClientWidth = 556
   Color = clBtnFace
@@ -38,7 +39,7 @@ object frmMain: TfrmMain
       Indent = 19
       ReadOnly = True
       RowSelect = True
-      ScrollBars = ssAutoBoth
+      ScrollBars = ssAutoVertical
       ShowRoot = False
       TabOrder = 1
       OnChange = tvwMainChange
