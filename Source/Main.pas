@@ -746,14 +746,18 @@ begin
       begin
         TDSKImage(tvwMain.Items[Idx].Data).Free;
         tvwMain.Items[Idx].Delete;
-        RefreshList;
-        if (tvwMain.Selected = nil) and (Previous <> nil) then
-          Previous.Selected := True;
+        if tvwMain.Selected = nil then
+          if Previous <> nil then
+            Previous.Selected := True
+          else
+          if tvwMain.Items.Count > 0 then
+            tvwMain.Items[0].Selected := True;
         exit;
       end;
       Previous := tvwMain.Items[Idx];
     end;
   end;
+
 end;
 
 // Get the current image
