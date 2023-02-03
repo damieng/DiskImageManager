@@ -410,7 +410,7 @@ begin
     if tvwMain.Selected <> nil then
       with tvwMain.Selected do
       begin
-        pnlListLabel.Caption := AnsiReplaceStr(GetTitle(tvwMain.Selected), '&', '&&');
+        pnlListLabel.Caption := ' ' + AnsiReplaceStr(GetTitle(tvwMain.Selected), '&', '&&');
         lvwMain.Visible := not (ItemType(ImageIndex) = itAnalyse);
         DiskMap.Visible := not lvwMain.Visible;
         if Data <> nil then
