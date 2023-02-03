@@ -139,6 +139,9 @@ object frmMain: TfrmMain
         ShortCut = 16463
         OnClick = itmOpenClick
       end
+      object itmOpenRecent: TMenuItem
+        Caption = 'Open recent'
+      end
       object N1: TMenuItem
         Caption = '-'
       end

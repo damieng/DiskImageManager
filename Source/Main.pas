@@ -28,6 +28,7 @@ type
   { TfrmMain }
 
   TfrmMain = class(TForm)
+    itmOpenRecent: TMenuItem;
     mnuMain: TMainMenu;
     itmDisk: TMenuItem;
     itmOpen: TMenuItem;
@@ -81,6 +82,7 @@ type
     dlgFind: TFindDialog;
     procedure itmOpenClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure itmOpenRecentClick(Sender: TObject);
     procedure tvwMainChange(Sender: TObject; Node: TTreeNode);
     procedure lvwMainDblClick(Sender: TObject);
     procedure itmAboutClick(Sender: TObject);
@@ -122,6 +124,7 @@ type
     function AddColumn(Caption: string): TListColumn;
     function AddColumns(Captions: array of string): TListColumnArray;
     procedure OnApplicationDropFiles(Sender: TObject; const FileNames: array of string);
+    procedure UpdateRecentFilesMenu;
   public
     Settings: TSettings;
 
@@ -188,15 +191,57 @@ begin
   end;
 
   Application.AddOnDropFilesHandler(OnApplicationDropFiles);
+  UpdateRecentFilesMenu;
+end;
+
+procedure TfrmMain.itmOpenRecentClick(Sender: TObject);
+var
+  FileName: string;
+begin
+  if Sender is TMenuItem then
+  begin
+    FileName := (Sender as TMenuItem).Caption;
+    if FileExists(FileName) then
+    begin
+      LoadImage(FileName);
+      Settings.AddRecentFile(FileName);
+      UpdateRecentFilesMenu;
+    end
+    else
+    if MessageDlg('File does not exist', SysUtils.Format('Can not find file %s. Remove from recent list?', [FileName]),
+      mtConfirmation, mbYesNo, 0) = mrYes then
+      Settings.RecentFiles.Delete(Settings.RecentFiles.IndexOf(FileName));
+  end;
+end;
+
+procedure TfrmMain.UpdateRecentFilesMenu;
+var
+  Idx: integer;
+  MenuItem: TMenuItem;
+begin
+  itmOpenRecent.Clear;
+  for Idx := 0 to Settings.RecentFiles.Count - 1 do
+  begin
+    MenuItem := TMenuItem.Create(itmOpenRecent);
+    MenuItem.OnClick := itmOpenRecentClick;
+    MenuItem.Caption := Settings.RecentFiles[Idx];
+    itmOpenRecent.Add(MenuItem);
+  end;
 end;
 
 procedure TfrmMain.itmOpenClick(Sender: TObject);
 var
   Idx: integer;
+  FileName: string;
 begin
   if dlgOpen.Execute then
     for Idx := 0 to dlgOpen.Files.Count - 1 do
-      LoadImage(dlgOpen.Files[Idx]);
+    begin
+      FileName := dlgOpen.Files[Idx];
+      LoadImage(FileName);
+      Settings.AddRecentFile(FileName);
+      UpdateRecentFilesMenu;
+    end;
 end;
 
 function TfrmMain.LoadImage(FileName: TFileName): boolean;
@@ -1190,7 +1235,11 @@ var
   FIdx: integer;
 begin
   for FIdx := Low(FileNames) to High(FileNames) do
+  begin
     LoadImage(FileNames[FIdx]);
+    Settings.AddRecentFile(FileNames[FIdx]);
+  end;
+  UpdateRecentFilesMenu;
 end;
 
 end.

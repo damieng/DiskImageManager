@@ -42,6 +42,7 @@ type
     // Workspace
     RestoreWorkspace: boolean;
     OpenView: string;
+    RecentFiles: TStringList;
 
     // Saving
     WarnConversionProblems: boolean;
@@ -53,6 +54,7 @@ type
     procedure Apply;
     procedure Save;
     procedure Reset;
+    procedure AddRecentFile(FileName: string);
   end;
 
 implementation
@@ -65,6 +67,7 @@ var
 constructor TSettings.Create(Owner: TForm);
 begin
   frmMain := TFrmMain(Owner);
+  RecentFiles := TStringList.Create;
 end;
 
 // Apply some settings directly to other places
@@ -137,6 +140,16 @@ begin
   SaveDiskMapWidth := Reg.ReadInteger(S, 'MapWidth', 640);
   SaveDiskMapHeight := Reg.ReadInteger(S, 'MapHeight', 480);
 
+  S := 'Recent';
+  Idx := 1;
+  RecentFiles.Clear;
+  repeat
+    FileName := Reg.ReadString(S, StrInt(Idx), '*end');
+    Inc(Idx);
+    if FileName <> '*end' then
+      RecentFiles.Add(FileName);
+  until FileName = '*end';
+
   Reg.Free;
 
   Apply;
@@ -196,6 +209,13 @@ begin
   Reg.WriteInteger(S, 'MapWidth', SaveDiskMapWidth);
   Reg.WriteInteger(S, 'MapHeight', SaveDiskMapHeight);
 
+  S := 'Recent';
+  Reg.EraseSection(S);
+  for Idx := 0 to RecentFiles.Count - 1 do
+  begin
+    Reg.WriteString(S, StrInt(Idx + 1), RecentFiles[Idx]);
+  end;
+
   Reg.Free;
 end;
 
@@ -203,6 +223,21 @@ procedure TSettings.Reset;
 begin
   DeleteFile(ChangeFileExt(Application.ExeName, '.ini'));
   Load;
+end;
+
+procedure TSettings.AddRecentFile(FileName: string);
+var
+  Index: integer;
+begin
+  // Move our recent file to the top of the list
+  Index := RecentFiles.IndexOf(FileName);
+  if Index > 0 then
+    RecentFiles.Delete(Index);
+  RecentFiles.Insert(0, FileName);
+
+  // Limit size of the list
+  while RecentFiles.Count > 8 do
+    RecentFiles.Pop;
 end;
 
 end.
