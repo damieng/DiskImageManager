@@ -4,7 +4,7 @@ Disk Image Manager (previously SPIN Disk Manager) is a cross-platform GUI applic
 
 Many of this tools features and functions were driven by the Spectrum Disk Preservation team which use this format and tool to help manage the selection and testing of disk images archived to The World of Spectrum and The TZX Vault.
 
-These images are traditionally created with CPDRead under DOS but Simon Owen's mordern [SamDisk](http://simonowen.com/samdisk/) works great under Windows.
+These images are traditionally created with CPDRead under DOS but Simon Owen's mordern [SamDisk](http://simonowen.com/samdisk/) works great under Windows and provides for much more advanced imaging especially around copy-protected disks.
 
 ## Features
 
