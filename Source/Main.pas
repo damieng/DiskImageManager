@@ -183,12 +183,14 @@ begin
   itmAbout.Caption := 'About ' + Application.Title;
   itmDarkUnusedSectors.Checked := DiskMap.DarkBlankSectors;
 
+  tvwMain.BeginUpdate;
   for Idx := 1 to ParamCount do
   begin
     FileName := ParamStr(Idx);
     if (ExtractFileExt(FileName) = '.dsk') and (FileExistsUTF8(FileName)) then
       LoadImage(FileName);
   end;
+  tvwMain.EndUpdate;
 
   Application.AddOnDropFilesHandler(OnApplicationDropFiles);
   UpdateRecentFilesMenu;
@@ -264,7 +266,7 @@ end;
 procedure TfrmMain.AddWorkspaceImage(Image: TDSKImage);
 var
   SIdx, TIdx, EIdx: integer;
-  ImageNode, SideNode, TrackNode, TracksNode, SpecsNode, SectorNode, MapNode: TTreeNode;
+  ImageNode, SideNode, TrackNode, TracksNode, SpecsNode, SectorNode, MapNode, FileNode: TTreeNode;
 begin
   SideNode := nil;
   tvwMain.Items.BeginUpdate;
@@ -882,6 +884,7 @@ end;
 procedure TfrmMain.itmOptionsClick(Sender: TObject);
 begin
   TfrmOptions.Create(self, Settings).Show;
+  RefreshList;
 end;
 
 procedure TfrmMain.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -914,6 +917,7 @@ begin
   else
     Buttons := [mbYes, mbNo];
 
+  tvwMain.BeginUpdate;
   while tvwMain.Items.GetFirstNode <> nil do
   begin
     if IsDiskNode(tvwMain.Items.GetFirstNode) then
@@ -932,6 +936,7 @@ begin
       tvwMain.Items.GetFirstNode.Delete;
     end;
   end;
+  tvwMain.EndUpdate;
   RefreshList;
   UpdateMenus;
 end;
@@ -1234,11 +1239,13 @@ procedure TfrmMain.OnApplicationDropFiles(Sender: TObject; const FileNames: arra
 var
   FIdx: integer;
 begin
+  tvwMain.BeginUpdate;
   for FIdx := Low(FileNames) to High(FileNames) do
   begin
     LoadImage(FileNames[FIdx]);
     Settings.AddRecentFile(FileNames[FIdx]);
   end;
+  tvwMain.EndUpdate;
   UpdateRecentFilesMenu;
 end;
 

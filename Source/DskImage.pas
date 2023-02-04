@@ -993,7 +993,6 @@ begin
         Result := True;
 end;
 
-
 // Side                                                  .
 constructor TDSKSide.Create(ParentDisk: TDSKDisk);
 begin
@@ -1145,7 +1144,6 @@ begin
   SectorSize := Formatter.SectorSize;
   Sectors := Formatter.SectorsPerTrack;
   GapLength := Formatter.GapFormat;
-  //  Size := Formatter.SectorsPerTrack * Formatter.SectorSize;
 
   case Formatter.Sides of
     dsSideSingle: Logical := Track;
