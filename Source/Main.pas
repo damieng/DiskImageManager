@@ -350,6 +350,7 @@ end;
 procedure TfrmMain.UpdateMenus;
 var
   AllowImageFile: boolean;
+  ObjectData: TObject;
 begin
   AllowImageFile := False;
   tvwMain.PopupMenu := nil;
@@ -358,8 +359,11 @@ begin
   if (tvwMain.Selected <> nil) and (tvwMain.Selected.Data <> nil) then
   begin
     AllowImageFile := True;
-    if (TObject(tvwMain.Selected.Data).ClassType = TDSKSector) or (TObject(tvwMain.Selected.Data).ClassType = TDSKTrack) then
+    ObjectData := TObject(tvwMain.Selected.Data);
+    if (ObjectData.ClassType = TDSKSector) or (ObjectData.ClassType = TDSKTrack) then
       tvwMain.PopupMenu := popSector;
+    if ItemType(tvwMain.Selected.ImageIndex) = itAnalyse then
+      tvwMain.PopupMenu := popDiskMap;
   end;
 
   // Set main menu options
