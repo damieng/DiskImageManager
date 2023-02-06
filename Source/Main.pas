@@ -138,7 +138,7 @@ type
 
     procedure AnalyseMap(Side: TDSKSide);
     procedure RefreshList;
-    procedure RefreshStrings(Image: TDSKImage);
+    procedure RefreshStrings(Disk: TDSKDisk);
     procedure RefreshListFiles(FileSystem: TDSKFileSystem);
     procedure RefreshListImage(Image: TDSKImage);
     procedure RefreshListMessages(Messages: TStringList);
@@ -322,7 +322,7 @@ begin
     end;
 
     //AddTree(ImageNode, 'Files', Ord(itFiles), Image.Disk.FileSystem);
-    AddTree(ImageNode, 'Strings', Ord(itStrings), Image);
+    AddTree(ImageNode, 'Strings', Ord(itStrings), Image.Disk);
 
     if Image.Messages.Count > 0 then
       AddTree(ImageNode, 'Messages', Ord(itMessages), Image.Messages);
@@ -893,12 +893,12 @@ begin
   end;
 end;
 
-procedure TfrmMain.RefreshStrings(Image: TDSKImage);
+procedure TfrmMain.RefreshStrings(Disk: TDSKDisk);
 var
   Idx: integer;
   Strings: TStringList;
 begin
-  Strings := Image.Disk.GetAllStrings(4, 4);
+  Strings := Disk.GetAllStrings(4, 4);
   memo.Clear;
   lvwMain.Hide;
   for Idx := 0 to Strings.Count - 1 do
@@ -1048,12 +1048,16 @@ end;
 procedure TfrmMain.itmSaveClick(Sender: TObject);
 var
   selectedImage: TDSKImage;
+  Node: TTreeNode;
 begin
-  if tvwMain.Selected <> nil then
+  Node := tvwMain.Selected;
+  if Node <> nil then
   begin
     selectedImage := GetCurrentImage;
     SaveImage(selectedImage);
-    tvwMain.Selected.Text := ExtractFileName(selectedImage.FileName);
+    while (TObject(Node.Data).ClassType <> TDskImage) do
+          Node := Node.Parent;
+    Node.Text := ExtractFileName(selectedImage.FileName);
   end;
 end;
 

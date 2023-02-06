@@ -7,10 +7,12 @@ object frmMain: TfrmMain
   ClientHeight = 364
   ClientWidth = 556
   Color = clBtnFace
+  Font.CharSet = ANSI_CHARSET
+  Font.Pitch = fpVariable
+  Font.Quality = fqDraft
   Menu = mnuMain
   OnClose = FormClose
   OnCreate = FormCreate
-  ParentFont = True
   LCLVersion = '2.2.4.0'
   object splVertical: TSplitter
     Left = 180
