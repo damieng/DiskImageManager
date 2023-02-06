@@ -14,14 +14,14 @@ unit Main;
 interface
 
 uses
-  DiskMap, DskImage, Utils, About, Options, SectorProperties, Settings,
-  Classes, Graphics, SysUtils, Forms, Dialogs, Menus, ComCtrls,
-  ExtCtrls, Controls, Clipbrd, FileUtil, StrUtils, LazFileUtils, LConvEncoding;
+  DiskMap, DskImage, Utils, About, Options, SectorProperties, Settings, Classes,
+  Graphics, SysUtils, Forms, Dialogs, Menus, ComCtrls, ExtCtrls, Controls,
+  Clipbrd, StdCtrls, FileUtil, StrUtils, LazFileUtils, LConvEncoding;
 
 type
   // Must match the imagelist, put sides last
   ItemType = (itDisk, itSpecification, itTracksAll, itTrack, itFiles, itSector,
-    itAnalyse, itSides, itSide0, itSide1, itDiskCorrupt, itMessages);
+    itAnalyse, itSides, itSide0, itSide1, itDiskCorrupt, itMessages, itStrings);
 
   TListColumnArray = array of TListColumn;
 
@@ -29,6 +29,7 @@ type
 
   TfrmMain = class(TForm)
     itmOpenRecent: TMenuItem;
+    memo: TMemo;
     mnuMain: TMainMenu;
     itmDisk: TMenuItem;
     itmOpen: TMenuItem;
@@ -137,6 +138,7 @@ type
 
     procedure AnalyseMap(Side: TDSKSide);
     procedure RefreshList;
+    procedure RefreshStrings(Image: TDSKImage);
     procedure RefreshListFiles(FileSystem: TDSKFileSystem);
     procedure RefreshListImage(Image: TDSKImage);
     procedure RefreshListMessages(Messages: TStringList);
@@ -266,7 +268,7 @@ end;
 procedure TfrmMain.AddWorkspaceImage(Image: TDSKImage);
 var
   SIdx, TIdx, EIdx: integer;
-  ImageNode, SideNode, TrackNode, TracksNode, SpecsNode, SectorNode, MapNode, FileNode: TTreeNode;
+  ImageNode, SideNode, TrackNode, TracksNode, SpecsNode, SectorNode, MapNode: TTreeNode;
 begin
   SideNode := nil;
   tvwMain.Items.BeginUpdate;
@@ -287,6 +289,7 @@ begin
       if Settings.OpenView = 'Specification' then
         tvwMain.Selected := SpecsNode;
     end;
+
     // Add the sides
     for SIdx := 0 to Image.Disk.Sides - 1 do
     begin
@@ -317,7 +320,10 @@ begin
             end;
         end;
     end;
-    //FileNode := AddTree(ImageNode,'Files',Ord(itFiles),Image.Disk.FileSystem);
+
+    //AddTree(ImageNode, 'Files', Ord(itFiles), Image.Disk.FileSystem);
+    AddTree(ImageNode, 'Strings', Ord(itStrings), Image);
+
     if Image.Messages.Count > 0 then
       AddTree(ImageNode, 'Messages', Ord(itMessages), Image.Messages);
   end;
@@ -375,6 +381,7 @@ begin
   if (lvwMain.Selected = nil) and (DiskMap.Visible) then
   begin
     DiskMap.Visible := False;
+    memo.Visible := False;
     lvwMain.Visible := True;
   end;
 
@@ -417,8 +424,9 @@ begin
       with tvwMain.Selected do
       begin
         pnlListLabel.Caption := ' ' + AnsiReplaceStr(GetTitle(tvwMain.Selected), '&', '&&');
-        lvwMain.Visible := not (ItemType(ImageIndex) = itAnalyse);
-        DiskMap.Visible := not lvwMain.Visible;
+        lvwMain.Visible := (ItemType(ImageIndex) <> itAnalyse) and (Caption <> 'Strings');
+        DiskMap.Visible := ItemType(ImageIndex) = itAnalyse;
+        memo.Visible := Caption = 'Strings';
         if Data <> nil then
         begin
           case ItemType(ImageIndex) of
@@ -429,6 +437,7 @@ begin
             itTrack: RefreshListSector(Data);
             itAnalyse: AnalyseMap(Data);
             itFiles: RefreshListFiles(Data);
+            itStrings: RefreshStrings(Data);
             itMessages: RefreshListMessages(Data);
             else
               if TObject(Data).ClassType = TDSKSide then
@@ -882,6 +891,19 @@ begin
       Subitems.Add(Newfile.FileType);
     end;
   end;
+end;
+
+procedure TfrmMain.RefreshStrings(Image: TDSKImage);
+var
+  Idx: integer;
+  Strings: TStringList;
+begin
+  Strings := Image.Disk.GetAllStrings(4, 4);
+  memo.Clear;
+  lvwMain.Hide;
+  for Idx := 0 to Strings.Count - 1 do
+    memo.Lines.Append(Strings[Idx]);
+  memo.Show;
 end;
 
 // Menu: View > Options

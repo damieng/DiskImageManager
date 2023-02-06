@@ -15,7 +15,7 @@ interface
 
 uses
   DSKFormat, Utils,
-  Classes, Dialogs, SysUtils, Math;
+  Classes, Dialogs, SysUtils, Math, Character;
 
 const
   MaxSectorSize = 32768;
@@ -94,6 +94,7 @@ type
     function DetectCopyProtection: string;
     function GetLogicalTrack(LogicalTrack: word): TDSKTrack;
     function GetNextLogicalSector(Sector: TDSKSector): TDSKSector;
+    function GetAllStrings(MinLength: integer; MinUniques: integer): TStringList;
     function HasFDCErrors: boolean;
     function HasSpaceForDPB: boolean;
     function IsTrackSizeUniform: boolean;
@@ -940,6 +941,64 @@ begin
     with Side[0].Track[0].Sector[0] do
       if (FDCStatus[1] and 32 = 32) or (FDCStatus[2] and 64 = 64) then
         Result := Result + ' (Corrupt?)';
+  end;
+end;
+
+const
+  TrimChars: array[0..30] of char = (' ', '''', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '{',
+    '}', ':', '"', '<', '>', '?', '-', '=', '[', ']', ';', ',', '.', '/', '`', '~');
+
+function TDSKDisk.GetAllStrings(MinLength: integer; MinUniques: integer): TStringList;
+var
+  Sector: TDSKSector;
+  CurrentText: string;
+  Index, CIdx: integer;
+  NextByte: byte;
+  Uniques: TStringList;
+  CurrChar: char;
+begin
+  Result := TStringList.Create;
+  Result.Duplicates := DupIgnore;
+  Result.Sorted := True;
+  CurrentText := '';
+  Sector := Side[0].Track[0].Sector[0];
+  Index := Sides;
+  Index := 0;
+  Uniques := TStringList.Create;
+  Uniques.Duplicates := DupIgnore;
+  Uniques.Sorted := True;
+
+  while Sector <> nil do
+  begin
+    NextByte := Sector.Data[Index];
+    if (NextByte >= 32) and (NextByte <= 127) then
+    begin
+      CurrentText := CurrentText + Chr(NextByte);
+    end
+    else
+    begin
+      if CurrentText.Trim(TrimChars).Length >= MinLength then
+      begin
+        Uniques.Clear;
+        for CIdx := 0 to CurrentText.Length - 1 do
+        begin
+          CurrChar := CurrentText[CIdx];
+          if IsUpper(CurrChar) or IsLower(CurrChar) then Uniques.Append(CurrChar);
+          if (Uniques.Count >= MinUniques) then break;
+        end;
+
+        if (Uniques.Count >= MinUniques) then
+          Result.Append(CurrentText.Trim());
+      end;
+      CurrentText := '';
+    end;
+
+    Inc(Index);
+    if Index = Sector.DataSize then
+    begin
+      Sector := GetNextLogicalSector(Sector);
+      Index := 0;
+    end;
   end;
 end;
 
