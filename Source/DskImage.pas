@@ -92,11 +92,11 @@ type
     function BootableOn: string;
     function DetectFormat: string;
     function DetectCopyProtection: string;
+    function GetFirstSector: TDSKSector;
     function GetLogicalTrack(LogicalTrack: word): TDSKTrack;
     function GetNextLogicalSector(Sector: TDSKSector): TDSKSector;
     function GetAllStrings(MinLength: integer; MinUniques: integer): TStringList;
     function HasFDCErrors: boolean;
-    function HasSpaceForDPB: boolean;
     function IsTrackSizeUniform: boolean;
     function IsUniform(IgnoreEmptyTracks: boolean): boolean;
     procedure Format(Formatter: TDSKFormatSpecification);
@@ -168,8 +168,7 @@ type
 
 
   // Sector
-  TDSKSectorStatus = (ssUnformatted, ssFormattedBlank, ssFormattedFilled,
-    ssFormattedInUse);
+  TDSKSectorStatus = (ssUnformatted, ssFormattedBlank, ssFormattedFilled, ssFormattedInUse);
 
   TDSKSector = class(TObject)
   private
@@ -208,10 +207,9 @@ type
 
 
   // Specification (Optional PCW/CPC+3 disk specification)
-  TDSKSpecFormat = (dsFormatPCW_SS, dsFormatCPC_System, dsFormatCPC_Data,
-    dsFormatPCW_DS, dsFormatAssumedPCW_SS, dsFormatInvalid);
-  TDSKSpecSide = (dsSideSingle, dsSideDoubleAlternate, dsSideDoubleSuccessive,
-    dsSideDoubleReverse, dsSideInvalid);
+  TDSKSpecFormat = (dsFormatPCW_SS, dsFormatCPC_System, dsFormatCPC_Data, dsFormatPCW_DS,
+    dsFormatAssumedPCW_SS, dsFormatInvalid);
+  TDSKSpecSide = (dsSideSingle, dsSideDoubleAlternate, dsSideDoubleSuccessive, dsSideDoubleReverse, dsSideInvalid);
   TDSKSpecTrack = (dsTrackSingle, dsTrackDouble, dsTrackInvalid);
 
   TDSKSpecification = class(TObject)
@@ -235,6 +233,7 @@ type
 
     procedure SetBlockShift(NewBlockShift: byte);
     procedure SetChecksum(NewChecksum: byte);
+    procedure SetDefaults;
     procedure SetDirectoryBlocks(NewDirectoryBlocks: byte);
     procedure SetFDCSectorSize(NewFDCSectorSize: byte);
     procedure SetFormat(NewFormat: TDSKSpecFormat);
@@ -247,10 +246,12 @@ type
     procedure SetTrack(NewTrack: TDSKSpecTrack);
     procedure SetTracksPerSide(NewTracksPerSide: byte);
   public
+    Source: string;
+
     constructor Create(ParentDisk: TDSKDisk);
     destructor Destroy; override;
 
-    function Read: TDSKSpecFormat;
+    procedure Read;
     function Write: boolean;
     function GetBlockSize: integer;
 
@@ -280,8 +281,6 @@ type
 
     constructor Create(ParentDisk: TDSKDisk);
     destructor Destroy; override;
-
-    function GetDiskFile(Offset: integer): TDSKFile;
   end;
 
 
@@ -920,7 +919,7 @@ var
   Mod256: integer;
 begin
   Result := '';
-  if HasSpaceForDPB then
+  if GetFirstSector <> nil then
   begin
     if Side[0].Track[0].Sector[1].Status = ssFormattedInUse then
     begin
@@ -1021,7 +1020,7 @@ var
   CheckTracks, CheckSectors, CheckSectorSize: integer;
 begin
   Result := True;
-  if HasSpaceForDPB then
+  if GetFirstSector <> nil then
   begin
     CheckTracks := Side[0].Tracks;
     CheckSectors := Side[0].Track[0].Sectors;
@@ -1043,13 +1042,11 @@ begin
   end;
 end;
 
-function TDSKDisk.HasSpaceForDPB: boolean;
+function TDSKDisk.GetFirstSector: TDSKSector;
 begin
-  Result := False;
-  if Sides > 0 then
-    if Side[0].Tracks > 0 then
-      if Side[0].Track[0].Sectors > 0 then
-        Result := True;
+  Result := nil;
+  if (Sides > 0) and (Side[0].Tracks > 0) and (Side[0].Track[0].Sectors > 0) then
+    Result := Side[0].Track[0].Sector[0];
 end;
 
 // Side                                                  .
@@ -1366,26 +1363,6 @@ begin
   inherited Destroy;
 end;
 
-function TDSKFileSystem.GetDiskFile(Offset: integer): TDSKFile;
-var
-  DirBlock: TDSKSector;
-  DirEnt: array[0..32] of char;
-  Idx: integer;
-begin
-  Result := TDSKFile.Create(Self);
-  for Idx := 0 to FParentDisk.Specification.DirectoryBlocks - 1 do
-  begin
-    DirBlock := FParentDisk.GetLogicalTrack(FParentDisk.Specification.FReservedTracks + Idx).Sector[0];
-    with Result do
-    begin
-      Move(DirBlock.Data[Offset * DirEntSize], DirEnt, DirEntSize);
-      FileName := StrBlockClean(DirEnt, 1, 8);
-      Size := (integer(DirEnt[12]) * 256) + integer(DirEnt[13]);
-      FileType := 'BASIC';
-    end;
-  end;
-end;
-
 // File                                                  .
 constructor TDSKFile.Create(ParentFileSystem: TDSKFileSystem);
 begin
@@ -1404,6 +1381,7 @@ constructor TDSKSpecification.Create(ParentDisk: TDSKDisk);
 begin
   inherited Create;
   FParentDisk := ParentDisk;
+  Read;
 end;
 
 destructor TDSKSpecification.Destroy;
@@ -1534,60 +1512,109 @@ begin
   end;
 end;
 
-function TDSKSpecification.Read: TDSKSpecFormat;
+procedure TDSKSpecification.SetDefaults;
+begin
+  FFormat := dsFormatAssumedPCW_SS;
+  FSide := dsSideSingle;
+  FTrack := dsTrackSingle;
+  FTracksPerSide := 40;
+  FSectorsPerTrack := 9;
+  FSectorSize := 512;
+  FReservedTracks := 1;
+  FBlockShift := 3;
+  FDirectoryBlocks := 2;
+  FGapReadWrite := 42;
+  FGapFormat := 82;
+end;
+
+procedure TDSKSpecification.Read;
 var
+  FirstSector: TDSKSector;
+  CheckByte: byte;
+  Idx: integer;
   Check: extended;
 begin
   FFormat := dsFormatInvalid;
-  Result := FFormat;
-  if FParentDisk.HasSpaceForDPB then
-    with FParentDisk.Side[0].Track[0].Sector[0] do
-    begin
-      case Data[0] of
-        0: FFormat := dsFormatPCW_SS;
-        1: FFormat := dsFormatCPC_System;
-        2: FFormat := dsFormatCPC_Data;
-        3: FFormat := dsFormatPCW_DS;
-        else
-          exit;
+  FirstSector := FParentDisk.GetFirstSector;
+  if FirstSector = nil then exit;
+
+  with FirstSector do
+  begin
+    case ID of
+      65: begin // CPC System
+        SetDefaults;
+        Source := 'Sector 0 has ID of 65';
+        FFormat := dsFormatCPC_System;
+        FReservedTracks := 2;
+        exit;
       end;
-
-      case (Data[1] and $3) of
-        0: FSide := dsSideSingle;
-        1: FSide := dsSideDoubleAlternate;
-        2: FSide := dsSideDoubleSuccessive;
+      193: begin // CPC Data
+        SetDefaults;
+        Source := 'Sector 0 has ID of 193';
+        FFormat := dsFormatCPC_Data;
+        FReservedTracks := 0;
+        exit;
       end;
-
-      if (Data[1] and $80) = $80 then
-        FTrack := dsTrackDouble
-      else
-        FTrack := dsTrackSingle;
-
-      FTracksPerSide := Data[2];
-      FSectorsPerTrack := Data[3];
-
-      Check := Power(2, (Data[4] + 7));
-      if (Check >= 0) and (Check <= 512) then
-        FSectorSize := Round(Check)
-      else
-        FSectorSize := 0;
-
-      FReservedTracks := Data[5];
-
-      FBlockShift := Data[6];
-
-      FDirectoryBlocks := Data[7];
-      FGapReadWrite := Data[8];
-      FGapFormat := Data[9];
-      FChecksum := Data[15];
     end;
-  Result := FFormat;
+
+    if FirstSector.DataSize < 10 then exit;
+
+    // If first 10 bytes are same value then PCW/+3
+    CheckByte := FirstSector.Data[0];
+    Idx := 1;
+    while (CheckByte = FirstSector.Data[Idx]) and (Idx <= 10) do
+      Inc(Idx);
+    if Idx = 11 then
+    begin
+      SetDefaults;
+      Source := SysUtils.Format('Sector 0 spec block is all %x', [CheckByte]);
+    end;
+
+    // Okay, finally lets check for a disk specification
+    case Data[0] of
+      0: FFormat := dsFormatPCW_SS;
+      1: FFormat := dsFormatCPC_System;
+      2: FFormat := dsFormatCPC_Data;
+      3: FFormat := dsFormatPCW_DS;
+      else
+        exit;
+    end;
+
+    Source := 'Sector 0 spec block';
+
+    case (Data[1] and $3) of
+      0: FSide := dsSideSingle;
+      1: FSide := dsSideDoubleAlternate;
+      2: FSide := dsSideDoubleSuccessive;
+    end;
+
+    if (Data[1] and $80) = $80 then
+      FTrack := dsTrackDouble
+    else
+      FTrack := dsTrackSingle;
+
+    FTracksPerSide := Data[2];
+    FSectorsPerTrack := Data[3];
+
+    Check := Power(2, (Data[4] + 7));
+    if (Check >= 0) and (Check <= 512) then
+      FSectorSize := Round(Check)
+    else
+      FSectorSize := 0;
+
+    FReservedTracks := Data[5];
+    FBlockShift := Data[6];
+    FDirectoryBlocks := Data[7];
+    FGapReadWrite := Data[8];
+    FGapFormat := Data[9];
+    FChecksum := Data[15];
+  end;
 end;
 
 function TDSKSpecification.Write: boolean;
 begin
   Result := False;
-  if FParentDisk.HasSpaceForDPB then
+  if FParentDisk.GetFirstSector <> nil then
     with FParentDisk.Side[0].Track[0].Sector[0] do
     begin
       case FFormat of
@@ -1729,7 +1756,7 @@ end;
 
 constructor TDSKFormatSpecification.Create(Format: integer);
 begin
-  inherited Create();  // Call the parent method
+  inherited Create();
 
   // Amstrad PCW/Spectrum +3 CF2 (start from this)
   Name := 'Amstrad PCW/Spectrum +3';

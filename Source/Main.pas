@@ -283,7 +283,8 @@ begin
   if Image.Disk.Sides > 0 then
   begin
     // Optional specification
-    if Image.Disk.Specification.Read <> dsFormatInvalid then
+    Image.Disk.Specification.Read;
+    if Image.Disk.Specification.Format <> dsFormatInvalid then
     begin
       SpecsNode := AddTree(ImageNode, 'Specification', Ord(itSpecification), Image.Disk.Specification);
       if Settings.OpenView = 'Specification' then
@@ -548,6 +549,7 @@ begin
   AddListInfo('Format', DSKSpecFormats[Specification.Format]);
   if Specification.Format <> dsFormatInvalid then
   begin
+    AddListInfo('Source', Specification.Source);
     AddListInfo('Sided', DSKSpecSides[Specification.Side]);
     AddListInfo('Track mode', DSKSpecTracks[Specification.Track]);
     AddListInfo('Tracks/side', StrInt(Specification.TracksPerSide));
@@ -857,9 +859,6 @@ end;
 
 // Load list with filenames
 procedure TfrmMain.RefreshListFiles(FileSystem: TDSKFileSystem);
-var
-  Idx: integer;
-  NewFile: TDSKFile;
 begin
   with lvwMain.Columns do
   begin
@@ -878,17 +877,6 @@ begin
     begin
       Caption := 'Type';
       AutoSize := True;
-    end;
-  end;
-
-  for Idx := 0 to 10 do
-  begin
-    with lvwMain.Items.Add do
-    begin
-      NewFile := FileSystem.GetDiskFile(Idx);
-      Caption := NewFile.FileName;
-      Subitems.Add(StrInt(NewFile.Size));
-      Subitems.Add(Newfile.FileType);
     end;
   end;
 end;
