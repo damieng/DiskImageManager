@@ -15,7 +15,7 @@ interface
 
 uses
   Utils, DskImage,
-  Classes, Dialogs, SysUtils, IniFiles, Graphics, Forms, FileUtil,
+  Classes, Dialogs, SysUtils, IniFiles, Graphics, Forms, FileUtil, ComCtrls,
   LazFileUtils;
 
 type
@@ -159,7 +159,8 @@ end;
 procedure TSettings.Save;
 var
   Reg: TIniFile;
-  Idx, Count: integer;
+  Idx: integer;
+  Node: TTreeNode;
   S: string;
 begin
   Reg := TIniFile.Create(ChangeFileExt(Application.ExeName, '.ini'));
@@ -192,16 +193,15 @@ begin
   Reg.WriteString(S, 'Mapping', Mapping);
 
   S := 'Workspace';
-  Count := 1;
   Reg.EraseSection(S);
   Reg.WriteBool(S, 'Restore', RestoreWorkspace);
   with frmMain do
     for Idx := 0 to tvwMain.Items.Count - 1 do
-      if (tvwMain.Items[Idx].Data <> nil) and (TObject(tvwMain.Items[Idx].Data).ClassType = TDSKImage) then
-      begin
-        Reg.WriteString(S, StrInt(Count), TDSKImage(tvwMain.Items[Idx].Data).FileName);
-        Inc(Count);
-      end;
+    begin
+      Node := tvwMain.Items[Idx];
+      if (Node.Data <> nil) and (TObject(Node.Data).ClassType = TDSKImage) then
+        Reg.WriteString(S, StrInt(Idx + 1), TDSKImage(Node.Data).FileName);
+    end;
 
   S := 'Saving';
   Reg.WriteBool(S, 'WarnConversionProblems', WarnConversionProblems);
@@ -212,9 +212,7 @@ begin
   S := 'Recent';
   Reg.EraseSection(S);
   for Idx := 0 to RecentFiles.Count - 1 do
-  begin
     Reg.WriteString(S, StrInt(Idx + 1), RecentFiles[Idx]);
-  end;
 
   Reg.Free;
 end;
@@ -230,9 +228,13 @@ var
   Index: integer;
 begin
   // Move our recent file to the top of the list
-  Index := RecentFiles.IndexOf(FileName);
-  if Index > 0 then
-    RecentFiles.Delete(Index);
+  repeat
+    begin
+      Index := RecentFiles.IndexOf(FileName);
+      if Index >= 0 then
+        RecentFiles.Delete(Index);
+    end;
+  until Index = -1;
   RecentFiles.Insert(0, FileName);
 
   // Limit size of the list
