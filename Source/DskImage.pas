@@ -14,14 +14,12 @@ unit DskImage;
 interface
 
 uses
-  DSKFormat, Utils,
-  Classes, Dialogs, SysUtils, Math, Character, FGL;
+  DSKFormat, Utils, Classes, Dialogs, SysUtils, Math, Character, FGL;
 
 const
   MaxSectorSize = 32768;
   Alt8KSize = 6144;
-  FDCSectorSizes: array[0..8] of word =
-    (128, 256, 512, 1024, 2048, 4096, 8192, 16384, MaxSectorSize);
+  FDCSectorSizes: array[0..8] of word = (128, 256, 512, 1024, 2048, 4096, 8192, 16384, MaxSectorSize);
 
 type
   // Physical disk structure
@@ -48,7 +46,6 @@ type
     FFileName: TFileName;
     FFileSize: int64;
     FIsChanged: boolean;
-
     procedure SetIsChanged(NewValue: boolean);
     function LoadFileDSK(DiskFile: TFileStream): boolean;
     function SaveFileDSK(DiskFile: TFileStream; SaveFileFormat: TDSKImageFormat; Compress: boolean): boolean;
@@ -78,7 +75,6 @@ type
     FFileSystem: TDSKFileSystem;
     FParentImage: TDSKImage;
     FSpecification: TDSKSpecification;
-
     function GetFormattedCapacity: integer;
     function GetSides: byte;
     function GetTrackTotal: word;
@@ -114,10 +110,8 @@ type
   TDSKSide = class(TObject)
   private
     FParentDisk: TDSKDisk;
-
     function GetTracks: byte;
     function GetHighTrackCount: byte;
-
     procedure SetTracks(NewTracks: byte);
   public
     Side: byte;
@@ -138,7 +132,6 @@ type
   TDSKTrack = class(TObject)
   private
     FParentSide: TDSKSide;
-
     function GetIsFormatted: boolean;
     function GetLowSectorID: byte;
     function GetSectors: byte;
@@ -176,7 +169,6 @@ type
     FDataSize: word;
     FIsChanged: boolean;
     FParentTrack: TDSKTrack;
-
     function GetStatus: TDSKSectorStatus;
   public
     Data: array[0..MaxSectorSize] of byte;
@@ -216,7 +208,6 @@ type
   private
     FParentDisk: TDSKDisk;
     FIsChanged: boolean;
-
     FBlockShift: byte;
     FChecksum: byte;
     FDirectoryBlocks: byte;
@@ -230,7 +221,6 @@ type
     FSide: TDSKSpecSide;
     FTrack: TDSKSpecTrack;
     FTracksPerSide: byte;
-
     procedure SetBlockShift(NewBlockShift: byte);
     procedure SetChecksum(NewChecksum: byte);
     procedure SetDefaults;
@@ -423,7 +413,7 @@ end;
 
 function TDSKDisk.GetNextLogicalSector(Sector: TDSKSector): TDSKSector;
 var
-  SIdx, NextSectorID: integer;
+  NextSectorID: integer;
   CheckSector: TDSKSector;
   CheckTrack: TDSKTrack;
 begin
@@ -434,9 +424,8 @@ begin
   while (CheckTrack <> nil) do
   begin
     // Find the next highest sector number on this track
-    for SIdx := 0 to High(CheckTrack.Sector) do
+    for CheckSector in CheckTrack.Sector do
     begin
-      CheckSector := CheckTrack.Sector[SIdx];
       if CheckSector.ID >= NextSectorID then
         if (Result = nil) or (Result.ID > CheckSector.ID) then
           Result := CheckSector;
@@ -684,9 +673,10 @@ var
   SCTInfoBlock: TSCTInfoBlock;
   SIdx, TIdx, EIdx, EOff: integer;
   TrackSize: word;
+  Track: TDSKTrack;
+  Side: TDSKSide;
 begin
   Result := False;
-
   FillChar(DSKInfoBlock, SizeOf(DSKInfoBlock), 0);
 
   // Construct disk info
@@ -736,9 +726,9 @@ begin
 
   // Write the tracks out
   for TIdx := 0 to DSKInfoBlock.Disk_NumTracks - 1 do
-    for SIdx := 0 to Disk.Sides - 1 do
+    for Side in Disk.Side do
     begin
-      with Disk.Side[SIdx].Track[TIdx] do
+      with Side.Track[TIdx] do
       begin
         // Set various track info properties
         FillChar(TRKInfoBlock, SizeOf(TRKInfoBlock), 0);
@@ -857,34 +847,35 @@ end;
 
 function TDSKDisk.GetFormattedCapacity: integer;
 var
-  SIdx, TIdx: byte;
+  Side: TDSKSide;
+  Track: TDSKTrack;
 begin
   Result := 0;
-  for SIdx := 0 to Sides - 1 do
-    for TIdx := 0 to Side[SIdx].Tracks - 1 do
-      Result := Result + Side[SIdx].Track[TIdx].Size;
+  for Side in self.Side do
+    for Track in Side.Track do
+      Result := Result + Track.Size;
 end;
 
 function TDSKDisk.GetTrackTotal: word;
 var
-  SIdx: byte;
+  Side: TDSKSide;
 begin
   Result := 0;
-  if Sides > 0 then
-    for SIdx := 0 to Sides - 1 do
-      Result := Result + Side[SIdx].Tracks;
+  for Side in self.Side do
+    Result := Result + Side.Tracks;
 end;
 
 function TDSKDisk.GetLogicalTrack(LogicalTrack: word): TDSKTrack;
 var
-  EIdx, TIdx: integer;
+  Side: TDSKSide;
+  Track: TDSKTrack;
 begin
-  for EIdx := 0 to Sides - 1 do
-    for TIdx := 0 to Side[EIdx].Tracks - 1 do
+  for Side in self.Side do
+    for Track in Side.Track do
     begin
-      if Side[EIdx].Track[TIdx].Logical = LogicalTrack then
+      if Track.Logical = LogicalTrack then
       begin
-        Result := Side[EIdx].Track[TIdx];
+        Result := Track;
         exit;
       end;
     end;
@@ -894,14 +885,19 @@ end;
 
 function TDSKDisk.IsTrackSizeUniform: boolean;
 var
-  SIdx, TIdx, LastSize: integer;
+  Side: TDSKSide;
+  Track: TDSKTrack;
+  Size: integer;
 begin
   Result := True;
-  LastSize := Side[0].Track[0].Size;
-  for SIdx := 0 to Sides - 1 do
-    for TIdx := 0 to Side[SIdx].Tracks - 1 do
-      if LastSize <> Side[SIdx].Track[TIdx].Size then
+  Size := self.Side[0].Track[0].Size;
+  for Side in self.Side do
+    for Track in Side.Track do
+      if Size <> Track.Size then
+      begin
         Result := False;
+        exit;
+      end;
 end;
 
 function TDSKDisk.DetectFormat: string;
@@ -1003,40 +999,57 @@ end;
 
 function TDSKDisk.HasFDCErrors: boolean;
 var
-  SIdx, TIdx, EIdx: integer;
+  Side: TDSKSide;
+  Track: TDSKTrack;
+  Sector: TDSKSector;
 begin
   Result := False;
-  for SIdx := 0 to Sides - 1 do
-    for TIdx := 0 to Side[SIdx].Tracks - 1 do
-      for EIdx := 0 to Side[SIdx].Track[TIdx].Sectors - 1 do
-        with Side[SIdx].Track[TIdx].Sector[EIdx] do
-          if (FDCStatus[1] <> 0) or (FDCStatus[2] <> 0) then
-            Result := True;
+  for Side in self.Side do
+    for Track in Side.Track do
+      for Sector in Track.Sector do
+        if (Sector.FDCStatus[1] <> 0) or (Sector.FDCStatus[2] <> 0) then
+        begin
+          Result := True;
+          exit;
+        end;
 end;
 
 function TDSKDisk.IsUniform(IgnoreEmptyTracks: boolean): boolean;
 var
-  SIdx, TIdx, EIdx: integer;
   CheckTracks, CheckSectors, CheckSectorSize: integer;
+  Side: TDSKSide;
+  Track: TDSKTrack;
+  Sector: TDSKSector;
 begin
   Result := True;
   if GetFirstSector <> nil then
   begin
-    CheckTracks := Side[0].Tracks;
-    CheckSectors := Side[0].Track[0].Sectors;
-    CheckSectorSize := Side[0].Track[0].Sector[0].DataSize;
-    for SIdx := 0 to Sides - 1 do
+    CheckTracks := self.Side[0].Tracks;
+    CheckSectors := self.Side[0].Track[0].Sectors;
+    CheckSectorSize := self.Side[0].Track[0].Sector[0].DataSize;
+    for Side in self.Side do
     begin
-      if CheckTracks <> Side[SIdx].Tracks then
-        Result := False;
-      for TIdx := 0 to Side[SIdx].Tracks - 1 do
+      if CheckTracks <> Side.Tracks then
       begin
-        if not ((Side[SIdx].Track[TIdx].Sectors = 0) and IgnoreEmptyTracks) then
-          if CheckSectors <> Side[SIdx].Track[TIdx].Sectors then
+        Result := False;
+        exit;
+      end;
+
+      for Track in Side.Track do
+      begin
+        if not ((Track.Sectors = 0) and IgnoreEmptyTracks) then
+          if CheckSectors <> Track.Sectors then
+          begin
             Result := False;
-        for EIdx := 0 to Side[SIdx].Track[TIdx].Sectors - 1 do
-          if CheckSectorSize <> Side[SIdx].Track[TIdx].Sector[EIdx].DataSize then
+            exit;
+          end;
+
+        for Sector in Track.Sector do
+          if CheckSectorSize <> Sector.DataSize then
+          begin
             Result := False;
+            exit;
+          end;
       end;
     end;
   end;
@@ -1080,12 +1093,13 @@ end;
 
 function TDSKSide.GetLargestTrackSize: integer;
 var
-  Idx, Size: integer;
+  Track: TDSKTrack;
+  Size: integer;
 begin
   Result := 0;
-  for Idx := 0 to Tracks - 1 do
+  for Track in self.Track do
   begin
-    Size := Track[Idx].GetTrackSizeFromSectors();
+    Size := Track.GetTrackSizeFromSectors();
     if Size > Result then
       Result := Size;
   end;
@@ -1128,22 +1142,21 @@ end;
 
 function TDSKTrack.GetLowSectorID: byte;
 var
-  SIdx: byte;
+  Sector: TDSKSector;
 begin
   Result := 255;
-  for SIdx := 0 to Sectors - 1 do
-    if Sector[SIdx].ID < Result then
-      Result := Sector[SIdx].ID;
+  for Sector in self.Sector do
+    if Sector.ID < Result then
+      Result := Sector.ID;
 end;
 
 function TDSKTrack.GetTrackSizeFromSectors: word;
 var
-  SIdx: byte;
+  Sector: TDSKSector;
 begin
   Result := 0;
-  if (Sectors > 0) then
-    for SIdx := 0 to Sectors - 1 do
-      Result := Result + Sector[SIdx].DataSize;
+    for Sector in self.Sector do
+    Result := Result + Sector.DataSize;
 end;
 
 function TDSKTrack.GetIsFormatted: boolean;

@@ -139,11 +139,11 @@ end;
 function DetectProtection(Side: TDSKSide): string;
 var
   TIdx, SIdx, Offset: integer;
+  Track: TDSKTrack;
   Sector: TDSKSector;
 begin
   Result := '';
-  if Side.Tracks < 2 then
-    exit;
+  if Side.Tracks < 2 then exit;
 
   // Alkatraz copy-protection
   Offset := StrBufPos(Side.Track[0].Sector[0].Data, ' THE ALKATRAZ PROTECTION SYSTEM   (C) 1987  Appleby Associates');
