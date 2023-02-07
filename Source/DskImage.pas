@@ -15,7 +15,7 @@ interface
 
 uses
   DSKFormat, Utils,
-  Classes, Dialogs, SysUtils, Math, Character;
+  Classes, Dialogs, SysUtils, Math, Character, FGL;
 
 const
   MaxSectorSize = 32768;
@@ -277,10 +277,10 @@ type
   private
     FParentDisk: TDSKDisk;
   public
-    DiskFile: array of TDSKFile;
-
     constructor Create(ParentDisk: TDSKDisk);
     destructor Destroy; override;
+
+    function GetFileList: TFPGList<string>;
   end;
 
 
@@ -1361,6 +1361,11 @@ destructor TDSKFileSystem.Destroy;
 begin
   FParentDisk := nil;
   inherited Destroy;
+end;
+
+function TDSKFileSystem.GetFileList: TFPGList<string>;
+begin
+  Result := TFPGList<string>.Create;
 end;
 
 // File                                                  .

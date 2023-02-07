@@ -114,7 +114,7 @@ type
     NextNewFile: integer;
     function AddTree(Parent: TTreeNode; Text: string; ImageIdx: integer; NodeObject: TObject): TTreeNode;
     function AddListInfo(Key: string; Value: string): TListItem;
-    function AddListTrack(Track: TDSKTrack; HideSide: boolean): TListItem;
+    function AddListTrack(Track: TDSKTrack): TListItem;
     function AddListSector(Sector: TDSKSector): TListItem;
     function AddListSides(Side: TDSKSide): TListItem;
     procedure SetListSimple;
@@ -142,7 +142,7 @@ type
     procedure RefreshListFiles(FileSystem: TDSKFileSystem);
     procedure RefreshListImage(Image: TDSKImage);
     procedure RefreshListMessages(Messages: TStringList);
-    procedure RefreshListTrack(OptionalSide: TObject);
+    procedure RefreshListTrack(Side: TDSKSide);
     procedure RefreshListSector(Track: TDSKTrack);
     procedure RefreshListSectorData(Sector: TDSKSector);
     procedure RefreshListSpecification(Specification: TDSKSpecification);
@@ -220,15 +220,15 @@ end;
 
 procedure TfrmMain.UpdateRecentFilesMenu;
 var
-  Idx: integer;
   MenuItem: TMenuItem;
+  RecentFile: string;
 begin
   itmOpenRecent.Clear;
-  for Idx := 0 to Settings.RecentFiles.Count - 1 do
+  for RecentFile in Settings.RecentFiles do
   begin
     MenuItem := TMenuItem.Create(itmOpenRecent);
     MenuItem.OnClick := itmOpenRecentClick;
-    MenuItem.Caption := Settings.RecentFiles[Idx];
+    MenuItem.Caption := RecentFile;
     itmOpenRecent.Add(MenuItem);
   end;
 end;
@@ -458,12 +458,12 @@ end;
 
 procedure TfrmMain.RefreshListMessages(Messages: TStringList);
 var
-  Idx: integer;
+  Message: string;
 begin
   SetListSimple;
   if Messages <> nil then
-    for Idx := 0 to Messages.Count - 1 do
-      AddListInfo('', Messages[Idx]);
+    for Message in Messages do
+      AddListInfo('', Message);
 end;
 
 procedure TfrmMain.RefreshListImage(Image: TDSKImage);
@@ -577,41 +577,23 @@ begin
   Result := NewListItem;
 end;
 
-procedure TfrmMain.RefreshListTrack(OptionalSide: TObject);
+procedure TfrmMain.RefreshListTrack(Side: TDSKSide);
 var
-  SIdx, TIdx: integer;
-  HideSide: boolean;
-  DSK: TDSKImage;
-  Side: TDSKSide;
+  Track: TDSKTrack;
 begin
-  HideSide := (OptionalSide.ClassType = TDSKSide);
   AddColumn('Logical');
   AddColumn('Physical');
-  if not HideSide then
-    AddColumn('Side');
   AddColumn('Track size');
   AddColumn('Sectors');
   AddColumn('Sector size');
   AddColumn('Gap');
   AddColumn('Filler');
-  AddColumn('');
 
-  if HideSide then
-  begin
-    Side := TDSKSide(OptionalSide);
-    for TIdx := 0 to Side.Tracks - 1 do
-      AddListTrack(Side.Track[TIdx], HideSide);
-  end
-  else
-  begin
-    DSK := TDSKImage(OptionalSide);
-    for TIdx := 0 to DSK.Disk.Side[0].Tracks - 1 do
-      for SIdx := 0 to DSK.Disk.Sides - 1 do
-        AddListTrack(DSK.Disk.Side[SIdx].Track[TIdx], HideSide);
-  end;
+  for Track in Side.Track do
+    AddListTrack(Track);
 end;
 
-function TfrmMain.AddListTrack(Track: TDSKTrack; HideSide: boolean): TListItem;
+function TfrmMain.AddListTrack(Track: TDSKTrack): TListItem;
 var
   NewListItem: TListItem;
 begin
@@ -621,13 +603,12 @@ begin
     Caption := StrInt(Track.Logical);
     Data := Track;
     Subitems.Add(StrInt(Track.Track));
-    if not HideSide then
-      Subitems.Add(StrInt(Track.Side));
     Subitems.Add(StrInt(Track.Size));
     Subitems.Add(StrInt(Track.Sectors));
     Subitems.Add(StrInt(Track.SectorSize));
     Subitems.Add(StrInt(Track.GapLength));
     Subitems.Add(StrHex(Track.Filler));
+    Subitems.Add('');
   end;
   Result := NewListItem;
 end;
@@ -654,33 +635,33 @@ end;
 
 procedure TfrmMain.SelectTree(Parent: TTreeNodes; Item: TObject);
 var
-  Idx: integer;
+  Node: TTreeNode;
 begin
-  for Idx := 0 to Parent.Count - 1 do
+  for Node in Parent do
   begin
-    if Parent.Item[Idx].Data = Item then
-      tvwMain.Selected := Parent.Item[Idx]
+    if Node.Data = Item then
+      tvwMain.Selected := Node
     else
-      SelectTreeChild(Parent.Item[Idx], Item);
+      SelectTreeChild(Node, Item);
   end;
 end;
 
 procedure TfrmMain.SelectTreeChild(Parent: TTreeNode; Item: TObject);
 var
-  Idx: integer;
+  Node: TTreeNode;
 begin
-  for Idx := 0 to Parent.Count - 1 do
+  for Node in Parent.TreeNodes do
   begin
-    if Parent.Items[Idx].Data = Item then
-      tvwMain.Selected := Parent.Items[Idx]
+    if Node.Data = Item then
+      tvwMain.Selected := Node
     else
-      SelectTreeChild(Parent.Items[Idx], Item);
+      SelectTreeChild(Node, Item);
   end;
 end;
 
 procedure TfrmMain.RefreshListSector(Track: TDSKTrack);
 var
-  Idx: integer;
+  Sector: TDSKSector;
 begin
   lvwMain.PopupMenu := popSector;
 
@@ -690,10 +671,9 @@ begin
     Caption := 'Status';
     AutoSize := True;
   end;
-  AddColumn('');
 
-  for Idx := 0 to Track.Sectors - 1 do
-    AddListSector(Track.Sector[Idx]);
+  for Sector in Track.Sector do
+    AddListSector(Sector);
 end;
 
 function TfrmMain.AddListSector(Sector: TDSKSector): TListItem;
@@ -797,17 +777,17 @@ end;
 procedure TfrmMain.CloseImage(Image: TDSKImage);
 var
   Idx: integer;
-  Previous: TTreeNode;
+  Previous, Current: TTreeNode;
 begin
   Previous := nil;
-  for Idx := 0 to tvwMain.Items.Count - 1 do
+  for Current in tvwMain.Items do
   begin
-    if IsDiskNode(tvwMain.Items[Idx]) then
+    if IsDiskNode(Current) then
     begin
-      if tvwMain.Items[Idx].Data = Image then
+      if Current.Data = Image then
       begin
-        TDSKImage(tvwMain.Items[Idx].Data).Free;
-        tvwMain.Items[Idx].Delete;
+        TDSKImage(Current.Data).Free;
+        Current.Delete;
         if tvwMain.Selected = nil then
           if Previous <> nil then
             Previous.Selected := True
@@ -816,7 +796,7 @@ begin
             tvwMain.Items[0].Selected := True;
         exit;
       end;
-      Previous := tvwMain.Items[Idx];
+      Previous := Current;
     end;
   end;
 
@@ -1044,7 +1024,7 @@ begin
     selectedImage := GetCurrentImage;
     SaveImage(selectedImage);
     while (TObject(Node.Data).ClassType <> TDskImage) do
-          Node := Node.Parent;
+      Node := Node.Parent;
     Node.Text := ExtractFileName(selectedImage.FileName);
   end;
 end;
@@ -1062,7 +1042,7 @@ end;
 procedure TfrmMain.itmSectorResetFDCClick(Sender: TObject);
 var
   Track: TDSKTrack;
-  TIdx: integer;
+  Sector: TDSKSector;
 begin
   if tvwMain.Selected <> nil then
   begin
@@ -1070,8 +1050,8 @@ begin
       if ConfirmChange('reset FDC flags for', 'track') then
       begin
         Track := TDSKTrack(tvwMain.Selected.Data);
-        for TIdx := 0 to (Track.Sectors - 1) do
-          Track.Sector[TIdx].ResetFDC;
+        for Sector in Track.Sector do
+          Sector.ResetFDC;
       end;
     if (TObject(tvwMain.Selected.Data).ClassType = TDSKSector) then
       if ConfirmChange('reset FDC flags for', 'sector') then
@@ -1102,38 +1082,36 @@ end;
 
 procedure TfrmMain.itmSectorUnformatClick(Sender: TObject);
 begin
-  if tvwMain.Selected <> nil then
-  begin
-    if TObject(tvwMain.Selected.Data).ClassType = TDSKTrack then
-      if ConfirmChange('unformat', 'track') then
-      begin
-        TDSKTrack(tvwMain.Selected.Data).Unformat;
-        tvwMain.Selected.DeleteChildren;
-      end;
-    if TObject(tvwMain.Selected.Data).ClassType = TDSKSector then
-      if ConfirmChange('unformat', 'sector') then
-        TDSKSector(tvwMain.Selected.Data).Unformat;
-    UpdateMenus;
-  end;
+  if tvwMain.Selected = nil then exit;
+
+  if TObject(tvwMain.Selected.Data).ClassType = TDSKTrack then
+    if ConfirmChange('unformat', 'track') then
+    begin
+      TDSKTrack(tvwMain.Selected.Data).Unformat;
+      tvwMain.Selected.DeleteChildren;
+    end;
+  if TObject(tvwMain.Selected.Data).ClassType = TDSKSector then
+    if ConfirmChange('unformat', 'sector') then
+      TDSKSector(tvwMain.Selected.Data).Unformat;
+  UpdateMenus;
 end;
 
 procedure TfrmMain.itmSectorPropertiesClick(Sender: TObject);
 var
   Track: TDSKTrack;
-  TIdx: integer;
+  Sector: TDSKSector;
 begin
-  if tvwMain.Selected <> nil then
+  if tvwMain.Selected = nil then exit;
+
+  if TObject(tvwMain.Selected.Data).ClassType = TDSKTrack then
   begin
-    if TObject(tvwMain.Selected.Data).ClassType = TDSKTrack then
-    begin
-      Track := TDSKTrack(tvwMain.Selected.Data);
-      for TIdx := 0 to (Track.Sectors - 1) do
-        TfrmSector.Create(Self, Track.Sector[TIdx]);
-    end;
-    if TObject(tvwMain.Selected.Data).ClassType = TDSKSector then
-      TfrmSector.Create(Self, TDSKSector(tvwMain.Selected.Data));
-    UpdateMenus;
+    Track := TDSKTrack(tvwMain.Selected.Data);
+    for Sector in Track.Sector do
+      TfrmSector.Create(Self, Sector);
   end;
+  if TObject(tvwMain.Selected.Data).ClassType = TDSKSector then
+    TfrmSector.Create(Self, TDSKSector(tvwMain.Selected.Data));
+  UpdateMenus;
 end;
 
 function TfrmMain.ConfirmChange(Action: string; Upon: string): boolean;
@@ -1149,7 +1127,10 @@ end;
 
 function GetListViewAsText(ForListView: TListView): string;
 var
-  CIdx, RIdx: integer;
+  CIdx: integer;
+  Item: TListItem;
+  SubItem: string;
+  SelectAll: boolean;
 begin
   Result := '';
   // Headings
@@ -1158,12 +1139,13 @@ begin
   Result := Result + CRLF;
 
   // Details
-  for RIdx := 0 to ForListView.Items.Count - 1 do
-    if ForListView.Items[RIdx].Selected then
+  SelectAll := ForListView.Selected = nil;
+  for Item in ForListView.Items do
+    if Item.Selected or SelectAll then
     begin
-      Result := Result + ForListView.Items[RIdx].Caption + TAB;
-      for CIdx := 0 to ForListView.Items[RIdx].SubItems.Count - 1 do
-        Result := Result + ForListView.Items[RIdx].SubItems[CIdx] + TAB;
+      Result := Result + Item.Caption + TAB;
+      for SubItem in Item.SubItems do
+        Result := Result + SubItem + TAB;
       Result := Result + CRLF;
     end;
 end;
@@ -1174,13 +1156,8 @@ begin
 end;
 
 procedure TfrmMain.itmEditSelectAllClick(Sender: TObject);
-var
-  i: integer;
 begin
-  lvwMain.Items.BeginUpdate;
-  for i := 0 to lvwMain.Items.Count - 1 do
-    lvwMain.Items[i].Selected := True;
-  lvwMain.Items.EndUpdate;
+  lvwMain.SelectAll;
 end;
 
 procedure TfrmMain.itmFindClick(Sender: TObject);
@@ -1191,11 +1168,10 @@ end;
 procedure TfrmMain.dlgFindFind(Sender: TObject);
 var
   StartSector, FoundSector: TDSKSector;
-  TreeIdx: integer;
+  Node: TTreeNode;
   Obj: TObject;
 begin
-  if tvwMain.Selected.Data = nil then
-    exit;
+  if tvwMain.Selected.Data = nil then exit;
 
   // Find out where to start searching
   Obj := TObject(tvwMain.Selected.Data);
@@ -1219,9 +1195,9 @@ begin
 
   if FoundSector <> nil then
   begin
-    for TreeIdx := 0 to tvwMain.Items.Count - 1 do
-      if tvwMain.Items[TreeIdx].Data = FoundSector then
-        tvwMain.Selected := tvwMain.Items[TreeIdx];
+    for Node in tvwMain.Items do
+      if Node.Data = FoundSector then
+        tvwMain.Selected := Node;
   end;
 end;
 
@@ -1255,13 +1231,13 @@ end;
 
 procedure TfrmMain.OnApplicationDropFiles(Sender: TObject; const FileNames: array of string);
 var
-  FIdx: integer;
+  FileName: string;
 begin
   tvwMain.BeginUpdate;
-  for FIdx := Low(FileNames) to High(FileNames) do
+  for FileName in FileNames do
   begin
-    LoadImage(FileNames[FIdx]);
-    Settings.AddRecentFile(FileNames[FIdx]);
+    LoadImage(FileName);
+    Settings.AddRecentFile(FileName);
   end;
   tvwMain.EndUpdate;
   UpdateRecentFilesMenu;
