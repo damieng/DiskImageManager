@@ -1,7 +1,7 @@
 object frmNew: TfrmNew
-  Left = 661
+  Left = 1095
   Height = 294
-  Top = 777
+  Top = 466
   Width = 513
   BorderStyle = bsDialog
   Caption = 'New'
@@ -67,7 +67,7 @@ object frmNew: TfrmNew
     end
     object lvwSummary: TListView
       Left = 6
-      Height = 72
+      Height = 79
       Top = 25
       Width = 202
       Align = alTop
@@ -81,7 +81,7 @@ object frmNew: TfrmNew
           Alignment = taRightJustify
           AutoSize = True
           Caption = 'Value'
-          Width = 64
+          Width = 81
         end>
       Items.LazData = {
         B900000004000000FFFFFFFFFFFFFFFFFFFFFFFF010000000D0000004469736B
@@ -132,11 +132,11 @@ object frmNew: TfrmNew
       Height = 254
       Top = 5
       Width = 289
-      ActivePage = tabDetails
+      ActivePage = tabFormat
       Align = alClient
       Constraints.MinHeight = 254
       Constraints.MinWidth = 281
-      TabIndex = 1
+      TabIndex = 0
       TabOrder = 0
       object tabFormat: TTabSheet
         Caption = 'Basic'
@@ -355,7 +355,7 @@ object frmNew: TfrmNew
           Top = 59
           Width = 33
           Alignment = taRightJustify
-          MaxLength = 3
+          MaxLength = 5
           ParentBidiMode = False
           OnChange = edtSecSizeChange
           TabOrder = 3

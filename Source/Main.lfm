@@ -121,7 +121,6 @@ object frmMain: TfrmMain
       RowSelect = True
       TabOrder = 1
       ViewStyle = vsReport
-      OnDblClick = lvwMainDblClick
     end
     object memo: TMemo
       Left = 0

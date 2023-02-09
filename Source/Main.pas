@@ -85,7 +85,6 @@ type
     procedure FormCreate(Sender: TObject);
     procedure itmOpenRecentClick(Sender: TObject);
     procedure tvwMainChange(Sender: TObject; Node: TTreeNode);
-    procedure lvwMainDblClick(Sender: TObject);
     procedure itmAboutClick(Sender: TObject);
     procedure itmCloseClick(Sender: TObject);
     procedure itmExitClick(Sender: TObject);
@@ -148,8 +147,6 @@ type
     procedure RefreshListSpecification(Specification: TDSKSpecification);
     procedure UpdateMenus;
 
-    procedure SelectTree(Parent: TTreeNodes; Item: TObject);
-    procedure SelectTreeChild(Parent: TTreeNode; Item: TObject);
     function LoadImage(FileName: TFileName): boolean;
     procedure CloseImage(Image: TDSKImage);
     function GetNextNewFile: integer;
@@ -625,38 +622,6 @@ begin
     Data := Side;
   end;
   Result := NewListItem;
-end;
-
-procedure TfrmMain.lvwMainDblClick(Sender: TObject);
-begin
-  if (tvwMain.Selected <> nil) and (lvwMain.Selected <> nil) then
-    SelectTree(tvwMain.Items, lvwMain.Selected.Data);
-end;
-
-procedure TfrmMain.SelectTree(Parent: TTreeNodes; Item: TObject);
-var
-  Node: TTreeNode;
-begin
-  for Node in Parent do
-  begin
-    if Node.Data = Item then
-      tvwMain.Selected := Node
-    else
-      SelectTreeChild(Node, Item);
-  end;
-end;
-
-procedure TfrmMain.SelectTreeChild(Parent: TTreeNode; Item: TObject);
-var
-  Node: TTreeNode;
-begin
-  for Node in Parent.TreeNodes do
-  begin
-    if Node.Data = Item then
-      tvwMain.Selected := Node
-    else
-      SelectTreeChild(Node, Item);
-  end;
 end;
 
 procedure TfrmMain.RefreshListSector(Track: TDSKTrack);
