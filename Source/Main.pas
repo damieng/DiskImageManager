@@ -30,6 +30,7 @@ type
   TfrmMain = class(TForm)
     itmOpenRecent: TMenuItem;
     memo: TMemo;
+    itmSaveBinaryAs: TMenuItem;
     mnuMain: TMainMenu;
     itmDisk: TMenuItem;
     itmOpen: TMenuItem;
@@ -43,6 +44,7 @@ type
     itmAbout: TMenuItem;
     dlgOpen: TOpenDialog;
     pnlLeft: TPanel;
+    dlgSaveBinary: TSaveDialog;
     splVertical: TSplitter;
     staBar: TStatusBar;
     pnlRight: TPanel;
@@ -84,7 +86,9 @@ type
     procedure itmOpenClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure itmOpenRecentClick(Sender: TObject);
+    procedure itmSaveBinaryAsClick(Sender: TObject);
     procedure lvwMainDblClickFile(Sender: TObject);
+    procedure popListItemPopup(Sender: TObject);
     procedure tvwMainChange(Sender: TObject; Node: TTreeNode);
     procedure itmAboutClick(Sender: TObject);
     procedure itmCloseClick(Sender: TObject);
@@ -218,6 +222,28 @@ begin
   end;
 end;
 
+procedure TfrmMain.itmSaveBinaryAsClick(Sender: TObject);
+var
+  DiskFile: TDSKFile;
+  Data: Pointer;
+  Stream: TStream;
+begin
+  if lvwMain.Selected = nil then exit;
+  Data := lvwMain.Selected.Data;
+  if (Data = nil) or (TObject(Data).ClassType <> TDSKFile) then exit;
+  DiskFile := TDSKFile(Data);
+
+  dlgSaveBinary.FileName := DiskFile.FileName;
+  if not dlgSaveBinary.Execute then exit;
+
+  Stream := TFileStream.Create(dlgSaveBinary.FileName, fmCreate);
+  try
+    Stream.WriteBuffer(Pointer(DiskFile.GetData())^, DiskFile.Size);
+  finally
+    Stream.Free;
+  end;
+end;
+
 procedure TfrmMain.lvwMainDblClickFile(Sender: TObject);
 var
   DiskFile: TDSKFile;
@@ -228,6 +254,12 @@ begin
   FoundNode := FindTreeNodeFromData(tvwMain.Selected.Parent, DiskFile.FirstSector);
   if FoundNode <> nil then
     tvwMain.Selected := FoundNode;
+end;
+
+procedure TfrmMain.popListItemPopup(Sender: TObject);
+begin
+  itmSaveBinaryAs.Visible := (lvwMain.Selected <> nil) and (lvwMain.Selected.Data <> nil) and
+    (TObject(lvwMain.Selected.Data).ClassType = TDSKFile);
 end;
 
 function TfrmMain.FindTreeNodeFromData(Node: TTreeNode; Data: TObject): TTreeNode;
@@ -556,7 +588,7 @@ begin
         else
         begin
           AddListInfo('Is changed', 'No');
-          AddListInfo('File size',StrFileSize(FileSize));
+          AddListInfo('File size', StrFileSize(FileSize));
         end;
       end;
     end;

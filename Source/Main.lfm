@@ -357,17 +357,26 @@ object frmMain: TfrmMain
     end
   end
   object popListItem: TPopupMenu
+    OnPopup = popListItemPopup
     Left = 328
     Top = 176
     object itmCopyDetailsClipboard: TMenuItem
       Caption = 'Copy details to clipboard'
       OnClick = itmEditCopyClick
     end
+    object itmSaveBinaryAs: TMenuItem
+      Caption = 'Save binary as...'
+      OnClick = itmSaveBinaryAsClick
+    end
   end
   object dlgFind: TFindDialog
     Options = [frDown, frHideUpDown, frDisableWholeWord, frHideEntireScope]
     OnFind = dlgFindFind
     Left = 384
+    Top = 112
+  end
+  object dlgSaveBinary: TSaveDialog
+    Left = 264
     Top = 112
   end
 end

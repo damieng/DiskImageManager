@@ -18,6 +18,7 @@ uses
   Classes, SysUtils, FGL;
 
 type
+  TByteArray = array of byte;
   TDSKEntryAllocationSize = (asByte, asWord);
   TDSKFile = class;
 
@@ -60,6 +61,8 @@ type
     Size: integer;
     Meta: string;
 
+    function GetData: TByteArray;
+
     constructor Create(ParentFileSystem: TDSKFileSystem);
     destructor Destroy; override;
   end;
@@ -94,7 +97,6 @@ const
   ARCHIVED_OFFSET: integer = 11;
   EXTENT_LOW: integer = 12;
   BYTES_IN_LAST_RECORD_OFFSET: integer = 13;
-  EXTENT_HIGH: integer = 14;
   RECORD_COUNT_OFFSET: integer = 15;
   ALLOCATION_OFFSET: integer = 16;
 
@@ -320,6 +322,51 @@ begin
   FParentFileSystem := nil;
   Blocks.Free;
   inherited Destroy;
+end;
+
+function TDSKFile.GetData: TByteArray;
+var
+  Block, BytesLeft, TargetIdx, BlockSize, SectorCount, SectorsPerBlock, SectorDataSkip: integer;
+  Disk: TDSKDisk;
+  Sector: TDSKSector;
+begin
+  Result := nil;
+  SetLength(Result, Size);
+
+  BytesLeft := Size;
+  TargetIdx := 0;
+  Disk := FParentFileSystem.FParentDisk;
+  BlockSize := Disk.Specification.GetBlockSize();
+  SectorsPerBlock := BlockSize div Disk.Specification.SectorSize;
+  SectorDataSkip := 0;
+
+  if HeaderType = 'PLUS3DOS' then
+  begin
+    SectorDataSkip := 128;
+    BytesLeft := BytesLeft - 128;
+  end;
+
+  for Block in Blocks do
+  begin
+    Sector := Disk.GetSectorByBlock(Block);
+    SectorCount := SectorsPerBlock;
+    repeat
+      begin
+        if (BytesLeft < Sector.DataSize) then
+        begin
+          Move(Sector.Data[SectorDataSkip], Result[TargetIdx], BytesLeft);
+          exit;
+        end;
+        Move(Sector.Data[SectorDataSkip], Result[TargetIdx], Sector.DataSize - SectorDataSkip);
+
+        BytesLeft := BytesLeft - Sector.DataSize + SectorDataSkip;
+        TargetIdx := TargetIdx + Sector.DataSize - SectorDataSkip;
+        SectorDataSkip := 0;
+        Dec(SectorCount);
+        Sector := Disk.GetNextLogicalSector(Sector);
+      end
+    until SectorCount = 0;
+  end;
 end;
 
 end.
