@@ -556,7 +556,7 @@ begin
         else
         begin
           AddListInfo('Is changed', 'No');
-          AddListInfo('File size', SysUtils.Format('%d bytes', [FileSize]));
+          AddListInfo('File size',StrFileSize(FileSize));
         end;
       end;
     end;
@@ -602,7 +602,7 @@ begin
     AddListInfo('Block size', StrInt(Specification.GetBlockSize));
     AddListInfo('Block count', StrInt(Specification.GetBlockCount));
     AddListInfo('Records per track', StrInt(Specification.GetRecordsPerTrack));
-    AddListInfo('Usable capacity', StrInt(Specification.GetUsableCapacity));
+    AddListInfo('Usable capacity', StrFileSize(Specification.GetUsableCapacity));
   end;
 end;
 

@@ -251,7 +251,8 @@ begin
   CalcChecksum := 0;
   for Idx := 0 to 126 do
     CalcChecksum := CalcChecksum + Data[Idx];
-  //  DiskFile.Checksum := CalcChecksum = Data[127];
+
+  DiskFile.Checksum := CalcChecksum = Data[127];
   DiskFile.HeaderType := Sig;
   DiskFile.Size := Data[11] + (Data[12] << 8) + (Data[13] << 16) + (Data[14] << 24);
 
