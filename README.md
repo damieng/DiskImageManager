@@ -48,20 +48,23 @@ Identification of copy-protection schemes both signed and unsigned versions:
 * Speedlock 1988/1989
 * Three Inch Loader type 1/2
 
-### Modification
+### File system
+* Can list a CP/M file system such as used on +3, PCW and CPC.
+* Understands +3 DOS and CPC file headers
+* Experimental binary "File save as..." available from file entry.
 
+### Modification
 * Manipulation of controller flags, actual sector sizes and indicated FDC size
 * Formatting and unformatting of specific sectors & tracks
 * Compress out unused tracks and sectors option 
 
 ### Creation
-
 * Formatting of new disk images to known formats
 * Formatting of new disk images to custom tailored formats: Sides, tracks per side, sectors per track, sector size, first sector ID, interleave, reverse tracks, skew tracks, skew sides, gap read/write, gap format, directory blocks, block size, filler byte
 * Writing of disk boot sectors as part of the image formatting process 
 
 ## Building
-This application requires the [Lazarus development system](http://www.lazarus.freepascal.org/) and was tested using Lazarus IDE v1.0.14 on Windows 8.1.
+This application requires the [Lazarus development system](http://www.lazarus.freepascal.org/) and was tested using Lazarus IDE v2.2.4 on Windows 11.
 
 To be able to build and visually edit the forms you will need to install the supplied DIMComponents package. To do that:
 
@@ -82,7 +85,6 @@ To be able to build and visually edit the forms you will need to install the sup
 * Extend support for SamDisk DSK extensions
 * Additional disk formats
 * Additional copy protection recognition
-* Allow file catalog and extract of files
 
 ## Licence
 Copyright 2002-2023 Damien Guard.
