@@ -159,7 +159,7 @@ end;
 procedure TSettings.Save;
 var
   Reg: TIniFile;
-  Idx: integer;
+  Idx, WorkspaceIdx: integer;
   Node: TTreeNode;
   S: string;
 begin
@@ -195,12 +195,16 @@ begin
   S := 'Workspace';
   Reg.EraseSection(S);
   Reg.WriteBool(S, 'Restore', RestoreWorkspace);
+  WorkspaceIdx := 1;
   with frmMain do
     for Idx := 0 to tvwMain.Items.Count - 1 do
     begin
       Node := tvwMain.Items[Idx];
       if (Node.Data <> nil) and (TObject(Node.Data).ClassType = TDSKImage) then
-        Reg.WriteString(S, StrInt(Idx + 1), TDSKImage(Node.Data).FileName);
+      begin
+        Reg.WriteString(S, StrInt(WorkspaceIdx), TDSKImage(Node.Data).FileName);
+        Inc(WorkspaceIdx);
+      end;
     end;
 
   S := 'Saving';
