@@ -862,7 +862,7 @@ begin
     end;
     with Add do
     begin
-      Caption := 'Extent';
+      Caption := 'Blocks';
       Alignment := taRightJustify;
       AutoSize := True;
     end;
@@ -874,7 +874,7 @@ begin
     end;
     with Add do
     begin
-      Caption := 'Real';
+      Caption := 'Actual';
       Alignment := taRightJustify;
       AutoSize := True;
     end;
@@ -912,7 +912,7 @@ begin
           Caption := StrInt(DiskFile.User) + ':' + DiskFile.FileName
         else
           Caption := DiskFile.FileName;
-        SubItems.Add(StrInt(DiskFile.Extent));
+        SubItems.Add(StrInt(DiskFile.Blocks.Count));
         SubItems.Add(StrFileSize(DiskFile.SizeOnDisk));
         SubItems.Add(StrFileSize(DiskFile.Size));
         Attributes := '';

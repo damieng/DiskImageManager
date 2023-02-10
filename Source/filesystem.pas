@@ -98,6 +98,11 @@ const
   RECORD_COUNT_OFFSET: integer = 15;
   ALLOCATION_OFFSET: integer = 16;
 
+function CompareByExtent(const Item1, Item2: TDSKFile): integer;
+begin
+  Result := Item1.Extent - Item2.Extent;
+end;
+
 function TDSKFileSystem.Directory: TFPGList<TDSKFile>;
 const
   DIR_ENTRY_SIZE: integer = 32;
@@ -106,6 +111,8 @@ var
   Sector: TDSKSector;
   Spec: TDSKSpecification;
   Index: integer;
+  Extents: TFPGList<TDSKFile>;
+  PrimaryDiskFile, ExtentEntry, DiskFile: TDSKFile;
 begin
   Spec := FParentDisk.Specification;
   case Spec.Format of
@@ -118,6 +125,7 @@ begin
   end;
 
   Result := TFPGList<TDSKFile>.Create;
+  Extents := TFPGList<TDSKFile>.Create;
 
   Sector := FParentDisk.GetLogicalTrack(Spec.ReservedTracks).GetFirstLogicalSector();
   if Sector = nil then exit;
@@ -134,7 +142,11 @@ begin
 
     if Sector.Data[SectorOffset] < 32 then
     begin
-      Result.Add(ReadFileEntry(Sector.Data, SectorOffset));
+      DiskFile := ReadFileEntry(Sector.Data, SectorOffset);
+      if DiskFile.Extent = 0 then
+        Result.Add(DiskFile)
+      else
+        Extents.Add(DiskFile);
     end;
 
     if Sector.Data[SectorOffset] = 32 then
@@ -142,6 +154,25 @@ begin
 
     SectorOffset := SectorOffset + DIR_ENTRY_SIZE;
   end;
+
+  Extents.Sort(CompareByExtent);
+
+  while Extents.Count > 0 do
+  begin
+    ExtentEntry := Extents.First;
+    Extents.Remove(ExtentEntry);
+    for PrimaryDiskFile in Result do
+    begin
+      if PrimaryDiskFile.FileName = ExtentEntry.FileName then
+      begin
+        PrimaryDiskFile.Blocks.AddList(ExtentEntry.Blocks);
+        PrimaryDiskFile.SizeOnDisk := PrimaryDiskFile.SizeOnDisk + ExtentEntry.SizeOnDisk;
+        break;
+      end;
+    end;
+  end;
+
+  Extents.Free;
 end;
 
 function TDSKFileSystem.ReadLabelEntry(Data: array of byte; Offset: integer): string;
