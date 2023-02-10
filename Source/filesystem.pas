@@ -27,6 +27,7 @@ type
     FEntryAllocationSize: TDSKEntryAllocationSize;
 
     procedure TryPlus3DOSHeader(Data: array of byte; DiskFile: TDSKFile);
+    procedure TryAMSDOSHeader(Data: array of byte; DiskFile: TDSKFile);
   public
     DiskLabel: string;
 
@@ -52,6 +53,7 @@ type
     System: boolean;
     Archived: boolean;
     FirstSector: TDSKSector;
+    Extent: integer;
 
     HeaderType: string;
     Checksum: boolean;
@@ -68,14 +70,11 @@ implementation
 // File system
 
 constructor TDSKFileSystem.Create(ParentDisk: TDSKDisk);
-var
-  MaxBlocks: integer;
 begin
   inherited Create;
   FParentDisk := ParentDisk;
 
-  MaxBlocks := FParentDisk.FormattedCapacity div ParentDisk.Specification.GetBlockSize();
-  if MaxBlocks > 255 then
+  if FParentDisk.Specification.GetBlockCount > 255 then
     FEntryAllocationSize := asWord
   else
     FEntryAllocationSize := asByte;
@@ -93,6 +92,10 @@ const
   READONLY_OFFSET: integer = 9;
   SYSTEM_OFFSET: integer = 10;
   ARCHIVED_OFFSET: integer = 11;
+  EXTENT_LOW: integer = 12;
+  BYTES_IN_LAST_RECORD_OFFSET: integer = 13;
+  EXTENT_HIGH: integer = 14;
+  RECORD_COUNT_OFFSET: integer = 15;
   ALLOCATION_OFFSET: integer = 16;
 
 function TDSKFileSystem.Directory: TFPGList<TDSKFile>;
@@ -150,7 +153,6 @@ function TDSKFileSystem.ReadFileEntry(Data: array of byte; Offset: integer): TDS
 var
   Extension: string;
   AllocBlock, AllocOffset: integer;
-  HeaderSig: string;
 begin
   Result := TDskFile.Create(self);
   with Result do
@@ -165,8 +167,8 @@ begin
     System := Data[Offset + SYSTEM_OFFSET] > 127;
     Archived := Data[Offset + ARCHIVED_OFFSET] > 127;
 
-    // Now read the file AllocBlock blocks
-    // TODO: Handle extents
+    Extent := Data[Offset + EXTENT_LOW];
+
     AllocOffset := Offset + ALLOCATION_OFFSET;
     repeat
       begin
@@ -177,7 +179,7 @@ begin
         end
         else
         begin
-          AllocBlock := Data[AllocOffset] + (Data[AllocOffset] << 8);
+          AllocBlock := Data[AllocOffset] + (Data[AllocOffset + 1] << 8);
           AllocOffset := AllocOffset + 2;
         end;
         if AllocBlock > 0 then
@@ -186,18 +188,54 @@ begin
     until (AllocBlock = 0) or (AllocOffset = Offset + 32);
 
     SizeOnDisk := Blocks.Count * FParentDisk.Specification.GetBlockSize();
+    Size := Data[Offset + RECORD_COUNT_OFFSET] * 128;
+    if Data[Offset + BYTES_IN_LAST_RECORD_OFFSET] > 0 then
+      Size := Size - 128 + Data[Offset + BYTES_IN_LAST_RECORD_OFFSET];
 
     if Blocks.Count > 0 then
     begin
-      HeaderType := 'Raw ?';
+      HeaderType := 'Raw';
       FirstSector := FParentDisk.GetSectorByBlock(Blocks[0]);
       if FirstSector <> nil then
       begin
         TryPlus3DOSHeader(FirstSector.Data, Result);
+        TryAMSDOSHeader(FirstSector.Data, Result);
       end;
-      if Meta = '' then Meta := Format('Unknown at block %d', [Blocks[0]]);
     end;
   end;
+end;
+
+procedure TDSKFileSystem.TryAMSDOSHeader(Data: array of byte; DiskFile: TDSKFile);
+var
+  CalcCheckSum: word;
+  Idx: integer;
+  ExecAddr, LoadAddr: word;
+begin
+  CalcChecksum := 0;
+  for Idx := 0 to 66 do
+    CalcChecksum := CalcChecksum + Data[Idx];
+  if CalcCheckSum <> Data[67] + (Data[68] << 8) then exit;
+
+  DiskFile.Checksum := True;
+  DiskFile.HeaderType := 'AMSDOS';
+  DiskFile.Size := Data[64] + (Data[65] << 8) + (Data[66] << 16);
+
+  LoadAddr := Data[21] + (Data[22] << 8);
+  ExecAddr := Data[26] + (Data[27] << 8);
+
+  case Data[18] of
+    0: DiskFile.Meta := 'BASIC';
+    1: DiskFile.Meta := 'BASIC (protected)';
+    2: DiskFile.Meta := Format('BINARY %d EXEC %d', [LoadAddr, ExecAddr]);
+    3: DiskFile.Meta := Format('BINARY (protected) %d EXEC %d', [LoadAddr, ExecAddr]);
+    4: DiskFile.Meta := 'SCREEN';
+    5: DiskFile.Meta := 'SCREEN (protected)';
+    6: DiskFile.Meta := 'ASCII';
+    7: DiskFile.Meta := 'ASCII (protected)';
+    else
+      DiskFile.Meta := Format('Custom 0x%x', [Data[15]]);
+  end;
+
 end;
 
 procedure TDSKFileSystem.TryPlus3DOSHeader(Data: array of byte; DiskFile: TDSKFile);
@@ -205,7 +243,7 @@ var
   Sig: string;
   CalcChecksum: byte;
   Idx: integer;
-  Length, Param1, Param2: integer;
+  Length, Param1, Param2: word;
 begin
   Sig := StrBlockClean(Data, 0, 8);
   if Sig <> 'PLUS3DOS' then exit;
@@ -213,7 +251,7 @@ begin
   CalcChecksum := 0;
   for Idx := 0 to 126 do
     CalcChecksum := CalcChecksum + Data[Idx];
-  DiskFile.Checksum := CalcChecksum = Data[127];
+  //  DiskFile.Checksum := CalcChecksum = Data[127];
   DiskFile.HeaderType := Sig;
   DiskFile.Size := Data[11] + (Data[12] << 8) + (Data[13] << 16) + (Data[14] << 24);
 
@@ -231,7 +269,8 @@ begin
     1: DiskFile.Meta := Format('DATA %s', [Data[19]]);
     2: DiskFile.Meta := Format('DATA %s$', [Data[19]]);
     3: DiskFile.Meta := Format('CODE %d,%d', [Param1, Length]);
-    else DiskFile.Meta := Format('Custom 0x%x', [Data[15]]);
+    else
+      DiskFile.Meta := Format('Custom 0x%x', [Data[15]]);
   end;
 end;
 

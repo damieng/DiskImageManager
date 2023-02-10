@@ -242,6 +242,9 @@ type
     procedure Read;
     function Write: boolean;
     function GetBlockSize: integer;
+    function GetBlockCount: word;
+    function GetUsableCapacity: integer;
+    function GetRecordsPerTrack: integer;
 
     property BlockShift: byte read FBlockShift write SetBlockShift;
     property Checksum: byte read FChecksum write SetChecksum;
@@ -1387,6 +1390,26 @@ end;
 function TDSKSpecification.GetBlockSize: integer;
 begin
   Result := 2 << (BlockShift + 6);
+end;
+
+function TDSKSpecification.GetBlockCount: word;
+begin
+  Result := GetUsableCapacity div GetBlockSize;
+end;
+
+function TDSKSpecification.GetUsableCapacity: integer;
+var
+  UsableTracks: integer;
+begin
+  UsableTracks := FTracksPerSide;
+  if Side <> dsSideSingle then UsableTracks := UsableTracks + UsableTracks;
+  UsableTracks := UsableTracks - ReservedTracks;
+  Result := UsableTracks * SectorsPerTrack * SectorSize;
+end;
+
+function TDSKSpecification.GetRecordsPerTrack: integer;
+begin
+  Result := (SectorSize * SectorsPerTrack) div 128;
 end;
 
 procedure TDSKSpecification.SetChecksum(NewChecksum: byte);

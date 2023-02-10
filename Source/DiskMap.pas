@@ -1,7 +1,7 @@
 unit DiskMap;
 
 {
-  Disk Image Manager -  Copyright 2002-2013 Envy Technologies Ltd.
+  Disk Image Manager -  Copyright 2002-2023 Envy Technologies Ltd.
 
   Disk map graphical component
 }
@@ -33,8 +33,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    function SaveMap(FileName: TFileName; SaveWidth: integer;
-      SaveHeight: integer): boolean;
+    function SaveMap(FileName: TFileName; SaveWidth: integer; SaveHeight: integer): boolean;
   published
     property Align;
     property BorderStyle: TSpinBorderStyle read FBorderStyle write SetBorderStyle;
@@ -179,8 +178,7 @@ begin
         if (TrackIdx = 0) and (SectorIdx < Sectors) then
         begin
           TextA := StrInt(SectorIdx);
-          TextOut(GRect.Left - TextWidth(TextA) - TextW, Y - (SectorSize div 2) -
-            (TextHeight(Text) div 2), TextA);
+          TextOut(GRect.Left - TextWidth(TextA) - TextW, Y - (SectorSize div 2) - (TextHeight(Text) div 2), TextA);
         end;
       end;
     end;
@@ -276,8 +274,7 @@ begin
   end;
 end;
 
-function TSpinDiskMap.SaveMap(FileName: TFileName; SaveWidth: integer;
-  SaveHeight: integer): boolean;
+function TSpinDiskMap.SaveMap(FileName: TFileName; SaveWidth: integer; SaveHeight: integer): boolean;
 var
   SaveImage: TBitmap;
 begin
@@ -288,7 +285,7 @@ begin
   RenderBitmap(SaveImage, Rect(0, 0, SaveWidth - 1, SaveHeight - 1));
   SaveImage.SaveToFile(FileName);
   SaveImage.Free;
-  Result := true;
+  Result := True;
 end;
 
 end.

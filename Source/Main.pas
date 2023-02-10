@@ -600,6 +600,9 @@ begin
     AddListInfo('Sector size', StrInt(Specification.SectorSize));
     AddListInfo('Block shift', StrInt(Specification.BlockShift));
     AddListInfo('Block size', StrInt(Specification.GetBlockSize));
+    AddListInfo('Block count', StrInt(Specification.GetBlockCount));
+    AddListInfo('Records per track', StrInt(Specification.GetRecordsPerTrack));
+    AddListInfo('Usable capacity', StrInt(Specification.GetUsableCapacity));
   end;
 end;
 
@@ -627,6 +630,7 @@ begin
   AddColumn('Sector size');
   AddColumn('Gap');
   AddColumn('Filler');
+  AddColumn('');
 
   for Track in Side.Track do
     AddListTrack(Track);
@@ -858,6 +862,12 @@ begin
     end;
     with Add do
     begin
+      Caption := 'Extent';
+      Alignment := taRightJustify;
+      AutoSize := True;
+    end;
+    with Add do
+    begin
       Caption := 'Allocated';
       Alignment := taRightJustify;
       AutoSize := True;
@@ -875,7 +885,7 @@ begin
     end;
     with Add do
     begin
-      Caption := 'Signature';
+      Caption := 'Header';
       AutoSize := True;
     end;
     with Add do
@@ -899,9 +909,10 @@ begin
       begin
         Data := DiskFile;
         if DiskFile.User <> 0 then
-           Caption := StrInt(DiskFile.User) + ':' + DiskFile.FileName
+          Caption := StrInt(DiskFile.User) + ':' + DiskFile.FileName
         else
-            Caption := DiskFile.FileName;
+          Caption := DiskFile.FileName;
+        SubItems.Add(StrInt(DiskFile.Extent));
         SubItems.Add(StrFileSize(DiskFile.SizeOnDisk));
         SubItems.Add(StrFileSize(DiskFile.Size));
         Attributes := '';

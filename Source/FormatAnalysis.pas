@@ -139,7 +139,6 @@ end;
 function DetectProtection(Side: TDSKSide): string;
 var
   TIdx, SIdx, Offset: integer;
-  Track: TDSKTrack;
   Sector: TDSKSector;
 begin
   Result := '';
