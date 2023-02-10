@@ -361,6 +361,7 @@ object frmMain: TfrmMain
     Top = 176
     object itmCopyDetailsClipboard: TMenuItem
       Caption = 'Copy details to clipboard'
+      OnClick = itmEditCopyClick
     end
   end
   object dlgFind: TFindDialog

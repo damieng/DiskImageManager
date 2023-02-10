@@ -448,7 +448,7 @@ var
 begin
   with lvwMain do
   begin
-    PopupMenu := nil;
+    PopupMenu := popListItem;
     OldViewStyle := ViewStyle;
     Items.BeginUpdate;
     ViewStyle := vsList;
