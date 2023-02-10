@@ -14,8 +14,8 @@ unit Main;
 interface
 
 uses
-  DiskMap, DskImage, Utils, About, Options, SectorProperties, Settings, Classes,
-  Graphics, SysUtils, Forms, Dialogs, Menus, ComCtrls, ExtCtrls, Controls,
+  DiskMap, DskImage, Utils, About, Options, SectorProperties, Settings, FileSystem,
+  Classes, Graphics, SysUtils, Forms, Dialogs, Menus, ComCtrls, ExtCtrls, Controls,
   Clipbrd, StdCtrls, FileUtil, StrUtils, LazFileUtils, LConvEncoding;
 
 type
@@ -84,6 +84,7 @@ type
     procedure itmOpenClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure itmOpenRecentClick(Sender: TObject);
+    procedure lvwMainDblClickFile(Sender: TObject);
     procedure tvwMainChange(Sender: TObject; Node: TTreeNode);
     procedure itmAboutClick(Sender: TObject);
     procedure itmCloseClick(Sender: TObject);
@@ -123,6 +124,7 @@ type
     function IsDiskNode(Node: TTreeNode): boolean;
     function AddColumn(Caption: string): TListColumn;
     function AddColumns(Captions: array of string): TListColumnArray;
+    function FindTreeNodeFromData(Node: TTreeNode; Data: TObject): TTreeNode;
     procedure OnApplicationDropFiles(Sender: TObject; const FileNames: array of string);
     procedure UpdateRecentFilesMenu;
   public
@@ -207,11 +209,49 @@ begin
       LoadImage(FileName);
       Settings.AddRecentFile(FileName);
       UpdateRecentFilesMenu;
+      Settings.Save();
     end
     else
     if MessageDlg('File does not exist', SysUtils.Format('Can not find file %s. Remove from recent list?', [FileName]),
       mtConfirmation, mbYesNo, 0) = mrYes then
       Settings.RecentFiles.Delete(Settings.RecentFiles.IndexOf(FileName));
+  end;
+end;
+
+procedure TfrmMain.lvwMainDblClickFile(Sender: TObject);
+var
+  DiskFile: TDSKFile;
+  FoundNode: TTreeNode;
+begin
+  // Jump to the first sector for this file
+  DiskFile := TDSKFile((lvwMain.Selected).Data);
+  FoundNode := FindTreeNodeFromData(tvwMain.Selected.Parent, DiskFile.FirstSector);
+  if FoundNode <> nil then
+    tvwMain.Selected := FoundNode;
+end;
+
+function TfrmMain.FindTreeNodeFromData(Node: TTreeNode; Data: TObject): TTreeNode;
+var
+  ChildNode, FoundInChildNode: TTreeNode;
+begin
+  Result := nil;
+  if Node.HasChildren then
+  begin
+    ChildNode := Node.GetFirstChild;
+    repeat
+      if ChildNode.Data = Data then
+      begin
+        Result := ChildNode;
+        exit;
+      end;
+      FoundInChildNode := FindTreeNodeFromData(ChildNode, Data);
+      if FoundInChildNode <> nil then
+      begin
+        Result := FoundInChildNode;
+        exit;
+      end;
+      ChildNode := Node.GetNextChild(ChildNode);
+    until ChildNode = nil;
   end;
 end;
 
@@ -242,6 +282,7 @@ begin
       LoadImage(FileName);
       Settings.AddRecentFile(FileName);
       UpdateRecentFilesMenu;
+      Settings.Save();
     end;
 end;
 
@@ -319,7 +360,7 @@ begin
         end;
     end;
 
-    //AddTree(ImageNode, 'Files', Ord(itFiles), Image.Disk.FileSystem);
+    AddTree(ImageNode, 'Files', Ord(itFiles), TDSKFileSystem.Create(Image.Disk));
     AddTree(ImageNode, 'Strings', Ord(itStrings), Image.Disk);
 
     if Image.Messages.Count > 0 then
@@ -425,6 +466,7 @@ begin
         lvwMain.Visible := (ItemType(ImageIndex) <> itAnalyse) and (Caption <> 'Strings');
         DiskMap.Visible := ItemType(ImageIndex) = itAnalyse;
         memo.Visible := Caption = 'Strings';
+        OnDblClick := nil;
         if Data <> nil then
         begin
           case ItemType(ImageIndex) of
@@ -676,8 +718,8 @@ begin
 
   with lvwMain.Columns do
   begin
-    Clear;
     BeginUpdate;
+    Clear;
     with Add do
     begin
       Caption := 'Off';
@@ -741,7 +783,6 @@ end;
 // Find a disk image and remove it from the tree
 procedure TfrmMain.CloseImage(Image: TDSKImage);
 var
-  Idx: integer;
   Previous, Current: TTreeNode;
 begin
   Previous := nil;
@@ -764,7 +805,6 @@ begin
       Previous := Current;
     end;
   end;
-
 end;
 
 // Get the current image
@@ -787,6 +827,7 @@ procedure TfrmMain.itmCloseClick(Sender: TObject);
 begin
   if (tvwMain.Selected <> nil) then
     CloseImage(GetCurrentImage);
+  Settings.Save();
 end;
 
 procedure TfrmMain.itmExitClick(Sender: TObject);
@@ -804,6 +845,9 @@ end;
 
 // Load list with filenames
 procedure TfrmMain.RefreshListFiles(FileSystem: TDSKFileSystem);
+var
+  DiskFile: TDSKFile;
+  Attributes: string;
 begin
   with lvwMain.Columns do
   begin
@@ -814,15 +858,60 @@ begin
     end;
     with Add do
     begin
-      Caption := 'Size';
+      Caption := 'Allocated';
       Alignment := taRightJustify;
       AutoSize := True;
     end;
     with Add do
     begin
-      Caption := 'Type';
+      Caption := 'Real';
+      Alignment := taRightJustify;
       AutoSize := True;
     end;
+    with Add do
+    begin
+      Caption := 'Attributes';
+      AutoSize := True;
+    end;
+    with Add do
+    begin
+      Caption := 'Signature';
+      AutoSize := True;
+    end;
+    with Add do
+    begin
+      Caption := 'Checksum';
+      AutoSize := True;
+    end;
+    with Add do
+    begin
+      Caption := 'Meta';
+      AutoSize := True;
+    end;
+  end;
+
+  with lvwMain do
+  begin
+    BeginUpdate;
+    Items.Clear;
+    for DiskFile in FileSystem.Directory do
+      with Items.Add do
+      begin
+        Data := DiskFile;
+        Caption := DiskFile.FileName;
+        SubItems.Add(StrFileSize(DiskFile.SizeOnDisk));
+        SubItems.Add(StrFileSize(DiskFile.Size));
+        Attributes := '';
+        if (DiskFile.ReadOnly) then Attributes := Attributes + 'R';
+        if (DiskFile.System) then Attributes := Attributes + 'S';
+        if (DiskFile.Archived) then Attributes := Attributes + 'A';
+        SubItems.Add(Attributes);
+        SubItems.Add(DiskFile.HeaderType);
+        SubItems.Add(StrYesNo(DiskFile.Checksum));
+        SubItems.Add(DiskFile.Meta);
+      end;
+    EndUpdate;
+    OnDblClick := lvwMainDblClickFile;
   end;
 end;
 

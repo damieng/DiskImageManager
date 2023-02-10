@@ -105,6 +105,16 @@ object frmMain: TfrmMain
       BorderWidth = 1
       TabOrder = 0
     end
+    object memo: TMemo
+      Left = 0
+      Height = 322
+      Top = 19
+      Width = 372
+      Align = alClient
+      ReadOnly = True
+      ScrollBars = ssAutoBoth
+      TabOrder = 2
+    end
     object lvwMain: TListView
       Left = 0
       Height = 322
@@ -121,16 +131,6 @@ object frmMain: TfrmMain
       RowSelect = True
       TabOrder = 1
       ViewStyle = vsReport
-    end
-    object memo: TMemo
-      Left = 0
-      Height = 322
-      Top = 19
-      Width = 372
-      Align = alClient
-      ReadOnly = True
-      ScrollBars = ssAutoBoth
-      TabOrder = 2
     end
   end
   object mnuMain: TMainMenu

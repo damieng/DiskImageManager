@@ -26,7 +26,7 @@ type
 function StrInt(I: integer): string;
 function StrHex(I: integer): string;
 function IntStr(S: string): integer;
-function StrBlockClean(S: array of char; Start, Len: integer): string;
+function StrBlockClean(S: array of byte; Start, Len: integer): string;
 function StrYesNo(IsEmpty: boolean): string;
 function StrInByteArray(ByteArray: array of byte; SubString: string; Start: integer): boolean;
 function StrBufPos(ByteArray: array of byte; SubString: string): integer;
@@ -38,6 +38,8 @@ function FontToDescription(ThisFont: TFont): string;
 function FontFromDescription(Description: string): TFont;
 function FontHumanReadable(ThisFont: TFont): string;
 function FontCopy(ThisFont: TFont): TFont;
+
+function StrFileSize(Size: integer): string;
 
 procedure DrawBorder(Canvas: TCanvas; var Rect: TRect; BorderStyle: TSpinBorderStyle);
 
@@ -62,14 +64,17 @@ begin
 end;
 
 // Extract ASCII string from a char array
-function StrBlockClean(S: array of char; Start, Len: integer): string;
+function StrBlockClean(S: array of byte; Start, Len: integer): string;
 var
   Idx: integer;
 begin
   Result := '';
-  for Idx := Start to Len - 1 do
-    if ((Ord(S[Idx]) > 31) and (Ord(S[Idx]) < 128)) then
-      Result := Result + S[Idx];
+  for Idx := Start to Start + Len - 1 do
+    if S[Idx] > 31 then
+      if S[Idx] < 128 then
+        Result := Result + Chr(S[Idx])
+      else
+        Result := Result + Chr(S[Idx] - 128);
 end;
 
 // Compare two char arrays
@@ -233,7 +238,6 @@ begin
   end;
 end;
 
-
 function StrInByteArray(ByteArray: array of byte; SubString: string; Start: integer): boolean;
 var
   Idx, Last: integer;
@@ -248,6 +252,19 @@ begin
       Result := False;
     Inc(Idx);
   end;
+end;
+
+function StrFileSize(Size: integer): string;
+const
+     Megabyte: integer = 1024 * 1024;
+begin
+  if Size < 1024 then
+     Result := Format('%d bytes', [Size])
+  else
+      if Size < Megabyte then
+         Result := Format('%d KB', [Size div 1024])
+      else
+          Result := Format('%d MB', [Size div Megabyte]);
 end;
 
 end.

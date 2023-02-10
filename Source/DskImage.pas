@@ -14,7 +14,7 @@ unit DskImage;
 interface
 
 uses
-  DSKFormat, Utils, Classes, Dialogs, SysUtils, Math, Character, FGL;
+  DSKFormat, Utils, Classes, Dialogs, SysUtils, Math, Character;
 
 const
   MaxSectorSize = 32768;
@@ -32,8 +32,6 @@ type
   // Logical intepretations
   TDSKFormatSpecification = class;
   TDSKSpecification = class;
-  TDSKFileSystem = class;
-  TDSKFile = class;
 
   // Image
   TDSKImageFormat = (diStandardDSK, diExtendedDSK, diNotYetSaved, diInvalid);
@@ -72,7 +70,6 @@ type
   // Disk
   TDSKDisk = class(TObject)
   private
-    FFileSystem: TDSKFileSystem;
     FParentImage: TDSKImage;
     FSpecification: TDSKSpecification;
     function GetFormattedCapacity: integer;
@@ -91,13 +88,13 @@ type
     function GetFirstSector: TDSKSector;
     function GetLogicalTrack(LogicalTrack: word): TDSKTrack;
     function GetNextLogicalSector(Sector: TDSKSector): TDSKSector;
+    function GetSectorByBlock(Block: integer): TDSKSector;
     function GetAllStrings(MinLength: integer; MinUniques: integer): TStringList;
     function HasFDCErrors: boolean;
     function IsTrackSizeUniform: boolean;
     function IsUniform(IgnoreEmptyTracks: boolean): boolean;
     procedure Format(Formatter: TDSKFormatSpecification);
 
-    property FileSystem: TDSKFileSystem read FFileSystem;
     property FormattedCapacity: integer read GetFormattedCapacity;
     property Sides: byte read GetSides write SetSides;
     property Specification: TDSKSpecification read FSpecification;
@@ -151,6 +148,7 @@ type
     procedure Format(Formatter: TDSKFormatSpecification);
     procedure Unformat;
     function GetTrackSizeFromSectors: word;
+    function GetFirstLogicalSector(): TDSKSector;
 
     property IsFormatted: boolean read GetIsFormatted;
     property LowSectorID: byte read GetLowSectorID;
@@ -260,35 +258,6 @@ type
     property Track: TDSKSpecTrack read FTrack write SetTrack;
     property TracksPerSide: byte read FTracksPerSide write SetTracksPerSide;
   end;
-
-
-  // File system abstraction
-  TDSKFileSystem = class(TObject)
-  private
-    FParentDisk: TDSKDisk;
-  public
-    constructor Create(ParentDisk: TDSKDisk);
-    destructor Destroy; override;
-
-    function GetFileList: TFPGList<string>;
-  end;
-
-
-  // File abstraction
-  TDSKFile = class(TObject)
-  private
-    FParentFileSystem: TDSKFileSystem;
-  public
-    Data: array of byte;
-    Deleted: boolean;
-    FileName: string;
-    FileType: string;
-    Size: integer;
-
-    constructor Create(ParentFileSystem: TDSKFileSystem);
-    destructor Destroy; override;
-  end;
-
 
   // Disk format specification
   TDSKFormatSpecification = class(TObject)
@@ -409,33 +378,6 @@ begin
     MessageDlg(SysUtils.Format('Cannot find "%s"', [Text]), mtInformation, [mbOK], 0)
   else
     Result := NextSector;
-end;
-
-function TDSKDisk.GetNextLogicalSector(Sector: TDSKSector): TDSKSector;
-var
-  NextSectorID: integer;
-  CheckSector: TDSKSector;
-  CheckTrack: TDSKTrack;
-begin
-  Result := nil;
-  NextSectorId := Sector.ID + 1;
-  CheckTrack := Sector.ParentTrack;
-
-  while (CheckTrack <> nil) do
-  begin
-    // Find the next highest sector number on this track
-    for CheckSector in CheckTrack.Sector do
-    begin
-      if CheckSector.ID >= NextSectorID then
-        if (Result = nil) or (Result.ID > CheckSector.ID) then
-          Result := CheckSector;
-    end;
-    if (Result <> nil) then exit;
-
-    // Find the next logical track
-    NextSectorID := 0;
-    CheckTrack := GetLogicalTrack(CheckTrack.Logical + 1);
-  end;
 end;
 
 function TDSKImage.LoadFile(LoadFileName: TFileName): boolean;
@@ -673,7 +615,6 @@ var
   SCTInfoBlock: TSCTInfoBlock;
   SIdx, TIdx, EIdx, EOff: integer;
   TrackSize: word;
-  Track: TDSKTrack;
   Side: TDSKSide;
 begin
   Result := False;
@@ -786,15 +727,60 @@ begin
   inherited Create;
   FParentImage := ParentImage;
   FSpecification := TDSKSpecification.Create(Self);
-  FFileSystem := TDSKFileSystem.Create(Self);
 end;
 
 destructor TDSKDisk.Destroy;
 begin
   FParentImage := nil;
   FSpecification.Free;
-  FFileSystem.Free;
   inherited Destroy;
+end;
+
+function TDSKDisk.GetSectorByBlock(Block: integer): TDSKSector;
+var
+  TargetOffset, Offset: integer;
+  Sector: TDSKSector;
+begin
+  // In theory blocks should be a multiple of sectors
+  TargetOffset := Block * Specification.GetBlockSize();
+
+  Offset := 0;
+  Sector := GetLogicalTrack(Specification.ReservedTracks).GetFirstLogicalSector();
+
+  while (Sector <> nil) and (Offset + Sector.DataSize <= TargetOffset) do
+  begin
+    Offset := Offset + Sector.DataSize;
+    Sector := GetNextLogicalSector(Sector);
+  end;
+
+  Result := Sector;
+end;
+
+function TDSKDisk.GetNextLogicalSector(Sector: TDSKSector): TDSKSector;
+var
+  NextSectorID: integer;
+  CheckSector: TDSKSector;
+  CheckTrack: TDSKTrack;
+begin
+  Result := nil;
+  NextSectorId := Sector.ID + 1;
+  CheckTrack := Sector.ParentTrack;
+
+  while (CheckTrack <> nil) do
+  begin
+    // Find the next highest sector number on this track
+    for CheckSector in CheckTrack.Sector do
+    begin
+      if CheckSector.ID >= NextSectorID then
+        if (Result = nil) or (Result.ID > CheckSector.ID) then
+          Result := CheckSector;
+    end;
+    if (Result <> nil) then exit;
+
+    // Find the next logical track
+    NextSectorID := 0;
+    CheckTrack := GetLogicalTrack(CheckTrack.Logical + 1);
+  end;
 end;
 
 procedure TDSKDisk.Format(Formatter: TDSKFormatSpecification);
@@ -1155,8 +1141,20 @@ var
   Sector: TDSKSector;
 begin
   Result := 0;
-    for Sector in self.Sector do
+  for Sector in self.Sector do
     Result := Result + Sector.DataSize;
+end;
+
+function TDSKTrack.GetFirstLogicalSector: TDSKSector;
+var
+  Sector: TDSKSector;
+begin
+  if not IsFormatted then exit;
+
+  Result := self.Sector[0];
+  for Sector in self.Sector do
+    if Sector.ID < Result.ID then
+      Result := Sector;
 end;
 
 function TDSKTrack.GetIsFormatted: boolean;
@@ -1361,37 +1359,6 @@ begin
   end;
 
   Result := -1;
-end;
-
-// File system                                            .
-constructor TDSKFileSystem.Create(ParentDisk: TDSKDisk);
-begin
-  inherited Create;
-  FParentDisk := ParentDisk;
-end;
-
-destructor TDSKFileSystem.Destroy;
-begin
-  FParentDisk := nil;
-  inherited Destroy;
-end;
-
-function TDSKFileSystem.GetFileList: TFPGList<string>;
-begin
-  Result := TFPGList<string>.Create;
-end;
-
-// File                                                  .
-constructor TDSKFile.Create(ParentFileSystem: TDSKFileSystem);
-begin
-  inherited Create;
-  FParentFileSystem := ParentFileSystem;
-end;
-
-destructor TDSKFile.Destroy;
-begin
-  FParentFileSystem := nil;
-  inherited Destroy;
 end;
 
 // Disk specification                                        .

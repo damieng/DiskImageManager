@@ -90,7 +90,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="9">
+    <Units Count="10">
       <Unit0>
         <Filename Value="DiskImageManager.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -143,6 +143,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="Settings"/>
       </Unit8>
+      <Unit9>
+        <Filename Value="filesystem.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="FileSystem"/>
+      </Unit9>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -179,7 +184,7 @@
     </Linking>
     <Other>
       <CompilerMessages>
-        <IgnoredMessages idx5057="True" idx5024="True" idx4081="True" idx4080="True" idx4079="True"/>
+        <IgnoredMessages idx6058="True" idx5057="True" idx5024="True" idx4081="True" idx4080="True" idx4079="True" idx3124="True" idx3123="True"/>
       </CompilerMessages>
     </Other>
   </CompilerOptions>

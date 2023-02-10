@@ -3,7 +3,7 @@ unit DSKFormat;
 interface
 
 const
-	// DSK file strings
+  // DSK file strings
   DiskInfoStandard = 'MV - CPCEMU Disk-File' + #13 + #10 + 'Disk-Info' + #13 + #10;
   DiskInfoExtended = 'EXTENDED CPC DSK File' + #13 + #10 + 'Disk-Info' + #13 + #10;
   DiskInfoTrack = 'Track-Info' + #13 + #10;
@@ -16,36 +16,36 @@ const
 type
   // DSK file format structure
   TDSKInfoBlock = packed record // Disk
-     DiskInfoBlock:     array[0..33] of Char;
-     Disk_Creator:      array[0..13] of Char;	// diExtendedDSK only
-     Disk_NumTracks:    Byte;
-     Disk_NumSides:     Byte;
-     Disk_StdTrackSize: Word;						// diStandardDSK only
-     Disk_ExtTrackSize: array[0..MaxTracks-1] of Byte; // diExtendedDSK only
+    DiskInfoBlock: array[0..33] of char;
+    Disk_Creator: array[0..13] of byte;  // diExtendedDSK only
+    Disk_NumTracks: byte;
+    Disk_NumSides: byte;
+    Disk_StdTrackSize: word;            // diStandardDSK only
+    Disk_ExtTrackSize: array[0..MaxTracks - 1] of byte; // diExtendedDSK only
   end;
 
   TTRKInfoBlock = packed record // Track
-     TrackData:       array[0..12] of Char;
-     TIB_pad1:        array[0..2] of Byte;
-     TIB_TrackNum:    Byte;
-     TIB_SideNum:     Byte;
-     TIB_pad2:        Word;
-     TIB_SectorSize:  Byte;
-     TIB_NumSectors:  Byte;
-     TIB_GapLength:   Byte;
-     TIB_FillerByte:  Byte;
-     SectorInfoList:  array[0..231] of Byte;
-     SectorData:      array[0..65535] of Byte;
+    TrackData: array[0..12] of char;
+    TIB_pad1: array[0..2] of byte;
+    TIB_TrackNum: byte;
+    TIB_SideNum: byte;
+    TIB_pad2: word;
+    TIB_SectorSize: byte;
+    TIB_NumSectors: byte;
+    TIB_GapLength: byte;
+    TIB_FillerByte: byte;
+    SectorInfoList: array[0..231] of byte;
+    SectorData: array[0..65535] of byte;
   end;
 
   TSCTInfoBlock = packed record // Sector
-     SIB_TrackNum:   Byte;
-     SIB_SideNum:    Byte;
-     SIB_ID:         Byte;
-     SIB_Size:       Byte;
-     SIB_FDC1:       Byte;
-     SIB_FDC2:       Byte;
-     SIB_DataLength: Word;
+    SIB_TrackNum: byte;
+    SIB_SideNum: byte;
+    SIB_ID: byte;
+    SIB_Size: byte;
+    SIB_FDC1: byte;
+    SIB_FDC2: byte;
+    SIB_DataLength: word;
   end;
 
 implementation
