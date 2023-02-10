@@ -898,7 +898,10 @@ begin
       with Items.Add do
       begin
         Data := DiskFile;
-        Caption := DiskFile.FileName;
+        if DiskFile.User <> 0 then
+           Caption := StrInt(DiskFile.User) + ':' + DiskFile.FileName
+        else
+            Caption := DiskFile.FileName;
         SubItems.Add(StrFileSize(DiskFile.SizeOnDisk));
         SubItems.Add(StrFileSize(DiskFile.Size));
         Attributes := '';

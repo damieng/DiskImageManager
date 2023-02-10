@@ -43,11 +43,10 @@ object frmMain: TfrmMain
       RowSelect = True
       ScrollBars = ssAutoVertical
       ShowLines = False
-      ShowRoot = False
       TabOrder = 1
       OnChange = tvwMainChange
       OnDblClick = tvwMainDblClick
-      Options = [tvoAutoItemHeight, tvoKeepCollapsedNodes, tvoReadOnly, tvoRowSelect, tvoShowButtons, tvoToolTips, tvoThemedDraw]
+      Options = [tvoAutoItemHeight, tvoKeepCollapsedNodes, tvoReadOnly, tvoRowSelect, tvoShowButtons, tvoShowRoot, tvoToolTips, tvoThemedDraw]
     end
     object pnlTreeLabel: TPanel
       Left = 0
