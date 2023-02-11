@@ -52,10 +52,10 @@ type
     Messages: TStringList;
 
     constructor Create;
+    constructor CreateFromFile(FileName: TFileName);
+    constructor CreateFromStream(Stream: TStream);
     destructor Destroy; override;
 
-    function LoadFile(LoadFileName: TFileName): boolean;
-    function LoadStream(FileStream: TStream): boolean;
     function SaveFile(SaveFileName: TFileName; SaveFileFormat: TDSKImageFormat; Copy: boolean; Compress: boolean): boolean;
     function FindText(From: TDSKSector; Text: string; CaseSensitive: boolean): TDSKSector;
 
@@ -346,11 +346,62 @@ uses FormatAnalysis;
 // Image
 constructor TDSKImage.Create;
 begin
-  inherited Create;
+  inherited;
   Disk := TDSKDisk.Create(Self);
   Creator := CreatorSig;
   Corrupt := False;
   Messages := TStringList.Create();
+end;
+
+constructor TDSKImage.CreateFromFile(FileName: TFileName);
+var
+  FileStream: TFileStream;
+  GZStream: TGZFileStream;
+begin
+  Create;
+
+  if ExtractFileExt(FileName) = '.gz' then
+  begin
+    GZStream := TGZFileStream.Create(FileName, gzopenread);
+    self.FileName := FileName;
+    CreateFromStream(GZStream);
+    // FileSize is unavailable from either the internal stream or the external stream
+    // Ditto reading the current position!
+    GZStream.Free;
+  end
+  else
+  begin
+    self.FileName := FileName;
+    FileStream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyNone);
+    FileSize := FileStream.Size;
+    CreateFromStream(FileStream);
+    FileStream.Free;
+  end;
+end;
+
+constructor TDSKImage.CreateFromStream(Stream: TStream);
+var
+  DSKInfoBlock: TDSKInfoBlock;
+begin
+  FileFormat := diInvalid;
+  Stream.ReadBuffer(DSKInfoBlock, SizeOf(DSKInfoBlock));
+
+  // Detect image format
+  if CompareBlock(DSKInfoBlock.DiskInfoBlock, 'MV - CPC') then
+    FileFormat := diStandardDSK;
+  if CompareBlock(DSKInfoBlock.DiskInfoBlock, 'EXTENDED CPC DSK File') then
+    FileFormat := diExtendedDSK;
+
+  if FileFormat <> diInvalid then
+  begin
+    Stream.Seek(0, soFromBeginning);
+    LoadFileDSK(Stream);
+    FIsChanged := False;
+  end
+  else
+  begin
+    MessageDlg('Unknown file type. Load aborted.', mtWarning, [mbOK], 0);
+  end;
 end;
 
 destructor TDSKImage.Destroy;
@@ -382,58 +433,6 @@ begin
     MessageDlg(SysUtils.Format('Cannot find "%s"', [Text]), mtInformation, [mbOK], 0)
   else
     Result := NextSector;
-end;
-
-function TDSKImage.LoadFile(LoadFileName: TFileName): boolean;
-var
-  FileStream: TFileStream;
-  GZStream: TGZFileStream;
-begin
-  Result := False;
-
-  if ExtractFileExt(LoadFileName) = '.gz' then
-  begin
-    GZStream := TGZFileStream.Create(LoadFileName, gzopenread);
-    FileName := LoadFileName;
-    Result := LoadStream(GZStream);
-    // FileSize is unavailable from either the internal stream or the external stream
-    // Ditto reading the current position!
-    GZStream.Free;
-  end
-  else
-  begin
-    FileName := LoadFileName;
-    FileStream := TFileStream.Create(LoadFileName, fmOpenRead or fmShareDenyNone);
-    FileSize := FileStream.Size;
-    Result := LoadStream(FileStream);
-    FileStream.Free;
-  end;
-end;
-
-function TDSKImage.LoadStream(FileStream: TStream): boolean;
-var
-  DSKInfoBlock: TDSKInfoBlock;
-begin
-  FileFormat := diInvalid;
-  FileStream.ReadBuffer(DSKInfoBlock, SizeOf(DSKInfoBlock));
-
-  // Detect image format
-  if CompareBlock(DSKInfoBlock.DiskInfoBlock, 'MV - CPC') then
-    FileFormat := diStandardDSK;
-  if CompareBlock(DSKInfoBlock.DiskInfoBlock, 'EXTENDED CPC DSK File') then
-    FileFormat := diExtendedDSK;
-
-  if FileFormat <> diInvalid then
-  begin
-    FileStream.Seek(0, soFromBeginning);
-    Result := LoadFileDSK(FileStream);
-    FIsChanged := False;
-  end
-  else
-  begin
-    MessageDlg('Unknown file type. Load aborted.', mtWarning, [mbOK], 0);
-    Result := False;
-  end;
 end;
 
 function TDSKImage.LoadFileDSK(DiskFile: TStream): boolean;

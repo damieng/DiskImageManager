@@ -316,8 +316,8 @@ function TfrmMain.LoadImage(FileName: TFileName): boolean;
 var
   NewImage: TDSKImage;
 begin
-  NewImage := TDSKImage.Create;
-  if NewImage.LoadFile(FileName) then
+  NewImage := TDSKImage.CreateFromFile(FileName);
+  if NewImage <> nil then
   begin
     AddWorkspaceImage(NewImage);
     Result := True;
