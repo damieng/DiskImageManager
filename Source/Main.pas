@@ -206,8 +206,8 @@ begin
       if LoadImage(FileName) then
         Settings.AddRecentFile(FileName);
   tvwMain.EndUpdate;
-  Settings.Save;
   UpdateRecentFilesMenu;
+  Settings.Save;
 end;
 
 procedure TfrmMain.itmOpenRecentClick(Sender: TObject);

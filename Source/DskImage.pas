@@ -55,6 +55,7 @@ type
     destructor Destroy; override;
 
     function LoadFile(LoadFileName: TFileName): boolean;
+    function LoadStream(FileStream: TFileStream): boolean;
     function SaveFile(SaveFileName: TFileName; SaveFileFormat: TDSKImageFormat; Copy: boolean; Compress: boolean): boolean;
     function FindText(From: TDSKSector; Text: string; CaseSensitive: boolean): TDSKSector;
 
@@ -385,38 +386,42 @@ end;
 
 function TDSKImage.LoadFile(LoadFileName: TFileName): boolean;
 var
-  DiskFile: TFileStream;
-  DSKInfoBlock: TDSKInfoBlock;
+  FileStream: TFileStream;
 begin
   Result := False;
+
+  FileStream := TFileStream.Create(LoadFileName, fmOpenRead or fmShareDenyNone);
+  FileSize := FileStream.Size;
+  FileName := LoadFileName;
+
+  Result := LoadStream(FileStream);
+  FileStream.Free;
+end;
+
+function TDSKImage.LoadStream(FileStream: TFileStream): boolean;
+var
+  DSKInfoBlock: TDSKInfoBlock;
+begin
   FileFormat := diInvalid;
+  FileStream.ReadBuffer(DSKInfoBlock, SizeOf(DSKInfoBlock));
 
-  DiskFile := TFileStream.Create(LoadFileName, fmOpenRead or fmShareDenyNone);
-  DiskFile.ReadBuffer(DSKInfoBlock, SizeOf(DSKInfoBlock));
-  DiskFile.Seek(0, soFromBeginning);
-  FileSize := DiskFile.Size;
-
-  // Detect image format and load
+  // Detect image format
   if CompareBlock(DSKInfoBlock.DiskInfoBlock, 'MV - CPC') then
-  begin
     FileFormat := diStandardDSK;
-    Result := LoadFileDSK(DiskFile);
-  end;
   if CompareBlock(DSKInfoBlock.DiskInfoBlock, 'EXTENDED CPC DSK File') then
-  begin
     FileFormat := diExtendedDSK;
-    Result := LoadFileDSK(DiskFile);
-  end;
-  DiskFile.Free;
 
-  if Result then
+  if FileFormat <> diInvalid then
   begin
+    FileStream.Seek(0, soFromBeginning);
+    Result := LoadFileDSK(FileStream);
     FIsChanged := False;
-    FileName := LoadFileName;
   end
   else
-  if FileFormat = diInvalid then
+  begin
     MessageDlg('Unknown file type. Load aborted.', mtWarning, [mbOK], 0);
+    Result := False;
+  end;
 end;
 
 function TDSKImage.LoadFileDSK(DiskFile: TFileStream): boolean;
