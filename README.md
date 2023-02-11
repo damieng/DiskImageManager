@@ -1,8 +1,8 @@
 # Disk Image Manager
 
-Disk Image Manager (previously SPIN Disk Manager) is a cross-platform GUI application for examining and manipulating disk images in the Extended DSK format used by many Spectrum and Amstrad emulators.
+Disk Image Manager is an application for examining and manipulating disk images in the Standard and Extended DSK format used by many Spectrum, Amstrad PCW and CPC emulators.
 
-Many of this tools features and functions were driven by the Spectrum Disk Preservation team which use this format and tool to help manage the selection and testing of disk images archived to The World of Spectrum and The TZX Vault.
+Many of this tools features and functions were driven by the Spectrum Disk Preservation team which used this format and tool to help manage the selection and testing of disk images archived to The World of Spectrum and The TZX Vault.
 
 These images are traditionally created with CPDRead under DOS but Simon Owen's mordern [SamDisk](http://simonowen.com/samdisk/) works great under Windows and provides for much more advanced imaging especially around copy-protected disks.
 
@@ -95,6 +95,7 @@ To be able to build and visually edit the forms you will need to install the sup
 * Additional copy protection recognition
 
 ## Licence
+
 Copyright 2002-2023 Damien Guard.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
