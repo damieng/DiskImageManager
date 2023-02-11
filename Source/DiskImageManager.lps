@@ -179,13 +179,13 @@
       </Item4>
     </BuildModes>
     <ManyBuildModesSelection Value="&quot;Release Win32&quot;,&quot;Release Win64&quot;"/>
-    <Units Count="42">
+    <Units Count="43">
       <Unit0>
         <Filename Value="DiskImageManager.lpr"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="15" Y="3"/>
-        <UsageCount Value="127"/>
+        <UsageCount Value="132"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
       <Unit1>
@@ -193,9 +193,9 @@
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="383"/>
-        <CursorPos X="28" Y="396"/>
-        <UsageCount Value="127"/>
+        <TopLine Value="372"/>
+        <CursorPos X="94" Y="392"/>
+        <UsageCount Value="132"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit1>
@@ -203,8 +203,9 @@
         <Filename Value="Utils.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <CursorPos X="55" Y="9"/>
-        <UsageCount Value="127"/>
+        <TopLine Value="75"/>
+        <CursorPos Y="108"/>
+        <UsageCount Value="132"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit2>
       <Unit3>
@@ -216,7 +217,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="41"/>
         <CursorPos X="92" Y="61"/>
-        <UsageCount Value="127"/>
+        <UsageCount Value="132"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit3>
       <Unit4>
@@ -228,7 +229,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="166"/>
         <CursorPos X="62" Y="176"/>
-        <UsageCount Value="127"/>
+        <UsageCount Value="132"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit4>
       <Unit5>
@@ -240,7 +241,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="2"/>
         <CursorPos X="34" Y="9"/>
-        <UsageCount Value="127"/>
+        <UsageCount Value="132"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit5>
       <Unit6>
@@ -252,7 +253,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="220"/>
         <CursorPos X="81" Y="233"/>
-        <UsageCount Value="127"/>
+        <UsageCount Value="132"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit6>
       <Unit7>
@@ -261,8 +262,9 @@
         <ComponentName Value="frmMain"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <CursorPos X="69" Y="19"/>
-        <UsageCount Value="127"/>
+        <TopLine Value="300"/>
+        <CursorPos Y="320"/>
+        <UsageCount Value="132"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -274,7 +276,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="164"/>
         <CursorPos X="43" Y="211"/>
-        <UsageCount Value="127"/>
+        <UsageCount Value="132"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit8>
       <Unit9>
@@ -283,7 +285,7 @@
         <UnitName Value="FileSystem"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="25" Y="18"/>
-        <UsageCount Value="75"/>
+        <UsageCount Value="80"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit9>
       <Unit10>
@@ -291,7 +293,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="49"/>
         <CursorPos Y="70"/>
-        <UsageCount Value="30"/>
+        <UsageCount Value="29"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit10>
       <Unit11>
@@ -302,343 +304,350 @@
         <UsageCount Value="1"/>
       </Unit11>
       <Unit12>
-        <Filename Value="DIMComponents.pas"/>
-        <EditorIndex Value="-1"/>
-        <WindowIndex Value="-1"/>
-        <CursorPos Y="12"/>
-        <UsageCount Value="0"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit12>
-      <Unit13>
         <Filename Value="C:\lazarus\lcl\include\font.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="918"/>
         <CursorPos Y="944"/>
         <UsageCount Value="1"/>
-      </Unit13>
-      <Unit14>
+      </Unit12>
+      <Unit13>
         <Filename Value="C:\lazarus\lcl\include\rasterimage.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="272"/>
         <CursorPos Y="300"/>
         <UsageCount Value="1"/>
-      </Unit14>
-      <Unit15>
+      </Unit13>
+      <Unit14>
         <Filename Value="C:\lazarus\lcl\include\bitmapcanvas.inc"/>
         <EditorIndex Value="-1"/>
         <CursorPos Y="26"/>
         <UsageCount Value="1"/>
-      </Unit15>
-      <Unit16>
+      </Unit14>
+      <Unit15>
         <Filename Value="C:\lazarus\lcl\include\canvas.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="1471"/>
         <CursorPos Y="1499"/>
         <UsageCount Value="1"/>
-      </Unit16>
-      <Unit17>
+      </Unit15>
+      <Unit16>
         <Filename Value="C:\lazarus\lcl\include\brush.inc"/>
         <EditorIndex Value="-1"/>
         <CursorPos Y="38"/>
         <UsageCount Value="1"/>
-      </Unit17>
-      <Unit18>
+      </Unit16>
+      <Unit17>
         <Filename Value="C:\lazarus\fpc\3.2.2\source\packages\fcl-base\src\custapp.pp"/>
         <UnitName Value="CustApp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="64"/>
         <CursorPos X="14" Y="88"/>
         <UsageCount Value="1"/>
-      </Unit18>
-      <Unit19>
+      </Unit17>
+      <Unit18>
         <Filename Value="C:\lazarus\lcl\interfaces\win32\win32wscustomlistview.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="306"/>
         <CursorPos X="26" Y="310"/>
         <UsageCount Value="1"/>
-      </Unit19>
-      <Unit20>
-        <Filename Value="C:\lazarus\lcl\include\filedialog.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="205"/>
-        <CursorPos Y="217"/>
-        <UsageCount Value="0"/>
-      </Unit20>
-      <Unit21>
-        <Filename Value="C:\lazarus\lcl\include\commondialog.inc"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos Y="31"/>
-        <UsageCount Value="0"/>
-      </Unit21>
-      <Unit22>
+      </Unit18>
+      <Unit19>
         <Filename Value="FormatAnalysis.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="111"/>
         <CursorPos X="142" Y="128"/>
-        <UsageCount Value="44"/>
+        <UsageCount Value="43"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit22>
-      <Unit23>
+      </Unit19>
+      <Unit20>
         <Filename Value="C:\lazarus\fpc\3.2.2\source\rtl\inc\objpash.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="186"/>
         <CursorPos X="23" Y="206"/>
         <UsageCount Value="10"/>
-      </Unit23>
-      <Unit24>
+      </Unit20>
+      <Unit21>
         <Filename Value="C:\lazarus\lcl\comctrls.pp"/>
         <UnitName Value="ComCtrls"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="1029"/>
         <CursorPos X="14" Y="1048"/>
-        <UsageCount Value="19"/>
-      </Unit24>
-      <Unit25>
+        <UsageCount Value="18"/>
+      </Unit21>
+      <Unit22>
         <Filename Value="C:\lazarus\lcl\dialogs.pp"/>
         <UnitName Value="Dialogs"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="146"/>
         <CursorPos X="14" Y="165"/>
         <UsageCount Value="10"/>
-      </Unit25>
-      <Unit26>
+      </Unit22>
+      <Unit23>
         <Filename Value="C:\lazarus\ide\main.pp"/>
         <UnitName Value="Main"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="11719"/>
         <CursorPos X="3" Y="11745"/>
         <UsageCount Value="1"/>
-      </Unit26>
-      <Unit27>
+      </Unit23>
+      <Unit24>
         <Filename Value="DSKFormat.pas"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="22" Y="6"/>
         <UsageCount Value="12"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit27>
-      <Unit28>
+      </Unit24>
+      <Unit25>
         <Filename Value="C:\lazarus\lcl\include\customlistview.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="1391"/>
         <CursorPos Y="1418"/>
-        <UsageCount Value="26"/>
-      </Unit28>
-      <Unit29>
+        <UsageCount Value="25"/>
+      </Unit25>
+      <Unit26>
         <Filename Value="C:\lazarus\fpc\3.2.2\source\rtl\objpas\math.pp"/>
         <UnitName Value="Math"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="371"/>
         <CursorPos X="10" Y="397"/>
         <UsageCount Value="6"/>
-      </Unit29>
-      <Unit30>
+      </Unit26>
+      <Unit27>
         <Filename Value="C:\lazarus\lcl\include\customcombobox.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="288"/>
         <CursorPos Y="308"/>
         <UsageCount Value="4"/>
-      </Unit30>
-      <Unit31>
+      </Unit27>
+      <Unit28>
         <Filename Value="C:\lazarus\lcl\include\messagedialogs.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="103"/>
         <CursorPos X="10" Y="123"/>
         <UsageCount Value="1"/>
-      </Unit31>
-      <Unit32>
+      </Unit28>
+      <Unit29>
         <Filename Value="C:\lazarus\components\lazutils\lazfileutils.pas"/>
         <UnitName Value="LazFileUtils"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="73"/>
         <CursorPos X="80" Y="106"/>
         <UsageCount Value="1"/>
-      </Unit32>
-      <Unit33>
+      </Unit29>
+      <Unit30>
         <Filename Value="C:\lazarus\fpc\3.2.2\source\packages\rtl-objpas\src\inc\strutils.pp"/>
         <UnitName Value="StrUtils"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="44"/>
         <CursorPos X="85" Y="57"/>
         <UsageCount Value="15"/>
-      </Unit33>
-      <Unit34>
+      </Unit30>
+      <Unit31>
         <Filename Value="C:\lazarus\lcl\include\control.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="3571"/>
         <CursorPos Y="3595"/>
         <UsageCount Value="2"/>
-      </Unit34>
-      <Unit35>
+      </Unit31>
+      <Unit32>
         <Filename Value="C:\lazarus\fpc\3.2.2\source\rtl\objpas\classes\classesh.inc"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="673"/>
-        <CursorPos X="3" Y="615"/>
+        <TopLine Value="931"/>
+        <CursorPos X="14" Y="951"/>
         <UsageCount Value="10"/>
-      </Unit35>
-      <Unit36>
+      </Unit32>
+      <Unit33>
         <Filename Value="C:\lazarus\lcl\include\treeview.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="1022"/>
         <CursorPos Y="1046"/>
         <UsageCount Value="9"/>
-      </Unit36>
-      <Unit37>
+      </Unit33>
+      <Unit34>
         <Filename Value="C:\lazarus\fpc\3.2.2\source\rtl\inc\systemh.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="1489"/>
         <CursorPos X="11" Y="1518"/>
         <UsageCount Value="10"/>
-      </Unit37>
-      <Unit38>
+      </Unit34>
+      <Unit35>
         <Filename Value="C:\lazarus\fpc\3.2.2\source\rtl\objpas\fgl.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="123"/>
         <CursorPos X="84" Y="123"/>
         <UsageCount Value="8"/>
-      </Unit38>
-      <Unit39>
+      </Unit35>
+      <Unit36>
         <Filename Value="New.lfm"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="71"/>
         <CursorPos X="73" Y="93"/>
         <UsageCount Value="4"/>
         <DefaultSyntaxHighlighter Value="LFM"/>
-      </Unit39>
-      <Unit40>
+      </Unit36>
+      <Unit37>
         <Filename Value="C:\lazarus\fpc\3.2.2\source\rtl\objpas\objpas.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="137"/>
         <CursorPos X="112" Y="150"/>
         <UsageCount Value="10"/>
-      </Unit40>
-      <Unit41>
+      </Unit37>
+      <Unit38>
         <Filename Value="C:\lazarus\fpc\3.2.2\source\rtl\win\syswin.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="208"/>
         <CursorPos X="5" Y="342"/>
         <UsageCount Value="10"/>
+      </Unit38>
+      <Unit39>
+        <Filename Value="C:\lazarus\fpc\3.2.2\source\rtl\objpas\sysutils\sysutilh.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="21"/>
+        <CursorPos X="4" Y="41"/>
+        <UsageCount Value="10"/>
+      </Unit39>
+      <Unit40>
+        <Filename Value="C:\lazarus\fpc\3.2.2\source\packages\paszlib\src\zipper.pp"/>
+        <UnitName Value="Zipper"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="156"/>
+        <CursorPos X="87" Y="354"/>
+        <UsageCount Value="10"/>
+      </Unit40>
+      <Unit41>
+        <Filename Value="C:\lazarus\fpc\3.2.2\source\rtl\objpas\sysutils\finah.inc"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="10" Y="26"/>
+        <UsageCount Value="10"/>
       </Unit41>
+      <Unit42>
+        <Filename Value="C:\lazarus\fpc\3.2.2\source\packages\paszlib\src\zstream.pp"/>
+        <UnitName Value="ZStream"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="352"/>
+        <CursorPos X="27" Y="372"/>
+        <UsageCount Value="10"/>
+      </Unit42>
     </Units>
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
-        <Filename Value="Main.pas"/>
-        <Caret Line="156" Column="23" TopLine="138"/>
+        <Filename Value="DskImage.pas"/>
+        <Caret Line="483" TopLine="451"/>
       </Position1>
       <Position2>
-        <Filename Value="Main.pas"/>
-        <Caret Line="190" TopLine="177"/>
+        <Filename Value="DskImage.pas"/>
+        <Caret Line="490" TopLine="458"/>
       </Position2>
       <Position3>
-        <Filename Value="Main.pas"/>
-        <Caret Line="204" TopLine="177"/>
+        <Filename Value="DskImage.pas"/>
+        <Caret Line="491" TopLine="459"/>
       </Position3>
       <Position4>
-        <Filename Value="Main.pas"/>
-        <Caret Line="310" Column="28" TopLine="292"/>
+        <Filename Value="DskImage.pas"/>
+        <Caret Line="399" TopLine="384"/>
       </Position4>
       <Position5>
-        <Filename Value="Main.pas"/>
-        <Caret Line="156" Column="23" TopLine="138"/>
+        <Filename Value="DskImage.pas"/>
+        <Caret Line="396" TopLine="376"/>
       </Position5>
       <Position6>
-        <Filename Value="Main.pas"/>
-        <Caret Line="201" Column="19" TopLine="168"/>
+        <Filename Value="DskImage.pas"/>
+        <Caret Line="393" Column="29" TopLine="376"/>
       </Position6>
       <Position7>
-        <Filename Value="Main.pas"/>
-        <Caret Line="304" Column="90" TopLine="289"/>
+        <Filename Value="DskImage.pas"/>
+        <Caret Line="397" Column="35" TopLine="376"/>
       </Position7>
       <Position8>
-        <Filename Value="Main.pas"/>
-        <Caret Line="191" Column="11" TopLine="171"/>
+        <Filename Value="DskImage.pas"/>
+        <Caret Line="215" Column="83" TopLine="191"/>
       </Position8>
       <Position9>
-        <Filename Value="Main.pas"/>
-        <Caret Line="195" Column="3" TopLine="171"/>
+        <Filename Value="DskImage.pas"/>
+        <Caret Line="405" Column="13" TopLine="372"/>
       </Position9>
       <Position10>
-        <Filename Value="Main.pas"/>
-        <Caret Line="330" Column="73" TopLine="307"/>
+        <Filename Value="DskImage.pas"/>
+        <Caret Line="496" Column="40" TopLine="464"/>
       </Position10>
       <Position11>
-        <Filename Value="Main.pas"/>
-        <Caret Line="1328" Column="12" TopLine="1291"/>
+        <Filename Value="DskImage.pas"/>
+        <Caret Line="405" Column="5" TopLine="385"/>
       </Position11>
       <Position12>
-        <Filename Value="Main.pas"/>
-        <Caret Line="139" Column="24" TopLine="120"/>
+        <Filename Value="DskImage.pas"/>
+        <Caret Line="496" Column="61" TopLine="476"/>
       </Position12>
       <Position13>
-        <Filename Value="Main.pas"/>
-        <Caret Line="194" Column="12" TopLine="161"/>
+        <Filename Value="DskImage.pas"/>
+        <Caret Line="499" Column="80" TopLine="476"/>
       </Position13>
       <Position14>
-        <Filename Value="Main.pas"/>
-        <Caret Line="210" TopLine="193"/>
+        <Filename Value="DskImage.pas"/>
+        <Caret Line="501" Column="33" TopLine="476"/>
       </Position14>
       <Position15>
-        <Filename Value="Main.pas"/>
-        <Caret Line="156" Column="14" TopLine="138"/>
+        <Filename Value="DskImage.pas"/>
+        <Caret Line="558" Column="66" TopLine="545"/>
       </Position15>
       <Position16>
-        <Filename Value="Main.pas"/>
-        <Caret Line="319" Column="3" TopLine="313"/>
+        <Filename Value="DskImage.pas"/>
+        <Caret Line="595" Column="11" TopLine="562"/>
       </Position16>
       <Position17>
-        <Filename Value="Main.pas"/>
-        <Caret Line="320" Column="6" TopLine="313"/>
+        <Filename Value="DskImage.pas"/>
+        <Caret Line="613" Column="11" TopLine="580"/>
       </Position17>
       <Position18>
         <Filename Value="DskImage.pas"/>
-        <Caret Line="57" Column="19" TopLine="37"/>
+        <Caret Line="624" Column="18" TopLine="591"/>
       </Position18>
       <Position19>
         <Filename Value="DskImage.pas"/>
-        <Caret Line="399" Column="42" TopLine="377"/>
+        <Caret Line="613" Column="3" TopLine="591"/>
       </Position19>
       <Position20>
         <Filename Value="DskImage.pas"/>
-        <Caret Line="393" Column="7" TopLine="377"/>
+        <Caret Line="624" Column="30" TopLine="591"/>
       </Position20>
       <Position21>
         <Filename Value="DskImage.pas"/>
-        <Caret Line="388" Column="14" TopLine="368"/>
+        <Caret Line="45" Column="14" TopLine="25"/>
       </Position21>
       <Position22>
         <Filename Value="DskImage.pas"/>
-        <Caret Line="392" Column="9" TopLine="383"/>
+        <Caret Line="66" Column="60" TopLine="33"/>
       </Position22>
       <Position23>
         <Filename Value="DskImage.pas"/>
-        <Caret Line="388" Column="13" TopLine="368"/>
+        <Caret Line="399" TopLine="372"/>
       </Position23>
       <Position24>
         <Filename Value="DskImage.pas"/>
-        <Caret Line="399" Column="41" TopLine="379"/>
+        <Caret Line="58" Column="18" TopLine="38"/>
       </Position24>
       <Position25>
-        <Filename Value="DskImage.pas"/>
-        <Caret Line="427" TopLine="391"/>
+        <Filename Value="Main.pas"/>
+        <Caret Line="320" TopLine="300"/>
       </Position25>
       <Position26>
         <Filename Value="DskImage.pas"/>
-        <Caret Line="48" Column="14" TopLine="28"/>
+        <Caret Line="429" TopLine="411"/>
       </Position26>
       <Position27>
         <Filename Value="DskImage.pas"/>
-        <Caret Line="415" Column="49" TopLine="380"/>
+        <Caret Line="417" Column="49" TopLine="411"/>
       </Position27>
       <Position28>
         <Filename Value="DskImage.pas"/>
-        <Caret Line="395" Column="13" TopLine="375"/>
       </Position28>
       <Position29>
         <Filename Value="DskImage.pas"/>
-        <Caret Line="113" Column="81" TopLine="96"/>
+        <Caret Line="45" Column="14" TopLine="12"/>
       </Position29>
       <Position30>
         <Filename Value="DskImage.pas"/>
-        <Caret Line="58" Column="14" TopLine="34"/>
+        <Caret Line="66" Column="60" TopLine="33"/>
       </Position30>
     </JumpHistory>
     <RunParams>
@@ -649,13 +658,13 @@
   <Debugging>
     <Watches>
       <Item>
-        <Expression Value="Node.Text"/>
+        <Expression Value="ZipFile.Entries"/>
       </Item>
       <Item>
-        <Expression Value="ChildNode.Text"/>
+        <Expression Value="ZipFile.Entries.Count"/>
       </Item>
       <Item>
-        <Expression Value="tvwMain"/>
+        <Expression Value="Entry.ArchiveFileName"/>
       </Item>
     </Watches>
   </Debugging>

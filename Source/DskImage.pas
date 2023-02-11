@@ -14,7 +14,7 @@ unit DskImage;
 interface
 
 uses
-  DSKFormat, Utils, Classes, Dialogs, SysUtils, Math, Character;
+  DSKFormat, Utils, Classes, Dialogs, SysUtils, Math, Character, ZStream;
 
 const
   MaxSectorSize = 32768;
@@ -45,7 +45,7 @@ type
     FFileSize: int64;
     FIsChanged: boolean;
     procedure SetIsChanged(NewValue: boolean);
-    function LoadFileDSK(DiskFile: TFileStream): boolean;
+    function LoadFileDSK(DiskFile: TStream): boolean;
     function SaveFileDSK(DiskFile: TFileStream; SaveFileFormat: TDSKImageFormat; Compress: boolean): boolean;
   public
     FileFormat: TDSKImageFormat;
@@ -55,7 +55,7 @@ type
     destructor Destroy; override;
 
     function LoadFile(LoadFileName: TFileName): boolean;
-    function LoadStream(FileStream: TFileStream): boolean;
+    function LoadStream(FileStream: TStream): boolean;
     function SaveFile(SaveFileName: TFileName; SaveFileFormat: TDSKImageFormat; Copy: boolean; Compress: boolean): boolean;
     function FindText(From: TDSKSector; Text: string; CaseSensitive: boolean): TDSKSector;
 
@@ -387,18 +387,30 @@ end;
 function TDSKImage.LoadFile(LoadFileName: TFileName): boolean;
 var
   FileStream: TFileStream;
+  GZStream: TGZFileStream;
 begin
   Result := False;
 
-  FileStream := TFileStream.Create(LoadFileName, fmOpenRead or fmShareDenyNone);
-  FileSize := FileStream.Size;
-  FileName := LoadFileName;
-
-  Result := LoadStream(FileStream);
-  FileStream.Free;
+  if ExtractFileExt(LoadFileName) = '.gz' then
+  begin
+    GZStream := TGZFileStream.Create(LoadFileName, gzopenread);
+    FileName := LoadFileName;
+    Result := LoadStream(GZStream);
+    // FileSize is unavailable from either the internal stream or the external stream
+    // Ditto reading the current position!
+    GZStream.Free;
+  end
+  else
+  begin
+    FileName := LoadFileName;
+    FileStream := TFileStream.Create(LoadFileName, fmOpenRead or fmShareDenyNone);
+    FileSize := FileStream.Size;
+    Result := LoadStream(FileStream);
+    FileStream.Free;
+  end;
 end;
 
-function TDSKImage.LoadStream(FileStream: TFileStream): boolean;
+function TDSKImage.LoadStream(FileStream: TStream): boolean;
 var
   DSKInfoBlock: TDSKInfoBlock;
 begin
@@ -424,7 +436,7 @@ begin
   end;
 end;
 
-function TDSKImage.LoadFileDSK(DiskFile: TFileStream): boolean;
+function TDSKImage.LoadFileDSK(DiskFile: TStream): boolean;
 var
   DSKInfoBlock: TDSKInfoBlock;
   TRKInfoBlock: TTRKInfoBlock;
@@ -483,7 +495,7 @@ begin
         if SizeT > 0 then // Don't load if track is unformatted
         begin
           ReadSize := SizeT + 256;
-          if TOff + ReadSize > FileSize then
+          if (FileSize > 0) and (TOff + ReadSize > FileSize) then
           begin
             Messages.Add(SysUtils.Format('Side %d track %d indicated %d bytes of data' +
               ' but file had only %d bytes left.', [SIdx, TIdx, SizeT, FileSize - TOff]));
