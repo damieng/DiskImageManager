@@ -19,7 +19,7 @@
 *.lrt
 
 # Lazarus local files (user-specific info)
-# *.lps
+*.lps
 
 # Lazarus backups and unit output folders.
 # These can be changed by user in Lazarus/project options.

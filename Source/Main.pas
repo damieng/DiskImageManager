@@ -138,7 +138,7 @@ type
     procedure CloseImage(Image: TDSKImage);
     procedure LoadFiles(FileNames: array of string);
     procedure SaveImage(Image: TDSKImage);
-    procedure SaveImageAs(Image: TDSKImage; Copy: boolean);
+    procedure SaveImageAs(Image: TDSKImage; Copy: boolean; NewName: string);
     procedure AnalyseMap(Side: TDSKSide);
     procedure RefreshList;
     procedure RefreshStrings(Disk: TDSKDisk);
@@ -1032,12 +1032,16 @@ end;
 procedure TfrmMain.itmSaveCopyAsClick(Sender: TObject);
 begin
   if tvwMain.Selected <> nil then
-    SaveImageAs(GetCurrentImage, True);
+    SaveImageAs(GetCurrentImage, True, '');
 end;
 
-procedure TfrmMain.SaveImageAs(Image: TDSKImage; Copy: boolean);
+procedure TfrmMain.SaveImageAs(Image: TDSKImage; Copy: boolean; NewName: string);
 begin
-  dlgSave.FileName := Image.FileName;
+  if NewName <> '' then
+    dlgSave.FileName := NewName
+  else
+    dlgSave.FileName := Image.FileName;
+
   case Image.FileFormat of
     diStandardDSK: dlgSave.FilterIndex := 1;
     diExtendedDSK: dlgSave.FilterIndex := 2;
@@ -1069,8 +1073,7 @@ begin
     DefaultFileName := DefaultFileName + ' Side ' + StrInt(DiskMap.Side.Side);
   dlgSaveMap.FileName := ExtractFileNameOnly(DefaultFileName);
   if dlgSaveMap.Execute then
-    DiskMap.SaveMap(dlgSaveMap.FileName, Settings.SaveDiskMapWidth,
-      Settings.SaveDiskMapHeight);
+    DiskMap.SaveMap(dlgSaveMap.FileName, Settings.SaveDiskMapWidth, Settings.SaveDiskMapHeight);
 end;
 
 procedure TfrmMain.itmDarkBlankSectorsPopClick(Sender: TObject);
@@ -1126,11 +1129,14 @@ end;
 procedure TfrmMain.SaveImage(Image: TDSKImage);
 begin
   if Image.FileFormat = diNotYetSaved then
-    SaveImageAs(Image, False)
+    SaveImageAs(Image, False, '')
+  else
+  if ExtractFileExt(Image.FileName) = '.gz' then
+    SaveImageAs(Image, False, ExtractFileNameWithoutExt(Image.FileName))
   else
     Image.SaveFile(Image.FileName, Image.FileFormat, False, (Settings.RemoveEmptyTracks and (Image.FileFormat = diExtendedDSK)));
-  RefreshList();
 
+  RefreshList();
 end;
 
 procedure TfrmMain.itmSectorResetFDCClick(Sender: TObject);
