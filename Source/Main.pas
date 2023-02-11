@@ -135,12 +135,10 @@ type
     Settings: TSettings;
 
     procedure AddWorkspaceImage(Image: TDSKImage);
-    function CloseAll(AllowCancel: boolean): boolean;
-    function ConfirmChange(Action: string; Upon: string): boolean;
-
+    procedure CloseImage(Image: TDSKImage);
+    procedure LoadFiles(FileNames: array of string);
     procedure SaveImage(Image: TDSKImage);
     procedure SaveImageAs(Image: TDSKImage; Copy: boolean);
-
     procedure AnalyseMap(Side: TDSKSide);
     procedure RefreshList;
     procedure RefreshStrings(Disk: TDSKDisk);
@@ -153,8 +151,9 @@ type
     procedure RefreshListSpecification(Specification: TDSKSpecification);
     procedure UpdateMenus;
 
+    function CloseAll(AllowCancel: boolean): boolean;
+    function ConfirmChange(Action: string; Upon: string): boolean;
     function LoadImage(FileName: TFileName): boolean;
-    procedure CloseImage(Image: TDSKImage);
     function GetNextNewFile: integer;
   end;
 
@@ -177,8 +176,8 @@ uses New;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
 var
+  FileNames: TStringList;
   Idx: integer;
-  FileName: string;
 begin
   Settings := TSettings.Create(self);
   Settings.Load;
@@ -187,17 +186,27 @@ begin
   Caption := Application.Title;
   itmAbout.Caption := 'About ' + Application.Title;
   itmDarkUnusedSectors.Checked := DiskMap.DarkBlankSectors;
-
-  tvwMain.BeginUpdate;
-  for Idx := 1 to ParamCount do
-  begin
-    FileName := ParamStr(Idx);
-    if (ExtractFileExt(FileName) = '.dsk') and (FileExistsUTF8(FileName)) then
-      LoadImage(FileName);
-  end;
-  tvwMain.EndUpdate;
-
   Application.AddOnDropFilesHandler(OnApplicationDropFiles);
+
+  FileNames := TStringList.Create();
+  for Idx := 0 to ParamCount - 1 do
+    FileNames.Add(ParamStr(Idx));
+  LoadFiles(FileNames.ToStringArray());
+
+  FileNames.Free;
+end;
+
+procedure TfrmMain.LoadFiles(FileNames: array of string);
+var
+  FileName: string;
+begin
+  tvwMain.BeginUpdate;
+  for FileName in FileNames do
+    if FileExistsUTF8(FileName) then
+      if LoadImage(FileName) then
+        Settings.AddRecentFile(FileName);
+  tvwMain.EndUpdate;
+  Settings.Save;
   UpdateRecentFilesMenu;
 end;
 
@@ -209,12 +218,7 @@ begin
   begin
     FileName := (Sender as TMenuItem).Caption;
     if FileExists(FileName) then
-    begin
-      LoadImage(FileName);
-      Settings.AddRecentFile(FileName);
-      UpdateRecentFilesMenu;
-      Settings.Save();
-    end
+      LoadFiles([FileName])
     else
     if MessageDlg('File does not exist', SysUtils.Format('Can not find file %s. Remove from recent list?', [FileName]),
       mtConfirmation, mbYesNo, 0) = mrYes then
@@ -303,19 +307,9 @@ begin
 end;
 
 procedure TfrmMain.itmOpenClick(Sender: TObject);
-var
-  Idx: integer;
-  FileName: string;
 begin
   if dlgOpen.Execute then
-    for Idx := 0 to dlgOpen.Files.Count - 1 do
-    begin
-      FileName := dlgOpen.Files[Idx];
-      LoadImage(FileName);
-      Settings.AddRecentFile(FileName);
-      UpdateRecentFilesMenu;
-      Settings.Save();
-    end;
+    LoadFiles(dlgOpen.Files.ToStringArray());
 end;
 
 function TfrmMain.LoadImage(FileName: TFileName): boolean;
@@ -1330,17 +1324,8 @@ begin
 end;
 
 procedure TfrmMain.OnApplicationDropFiles(Sender: TObject; const FileNames: array of string);
-var
-  FileName: string;
 begin
-  tvwMain.BeginUpdate;
-  for FileName in FileNames do
-  begin
-    LoadImage(FileName);
-    Settings.AddRecentFile(FileName);
-  end;
-  tvwMain.EndUpdate;
-  UpdateRecentFilesMenu;
+  LoadFiles(FileNames);
 end;
 
 end.

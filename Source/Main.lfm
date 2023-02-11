@@ -263,7 +263,7 @@ object frmMain: TfrmMain
   end
   object dlgOpen: TOpenDialog
     DefaultExt = '.*.dsk'
-    Filter = 'Disk Images (*.DSK)|*.DSK|All files|*.*'
+    Filter = 'Disk Images (*.DSK)|*.DSK|ZIP Files (*.ZIP)|*.ZIP|All files|*.*'
     Options = [ofHideReadOnly, ofAllowMultiSelect, ofPathMustExist, ofFileMustExist, ofEnableSizing]
     Left = 440
     Top = 112
