@@ -16,9 +16,9 @@
       <ResourceType Value="res"/>
       <UseXPManifest Value="True"/>
       <XPManifest>
-        <DpiAware Value="Per-monitor"/>
-        <TextName Value="Envy.Spin.DiskImageManager"/>
-        <TextDesc Value="A manager for Spectrum and CPC .DSK files."/>
+        <DpiAware Value="True/PM"/>
+        <TextName Value="Disk Image Manager"/>
+        <TextDesc Value="A manager for Spectrum, PCW and CPC .DSK files."/>
       </XPManifest>
       <Icon Value="0"/>
     </General>
@@ -26,9 +26,12 @@
       <EnableI18N LFM="False"/>
     </i18n>
     <VersionInfo>
-      <MinorVersionNr Value="1"/>
-      <RevisionNr Value="9"/>
-      <BuildNr Value="100"/>
+      <UseVersionInfo Value="True"/>
+      <AutoIncrementBuild Value="True"/>
+      <MajorVersionNr Value="2"/>
+      <MinorVersionNr Value="3"/>
+      <BuildNr Value="103"/>
+      <StringTable CompanyName="Envy Technologies" InternalName="Disk Image Manager" LegalCopyright="Copyright 2002-2023 Damien Guard." OriginalFilename="DiskImageManager.exe" ProductName="Disk Image Manager"/>
     </VersionInfo>
     <BuildModes Count="2">
       <Item1 Name="Debug" Default="True"/>
