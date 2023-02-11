@@ -27,6 +27,7 @@ backup/
 *.bak
 lib/
 out/
+release/
 
 # Application bundle for Mac OS
 *.app/
