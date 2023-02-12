@@ -30,7 +30,8 @@ type
   TfrmMain = class(TForm)
     itmOpenRecent: TMenuItem;
     memo: TMemo;
-    itmSaveBinaryAs: TMenuItem;
+    itmSaveFileAs: TMenuItem;
+    itmSaveSelectedFilesTo: TMenuItem;
     mnuMain: TMainMenu;
     itmDisk: TMenuItem;
     itmOpen: TMenuItem;
@@ -45,6 +46,7 @@ type
     dlgOpen: TOpenDialog;
     pnlLeft: TPanel;
     dlgSaveBinary: TSaveDialog;
+    dlgSelectDirectory: TSelectDirectoryDialog;
     splVertical: TSplitter;
     staBar: TStatusBar;
     pnlRight: TPanel;
@@ -86,7 +88,8 @@ type
     procedure itmOpenClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure itmOpenRecentClick(Sender: TObject);
-    procedure itmSaveBinaryAsClick(Sender: TObject);
+    procedure itmSaveSelectedFilesToClick(Sender: TObject);
+    procedure itmSaveFileAsClick(Sender: TObject);
     procedure lvwMainDblClickFile(Sender: TObject);
     procedure popListItemPopup(Sender: TObject);
     procedure tvwMainChange(Sender: TObject; Node: TTreeNode);
@@ -226,7 +229,30 @@ begin
   end;
 end;
 
-procedure TfrmMain.itmSaveBinaryAsClick(Sender: TObject);
+procedure TfrmMain.itmSaveSelectedFilesToClick(Sender: TObject);
+var
+  ListItem: TListItem;
+  Folder: string;
+  Stream: TStream;
+  DiskFile: TDSKFile;
+begin
+  if not dlgSelectDirectory.Execute then exit;
+
+  Folder := dlgSelectDirectory.FileName + PathDelim;
+  for ListItem in lvwMain.Items do
+    if (ListItem.Selected) and (TObject(ListItem.Data).ClassType = TDSKFile) then
+    begin
+      DiskFile := TDSKFile(ListItem.Data);
+      Stream := TFileStream.Create(Folder + DiskFile.FileName, fmCreate);
+      try
+        Stream.WriteBuffer(Pointer(DiskFile.GetData())^, DiskFile.Size);
+      finally
+        Stream.Free;
+      end;
+    end;
+end;
+
+procedure TfrmMain.itmSaveFileAsClick(Sender: TObject);
 var
   DiskFile: TDSKFile;
   Data: Pointer;
@@ -261,9 +287,19 @@ begin
 end;
 
 procedure TfrmMain.popListItemPopup(Sender: TObject);
+var
+  DiskFile: TDSKFile;
 begin
-  itmSaveBinaryAs.Visible := (lvwMain.Selected <> nil) and (lvwMain.Selected.Data <> nil) and
-    (TObject(lvwMain.Selected.Data).ClassType = TDSKFile);
+  itmSaveSelectedFilesTo.Visible := tvwMain.Selected.Text = 'Files';
+  itmSaveSelectedFilesTo.Enabled := lvwMain.SelCount > 0;
+
+  itmSaveFileAs.Visible := False;
+  if (lvwMain.SelCount = 1) and (lvwMain.Selected.Data <> nil) and (TObject(lvwMain.Selected.Data).ClassType = TDSKFile) then
+  begin
+    itmSaveFileAs.Visible := True;
+    DiskFile := TDSKFile((lvwMain.Selected).Data);
+    itmSaveFileAs.Caption := Format('Save %s as...', [DiskFile.FileName]);
+  end;
 end;
 
 function TfrmMain.FindTreeNodeFromData(Node: TTreeNode; Data: TObject): TTreeNode;

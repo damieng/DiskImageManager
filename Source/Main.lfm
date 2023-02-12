@@ -364,9 +364,13 @@ object frmMain: TfrmMain
       Caption = 'Copy details to clipboard'
       OnClick = itmEditCopyClick
     end
-    object itmSaveBinaryAs: TMenuItem
-      Caption = 'Save binary as...'
-      OnClick = itmSaveBinaryAsClick
+    object itmSaveFileAs: TMenuItem
+      Caption = 'Save file as...'
+      OnClick = itmSaveFileAsClick
+    end
+    object itmSaveSelectedFilesTo: TMenuItem
+      Caption = 'Save selected files to...'
+      OnClick = itmSaveSelectedFilesToClick
     end
   end
   object dlgFind: TFindDialog
@@ -378,5 +382,9 @@ object frmMain: TfrmMain
   object dlgSaveBinary: TSaveDialog
     Left = 264
     Top = 112
+  end
+  object dlgSelectDirectory: TSelectDirectoryDialog
+    Left = 264
+    Top = 176
   end
 end
