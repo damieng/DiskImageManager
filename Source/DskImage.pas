@@ -519,8 +519,8 @@ begin
           // Test to make sure this was a track
           if TRKInfoBlock.TrackData <> DiskInfoTrack then
           begin
-            MessageDlg(SysUtils.Format('Side %d track %d not found at offset %d to %d. Load aborted.',
-              [SIdx, TIdx, TOff, DiskFile.Position]), mtError, [mbOK], 0);
+            MessageDlg(SysUtils.Format('%s: Side %d track %d not found at offset %d to %d. Load aborted.',
+              [ExtractFileName(FileName), SIdx, TIdx, TOff, DiskFile.Position]), mtError, [mbOK], 0);
             exit;
           end;
 
