@@ -42,21 +42,26 @@ begin
   end;
 end;
 
+const
+  EINSTEIN_SIGNATURE: array[0..5] of byte = ($00, $E1, $00, $FB, $00, $FA);
+
 function DetectUniformFormat(Disk: TDSKDisk): string;
 var
   FirstTrack: TDSKTrack;
+  FirstSector: TDSKSector;
 begin
-  FirstTrack := Disk.Side[0].Track[0];
+  FirstTrack := Disk.GetLogicalTrack(0);
+  FirstSector := FirstTrack.GetFirstLogicalSector();
   Result := '';
 
   // Amstrad formats (9 sectors, 512 size, SS or DS)
-  if (FirstTrack.Sectors = 9) and (Disk.Side[0].Track[0].Sector[0].DataSize = 512) then
+  if (FirstTrack.Sectors = 9) and (FirstSector.DataSize = 512) then
   begin
     // TODO: Identify format by lowest sector ID
     case FirstTrack.LowSectorID of
       1: begin
         Result := 'Amstrad PCW/Spectrum +3';
-        case Disk.Side[0].Track[0].Sector[0].GetModChecksum(256) of
+        case FirstSector.GetModChecksum(256) of
           1: Result := 'Amstrad PCW 9512';
           3: Result := 'Spectrum +3';
           255: Result := 'Amstrad PCW 8256';
@@ -77,22 +82,27 @@ begin
   else
   begin
     // Other possible formats...
-    case Disk.Side[0].Track[0].LowSectorID of
-      1: if (Disk.Side[0].Track[0].Sectors = 8) then Result := 'Amstrad CPC IBM';
+    case FirstTrack.LowSectorID of
+      1: if FirstTrack.Sectors = 8 then Result := 'Amstrad CPC IBM';
       65: Result := 'Amstrad CPC system custom (maybe)';
       193: Result := 'Amstrad CPC data custom (maybe)';
     end;
   end;
 
+  // Einstein format
+  if FirstSector.DataSize > 10 then
+    if CompareMem(@FirstSector.Data, @EINSTEIN_SIGNATURE, Length(EINSTEIN_SIGNATURE)) then
+      Result := 'Einstein';
+
   // Custom speccy formats (10 sectors, SS)
-  if (Disk.Sides = 1) and (Disk.Side[0].Track[0].Sectors = 10) then
+  if (Disk.Sides = 1) and (FirstTrack.Sectors = 10) then
   begin
     // HiForm/Ultra208 (Chris Pile) + Ian Collier's skewed versions
-    if (Disk.Side[0].Track[0].Sector[0].DataSize > 10) then
+    if (FirstSector.DataSize > 10) then
     begin
-      if (Disk.Side[0].Track[0].Sector[0].Data[2] = 42) and (Disk.Side[0].Track[0].Sector[0].Data[8] = 12) then
-        case Disk.Side[0].Track[0].Sector[0].Data[5] of
-          0: if (Disk.Side[0].Track[0].Sector[1].ID = 8) then
+      if (FirstSector.Data[2] = 42) and (FirstSector.Data[8] = 12) then
+        case FirstSector.Data[5] of
+          0: if (FirstTrack.Sector[1].ID = 8) then
               case Disk.Side[0].Track[1].Sector[0].ID of
                 7: Result := 'Ultra 208/Ian Max';
                 8: Result := 'Maybe Ultra 208 or Ian Max (skew lost)';
@@ -101,7 +111,7 @@ begin
               end
             else
               Result := 'Possibly Ultra 208 or Ian Max (interleave lost)';
-          1: if (Disk.Side[0].Track[0].Sector[1].ID = 8) then
+          1: if (FirstTrack.Sector[1].ID = 8) then
               case Disk.Side[0].Track[1].Sector[0].ID of
                 7: Result := 'Ian High';
                 1: Result := 'HiForm 203';
@@ -112,21 +122,20 @@ begin
             Result := 'Possibly HiForm or Ian High (interleave lost)';
         end;
       // Supermat 192 (Ian Cull)
-      if (Disk.Side[0].Track[0].Sector[0].Data[7] = 3) and (Disk.Side[0].Track[0].Sector[0].Data[9] = 23) and
-        (Disk.Side[0].Track[0].Sector[0].Data[2] = 40) then
+      if (FirstSector.Data[7] = 3) and (FirstSector.Data[9] = 23) and (FirstSector.Data[2] = 40) then
         Result := 'Supermat 192/XCF2';
     end;
   end;
 
   // Sam Coupe formats
-  if (Disk.Sides = 2) and (Disk.Side[0].Track[0].Sectors = 10) and (Disk.Side[0].HighTrackCount = 80) and
-    (Disk.Side[0].Track[0].LowSectorID = 1) and (Disk.Side[0].Track[0].Sector[0].DataSize = 512) then
+  if (Disk.Sides = 2) and (FirstTrack.Sectors = 10) and (Disk.Side[0].HighTrackCount = 80) and
+    (FirstTrack.LowSectorID = 1) and (FirstSector.DataSize = 512) then
   begin
     Result := 'MGT SAM Coupe';
-    if (StrInByteArray(Disk.Side[0].Track[0].Sector[0].Data, 'BDOS', 232)) then
+    if StrInByteArray(FirstSector.Data, 'BDOS', 232) then
       Result := Result + ' BDOS'
     else
-      case (Disk.Side[0].Track[0].Sector[0].Data[210]) of
+      case FirstSector.Data[210] of
         0, 255: Result := Result + ' SAMDOS';
         else
           Result := Result + ' MasterDOS';

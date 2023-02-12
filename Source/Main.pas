@@ -347,7 +347,7 @@ begin
   if Image.Disk.Sides > 0 then
   begin
     // Optional specification
-    Image.Disk.Specification.Read;
+    Image.Disk.Specification.Identify;
     if Image.Disk.Specification.Format <> dsFormatInvalid then
     begin
       SpecsNode := AddTree(ImageNode, 'Specification', Ord(itSpecification), Image.Disk.Specification);
@@ -610,7 +610,7 @@ end;
 procedure TfrmMain.RefreshListSpecification(Specification: TDSKSpecification);
 begin
   SetListSimple;
-  Specification.Read;
+  Specification.Identify;
   AddListInfo('Format', DSKSpecFormats[Specification.Format]);
   if Specification.Format <> dsFormatInvalid then
   begin
@@ -620,6 +620,7 @@ begin
     AddListInfo('Tracks/side', StrInt(Specification.TracksPerSide));
     AddListInfo('Sectors/track', StrInt(Specification.SectorsPerTrack));
     AddListInfo('Directory blocks', StrInt(Specification.DirectoryBlocks));
+    AddListInfo('Allocation size', DSKSpecAllocations[Specification.AllocationSize]);
     AddListInfo('Reserved tracks', StrInt(Specification.ReservedTracks));
     AddListInfo('Gap (format)', StrInt(Specification.GapFormat));
     AddListInfo('Gap (read/write)', StrInt(Specification.GapReadWrite));

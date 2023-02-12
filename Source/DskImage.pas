@@ -199,14 +199,17 @@ type
 
   // Specification (Optional PCW/CPC+3 disk specification)
   TDSKSpecFormat = (dsFormatPCW_SS, dsFormatCPC_System, dsFormatCPC_Data, dsFormatPCW_DS,
-    dsFormatAssumedPCW_SS, dsFormatInvalid);
+    dsFormatAssumedPCW_SS, dsFormatEinstein, dsFormatInvalid);
   TDSKSpecSide = (dsSideSingle, dsSideDoubleAlternate, dsSideDoubleSuccessive, dsSideDoubleReverse, dsSideInvalid);
   TDSKSpecTrack = (dsTrackSingle, dsTrackDouble, dsTrackInvalid);
+  TDSKAllocationSize = (asByte, asWord);
 
   TDSKSpecification = class(TObject)
   private
     FParentDisk: TDSKDisk;
     FIsChanged: boolean;
+
+    FAllocationSize: TDSKAllocationSize;
     FBlockShift: byte;
     FChecksum: byte;
     FDirectoryBlocks: byte;
@@ -240,13 +243,14 @@ type
     constructor Create(ParentDisk: TDSKDisk);
     destructor Destroy; override;
 
-    procedure Read;
+    procedure Identify;
     function Write: boolean;
     function GetBlockSize: integer;
     function GetBlockCount: word;
     function GetUsableCapacity: integer;
     function GetRecordsPerTrack: integer;
 
+    property AllocationSize: TDSKAllocationSize read FAllocationSize write FAllocationSize;
     property BlockShift: byte read FBlockShift write SetBlockShift;
     property Checksum: byte read FChecksum write SetChecksum;
     property DirectoryBlocks: byte read FDirectoryBlocks write SetDirectoryBlocks;
@@ -310,7 +314,13 @@ const
     'Amstrad CPC DD/SS/ST data',
     'Amstrad PCW DD/DS/DT',
     'Amstrad PCW/+3 DD/SS/ST (Assumed)',
+    'Einstein',
     'Invalid'
+    );
+
+  DSKSpecAllocations: array[TDSKAllocationSize] of string = (
+    '8-bit byte',
+    '16-bit word'
     );
 
   DSKSpecSides: array[TDSKSpecSide] of string = (
@@ -1549,9 +1559,14 @@ begin
   FDirectoryBlocks := 2;
   FGapReadWrite := 42;
   FGapFormat := 82;
+
+  if GetBlockCount > 255 then
+    FAllocationSize := asWord
+  else
+    FAllocationSize := asByte;
 end;
 
-procedure TDSKSpecification.Read;
+procedure TDSKSpecification.Identify;
 var
   FirstSector: TDSKSector;
   CheckByte: byte;
@@ -1561,6 +1576,20 @@ begin
   FFormat := dsFormatInvalid;
   FirstSector := FParentDisk.GetFirstSector;
   if FirstSector = nil then exit;
+
+  if FParentDisk.DetectFormat = 'Einstein' then
+  begin
+    FFormat := dsFormatEinstein;
+    Source := 'Signature 00 E1 00 FB 00 FA on first logical sector';
+    SectorSize := 512;
+    SectorsPerTrack := 10;
+    TracksPerSide := 40;
+    BlockShift := 4;
+    FReservedTracks := 2;
+    FDirectoryBlocks := 1;
+    FAllocationSize := asWord;
+    exit;
+  end;
 
   with FirstSector do
   begin

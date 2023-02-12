@@ -19,20 +19,19 @@ uses
 
 type
   TByteArray = array of byte;
-  TDSKEntryAllocationSize = (asByte, asWord);
   TDSKFile = class;
 
   TDSKFileSystem = class(TObject)
   private
     FParentDisk: TDSKDisk;
-    FEntryAllocationSize: TDSKEntryAllocationSize;
+    FEntryAllocationSize: TDSKAllocationSize;
 
     procedure TryPlus3DOSHeader(Data: array of byte; DiskFile: TDSKFile);
     procedure TryAMSDOSHeader(Data: array of byte; DiskFile: TDSKFile);
   public
     DiskLabel: string;
 
-    property EntryAllocationSize: TDSKEntryAllocationSize read FEntryAllocationSize;
+    property EntryAllocationSize: TDSKAllocationSize read FEntryAllocationSize;
 
     function ReadLabelEntry(Data: array of byte; Offset: integer): string;
     function ReadFileEntry(Data: array of byte; Offset: integer): TDSKFile;
@@ -76,11 +75,6 @@ constructor TDSKFileSystem.Create(ParentDisk: TDSKDisk);
 begin
   inherited Create;
   FParentDisk := ParentDisk;
-
-  if FParentDisk.Specification.GetBlockCount > 255 then
-    FEntryAllocationSize := asWord
-  else
-    FEntryAllocationSize := asByte;
 end;
 
 destructor TDSKFileSystem.Destroy;
@@ -186,8 +180,11 @@ function TDSKFileSystem.ReadFileEntry(Data: array of byte; Offset: integer): TDS
 var
   Extension: string;
   AllocBlock, AllocOffset: integer;
+  Spec: TDSKSpecification;
 begin
   Result := TDskFile.Create(self);
+  Spec := FParentDisk.Specification;
+
   with Result do
   begin
     User := Data[Offset];
@@ -201,11 +198,10 @@ begin
     Archived := Data[Offset + ARCHIVED_OFFSET] > 127;
 
     Extent := Data[Offset + EXTENT_LOW];
-
     AllocOffset := Offset + ALLOCATION_OFFSET;
     repeat
       begin
-        if FEntryAllocationSize = asByte then
+        if Spec.AllocationSize = asByte then
         begin
           AllocBlock := Data[AllocOffset];
           AllocOffset := AllocOffset + 1;
@@ -220,7 +216,7 @@ begin
       end;
     until (AllocBlock = 0) or (AllocOffset = Offset + 32);
 
-    SizeOnDisk := Blocks.Count * FParentDisk.Specification.GetBlockSize();
+    SizeOnDisk := Blocks.Count * Spec.GetBlockSize();
     Size := Data[Offset + RECORD_COUNT_OFFSET] * 128;
     if Data[Offset + BYTES_IN_LAST_RECORD_OFFSET] > 0 then
       Size := Size - 128 + Data[Offset + BYTES_IN_LAST_RECORD_OFFSET];
