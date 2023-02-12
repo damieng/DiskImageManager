@@ -255,20 +255,22 @@ end;
 procedure TfrmMain.itmSaveFileAsClick(Sender: TObject);
 var
   DiskFile: TDSKFile;
-  Data: Pointer;
+  Data: TDiskByteArray;
   Stream: TStream;
 begin
-  if lvwMain.Selected = nil then exit;
-  Data := lvwMain.Selected.Data;
-  if (Data = nil) or (TObject(Data).ClassType <> TDSKFile) then exit;
-  DiskFile := TDSKFile(Data);
+  if (lvwMain.Selected = nil) or (lvwMain.Selected.Data = nil) or (TObject(lvwMain.Selected.Data).ClassType <> TDSKFile) then
+    exit;
+
+  DiskFile := TDSKFile(lvwMain.Selected.Data);
 
   dlgSaveBinary.FileName := DiskFile.FileName;
   if not dlgSaveBinary.Execute then exit;
 
   Stream := TFileStream.Create(dlgSaveBinary.FileName, fmCreate);
+  Data := DiskFile.GetData();
   try
-    Stream.WriteBuffer(Pointer(DiskFile.GetData())^, DiskFile.Size);
+
+    Stream.WriteBuffer(Pointer(Data)^, High(Data));
   finally
     Stream.Free;
   end;

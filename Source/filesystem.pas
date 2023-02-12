@@ -18,7 +18,7 @@ uses
   Classes, SysUtils, FGL;
 
 type
-  TByteArray = array of byte;
+  TDiskByteArray = array of byte;
   TDSKFile = class;
 
   TDSKFileSystem = class(TObject)
@@ -60,7 +60,7 @@ type
     Size: integer;
     Meta: string;
 
-    function GetData: TByteArray;
+    function GetData: TDiskByteArray;
 
     constructor Create(ParentFileSystem: TDSKFileSystem);
     destructor Destroy; override;
@@ -320,7 +320,7 @@ begin
   inherited Destroy;
 end;
 
-function TDSKFile.GetData: TByteArray;
+function TDSKFile.GetData: TDiskByteArray;
 var
   Block, BytesLeft, TargetIdx, BlockSize, SectorCount, SectorsPerBlock, SectorDataSkip: integer;
   Disk: TDSKDisk;
@@ -336,7 +336,7 @@ begin
   SectorsPerBlock := BlockSize div Disk.Specification.SectorSize;
   SectorDataSkip := 0;
 
-  if HeaderType = 'PLUS3DOS' then
+  if HeaderType = 'PLUS3DOS' or HeaderType = 'AMSDOS' then
   begin
     SectorDataSkip := 128;
     BytesLeft := BytesLeft - 128;
