@@ -139,10 +139,11 @@ begin
     if Sector.Data[SectorOffset] < 32 then
     begin
       DiskFile := ReadFileEntry(Sector.Data, SectorOffset);
-      if DiskFile.Extent = 0 then
-        Result.Add(DiskFile)
-      else
-        Extents.Add(DiskFile);
+      if (DiskFile.FileName <> '') and (DiskFile.Blocks.Count > 0) then
+        if DiskFile.Extent = 0 then
+          Result.Add(DiskFile)
+        else
+          Extents.Add(DiskFile);
     end;
 
     if Sector.Data[SectorOffset] = 32 then
@@ -190,6 +191,7 @@ begin
     User := Data[Offset];
     FileName := StrBlockClean(Data, Offset + FILENAME_OFFSET, 8).TrimRight();
     Extension := StrBlockClean(Data, Offset + EXTENSION_OFFSET, 3).TrimRight();
+    if FileName = '' then exit;
     if Extension <> '' then
       FileName := FileName + '.' + Extension;
 
@@ -296,8 +298,8 @@ begin
       else
         DiskFile.Meta := 'BASIC';
     end;
-    1: DiskFile.Meta := Format('DATA %s', [Data[19]]);
-    2: DiskFile.Meta := Format('DATA %s$', [Data[19]]);
+    1: DiskFile.Meta := Format('DATA %s(%d)', [char(Data[19] - 64), Data[129] + (Data[130] << 8)]);
+    2: DiskFile.Meta := Format('DATA %s$(%d)', [char(Data[19] - 128), Data[129] + (Data[130] << 8)]);
     3: DiskFile.Meta := Format('CODE %d,%d', [Param1, Length]);
     else
       DiskFile.Meta := Format('Custom 0x%x', [Data[15]]);
@@ -336,7 +338,7 @@ begin
   SectorsPerBlock := BlockSize div Disk.Specification.SectorSize;
   SectorDataSkip := 0;
 
-  if HeaderType = 'PLUS3DOS' or HeaderType = 'AMSDOS' then
+  if (HeaderType = 'PLUS3DOS') or (HeaderType = 'AMSDOS') then
   begin
     SectorDataSkip := 128;
     BytesLeft := BytesLeft - 128;
