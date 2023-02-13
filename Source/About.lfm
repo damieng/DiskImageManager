@@ -152,12 +152,12 @@ object frmAbout: TfrmAbout
     Width = 265
   end
   object lblVersion: TLabel
-    Left = 303
+    Left = 64
     Height = 13
     Top = 32
-    Width = 26
-    Alignment = taRightJustify
+    Width = 265
     Anchors = [akTop, akRight]
+    AutoSize = False
     Caption = '0.0.0'
     ParentColor = False
   end

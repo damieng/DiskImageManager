@@ -29,8 +29,8 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="2"/>
-      <MinorVersionNr Value="3"/>
-      <BuildNr Value="104"/>
+      <MinorVersionNr Value="4"/>
+      <BuildNr Value="105"/>
       <StringTable CompanyName="Envy Technologies" InternalName="Disk Image Manager" LegalCopyright="Copyright 2002-2023 Damien Guard." OriginalFilename="DiskImageManager.exe" ProductName="Disk Image Manager"/>
     </VersionInfo>
     <BuildModes Count="2">

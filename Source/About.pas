@@ -14,7 +14,7 @@ unit About;
 interface
 
 uses
-  LCLIntf, Forms, ExtCtrls, StdCtrls, Graphics;
+  LCLIntf, Forms, ExtCtrls, StdCtrls, Graphics, SysUtils, ShellApi, Windows;
 
 type
   TfrmAbout = class(TForm)
@@ -25,6 +25,7 @@ type
     lblVersion: TLabel;
     timFade: TTimer;
     lblWeb: TLabel;
+  function GetAppVersion: String;
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
@@ -35,6 +36,7 @@ type
 var
   frmAbout: TfrmAbout;
 
+
 implementation
 
 uses
@@ -42,11 +44,34 @@ uses
 
 {$R *.lfm}
 
+function TfrmAbout.GetAppVersion: String;
+var
+  Size, Size2: DWord;
+  Pt, Pt2: Pointer;
+begin
+  Size := GetFileVersionInfoSize(PChar(ParamStr(0)),Size2);
+  if (Size > 0) then
+  begin
+  	GetMem(Pt,Size);
+    try
+    	GetFileVersionInfo(PChar(ParamStr(0)),0,Size,Pt);
+      VerQueryValue(Pt,'\',Pt2,Size2);
+      with TVSFixedFileInfo(Pt2^) do
+      begin
+      	Result := Format('%d.%d.%d.%d', [HiWord(dwFileVersionMS),LoWord(dwFileVersionMS),
+                 	HiWord(dwFileVersionLS),LoWord(dwFileVersionLS)]);
+      end;
+    finally
+    	FreeMem(Pt);
+    end;
+  end;
+end;
+
 procedure TfrmAbout.FormCreate(Sender: TObject);
 begin
   Caption := 'About ' + Application.Title;
   lblTitle.Caption := Application.Title;
-  lblVersion.Caption := 'Compiled: ' + {$I %DATE%} + ' ' + {$I %TIME%};
+  lblVersion.Caption := Format('%s build: %s compiled %s %s', [{$I %FPCTARGETOS%}, GetAppVersion, {$I %DATE%}, {$I %TIME%}]);
 end;
 
 procedure TfrmAbout.timFadeTimer(Sender: TObject);
@@ -90,4 +115,4 @@ begin
   timFade.Enabled := True;
 end;
 
-end.
+end.
