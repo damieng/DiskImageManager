@@ -235,6 +235,7 @@ var
   Folder: string;
   Stream: TStream;
   DiskFile: TDSKFile;
+  Data: TDiskByteArray;
 begin
   if not dlgSelectDirectory.Execute then exit;
 
@@ -244,8 +245,9 @@ begin
     begin
       DiskFile := TDSKFile(ListItem.Data);
       Stream := TFileStream.Create(Folder + DiskFile.FileName, fmCreate);
+      Data := DiskFile.GetData();
       try
-        Stream.WriteBuffer(Pointer(DiskFile.GetData())^, DiskFile.Size);
+        Stream.WriteBuffer(Pointer(Data)^, Length(Data));
       finally
         Stream.Free;
       end;
@@ -269,8 +271,7 @@ begin
   Stream := TFileStream.Create(dlgSaveBinary.FileName, fmCreate);
   Data := DiskFile.GetData();
   try
-
-    Stream.WriteBuffer(Pointer(Data)^, High(Data));
+    Stream.WriteBuffer(Pointer(Data)^, Length(Data));
   finally
     Stream.Free;
   end;

@@ -324,47 +324,51 @@ end;
 
 function TDSKFile.GetData: TDiskByteArray;
 var
-  Block, BytesLeft, TargetIdx, BlockSize, SectorCount, SectorsPerBlock, SectorDataSkip: integer;
+  Block, BytesLeft, TargetIdx, BlockSize, SectorsLeft, SectorsPerBlock: integer;
   Disk: TDSKDisk;
   Sector: TDSKSector;
+  FileData: TDiskByteArray;
 begin
-  Result := nil;
-  SetLength(Result, Size);
+  FileData := nil;
+  SetLength(FileData, Size);
 
   BytesLeft := Size;
   TargetIdx := 0;
   Disk := FParentFileSystem.FParentDisk;
   BlockSize := Disk.Specification.GetBlockSize();
   SectorsPerBlock := BlockSize div Disk.Specification.SectorSize;
-  SectorDataSkip := 0;
 
-  if (HeaderType = 'PLUS3DOS') or (HeaderType = 'AMSDOS') then
-  begin
-    SectorDataSkip := 128;
-    BytesLeft := BytesLeft - 128;
-  end;
-
+  // Extract the full data out
   for Block in Blocks do
   begin
     Sector := Disk.GetSectorByBlock(Block);
-    SectorCount := SectorsPerBlock;
+    SectorsLeft := SectorsPerBlock;
     repeat
       begin
-        if (BytesLeft < Sector.DataSize) then
+        // Final (possibly partial) sector
+        if (BytesLeft <= Sector.DataSize) then
         begin
-          Move(Sector.Data[SectorDataSkip], Result[TargetIdx], BytesLeft);
-          exit;
+          Move(Sector.Data, FileData[TargetIdx], BytesLeft);
+          SectorsLeft := 0;
+        end
+        else
+        begin
+          // Full sector
+          Move(Sector.Data, FileData[TargetIdx], Sector.DataSize);
+          BytesLeft := BytesLeft - Sector.DataSize;
+          TargetIdx := TargetIdx + Sector.DataSize;
+          Sector := Disk.GetNextLogicalSector(Sector);
+          Dec(SectorsLeft);
         end;
-        Move(Sector.Data[SectorDataSkip], Result[TargetIdx], Sector.DataSize - SectorDataSkip);
-
-        BytesLeft := BytesLeft - Sector.DataSize + SectorDataSkip;
-        TargetIdx := TargetIdx + Sector.DataSize - SectorDataSkip;
-        SectorDataSkip := 0;
-        Dec(SectorCount);
-        Sector := Disk.GetNextLogicalSector(Sector);
       end
-    until SectorCount = 0;
+    until SectorsLeft = 0;
   end;
+
+  // Strip any headers (maybe make this optional in the future)
+  if (HeaderType = 'PLUS3DOS') or (HeaderType = 'AMSDOS') then
+    Result := Copy(FileData, 128, Size - 128)
+  else
+    Result := FileData;
 end;
 
 end.
