@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 4134
+  Left = 460
   Height = 384
-  Top = 281
+  Top = 326
   Width = 556
   AllowDropFiles = True
   ClientHeight = 364
@@ -13,6 +13,7 @@ object frmMain: TfrmMain
   Menu = mnuMain
   OnClose = FormClose
   OnCreate = FormCreate
+  Position = poDesktopCenter
   LCLVersion = '2.2.4.0'
   object splVertical: TSplitter
     Left = 180
