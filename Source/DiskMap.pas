@@ -33,6 +33,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    function CreateImage(SaveWidth: integer; SaveHeight: integer): TBitmap;
     function SaveMap(FileName: TFileName; SaveWidth: integer; SaveHeight: integer): boolean;
   published
     property Align;
@@ -274,15 +275,19 @@ begin
   end;
 end;
 
+function TSpinDiskMap.CreateImage(SaveWidth: integer; SaveHeight: integer): TBitmap;
+begin
+  Result := TBitmap.Create;
+  Result.Width := SaveWidth;
+  Result.Height := SaveHeight;
+  RenderBitmap(Result, Rect(0, 0, SaveWidth - 1, SaveHeight - 1));
+end;
+
 function TSpinDiskMap.SaveMap(FileName: TFileName; SaveWidth: integer; SaveHeight: integer): boolean;
 var
-  SaveImage: TBitmap;
+ SaveImage: TBitmap;
 begin
-  SaveImage := TBitmap.Create;
-  SaveImage.Width := SaveWidth;
-  SaveImage.Height := SaveHeight;
-
-  RenderBitmap(SaveImage, Rect(0, 0, SaveWidth - 1, SaveHeight - 1));
+  SaveImage := CreateImage(SaveWidth, SaveHeight);
   SaveImage.SaveToFile(FileName);
   SaveImage.Free;
   Result := True;

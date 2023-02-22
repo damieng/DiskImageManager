@@ -32,6 +32,7 @@ type
     memo: TMemo;
     itmSaveFileAs: TMenuItem;
     itmSaveSelectedFilesTo: TMenuItem;
+    itmCopyMapToClipboard: TMenuItem;
     mnuMain: TMainMenu;
     itmDisk: TMenuItem;
     itmOpen: TMenuItem;
@@ -47,6 +48,7 @@ type
     pnlLeft: TPanel;
     dlgSaveBinary: TSaveDialog;
     dlgSelectDirectory: TSelectDirectoryDialog;
+    Separator1: TMenuItem;
     splVertical: TSplitter;
     staBar: TStatusBar;
     pnlRight: TPanel;
@@ -85,6 +87,7 @@ type
     itmFind: TMenuItem;
     itmFindNext: TMenuItem;
     dlgFind: TFindDialog;
+    procedure itmCopyMapToClipboardClick(Sender: TObject);
     procedure itmOpenClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure itmOpenRecentClick(Sender: TObject);
@@ -349,6 +352,16 @@ procedure TfrmMain.itmOpenClick(Sender: TObject);
 begin
   if dlgOpen.Execute then
     LoadFiles(dlgOpen.Files.ToStringArray());
+end;
+
+procedure TfrmMain.itmCopyMapToClipboardClick(Sender: TObject);
+var
+  MapImage: TBitmap;
+begin
+  MapImage := DiskMap.CreateImage(Settings.SaveDiskMapWidth, Settings.SaveDiskMapHeight);
+  Clipboard.Assign(MapImage);
+  MapImage.Free;
+
 end;
 
 function TfrmMain.LoadImage(FileName: TFileName): boolean;
@@ -1293,7 +1306,10 @@ end;
 
 procedure TfrmMain.itmEditCopyClick(Sender: TObject);
 begin
-  Clipboard.AsText := GetListViewAsText(lvwMain);
+  if DiskMap.Visible then
+    itmCopyMapToClipboardClick(Sender)
+  else
+    Clipboard.AsText := GetListViewAsText(lvwMain);
 end;
 
 procedure TfrmMain.itmEditSelectAllClick(Sender: TObject);
