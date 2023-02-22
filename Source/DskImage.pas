@@ -945,7 +945,7 @@ var
   Mod256: integer;
 begin
   Result := '';
-  if GetFirstSector <> nil then
+  if (Side[0].Tracks > 0) and (Side[0].Track[0].Sectors > 1) then
   begin
     if Side[0].Track[0].Sector[1].Status = ssFormattedInUse then
     begin
@@ -1019,7 +1019,7 @@ begin
     end;
 
     Inc(Index);
-    if Index = Sector.DataSize then
+    if Index >= Sector.DataSize then
     begin
       Sector := GetNextLogicalSector(Sector);
       Index := 0;
