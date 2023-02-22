@@ -1,7 +1,7 @@
 object frmSector: TfrmSector
-  Left = 735
+  Left = 669
   Height = 467
-  Top = 961
+  Top = 627
   Width = 375
   BorderStyle = bsDialog
   Caption = 'Sector Properties'
@@ -13,7 +13,7 @@ object frmSector: TfrmSector
   Font.Height = -11
   Font.Name = 'Tahoma'
   Position = poMainFormCenter
-  LCLVersion = '1.6.0.4'
+  LCLVersion = '2.2.4.0'
   object pnlTab: TPanel
     Left = 0
     Height = 437
@@ -292,7 +292,6 @@ object frmSector: TfrmSector
           Min = 0
           Position = 0
           TabOrder = 3
-          Wrap = False
         end
         object cboStatus: TComboBox
           Left = 56
@@ -331,7 +330,6 @@ object frmSector: TfrmSector
           Min = 0
           Position = 0
           TabOrder = 12
-          Wrap = False
         end
         object edtImage: TEdit
           Left = 56
@@ -376,7 +374,6 @@ object frmSector: TfrmSector
           Position = 0
           TabOrder = 5
           Visible = False
-          Wrap = False
         end
         object edtPad: TEdit
           Left = 272
@@ -400,7 +397,6 @@ object frmSector: TfrmSector
           Position = 0
           TabOrder = 8
           Visible = False
-          Wrap = False
         end
         object edtFDCSize: TEdit
           Left = 272
@@ -418,12 +414,10 @@ object frmSector: TfrmSector
           Top = 169
           Width = 16
           Associate = edtFDCSize
-          Increment = 256
           Max = 255
           Min = 0
           Position = 0
           TabOrder = 11
-          Wrap = False
         end
         object bevIdentity: TBevel
           Left = 56

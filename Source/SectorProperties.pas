@@ -112,6 +112,7 @@ begin
 
   // Details
   udSectorID.Position := FSector.ID;
+  udFDCSize.Position := FSector.FDCSize;
   udSize.Position := FSector.DataSize;
   if (FSector.GetFillByte >= 0) then
     udFill.Position := FSector.ParentTrack.Filler
