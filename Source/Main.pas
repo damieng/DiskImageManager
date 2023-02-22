@@ -482,7 +482,7 @@ begin
   itmSaveCopyAs.Enabled := AllowImageFile;
 
   // Hide disk map if no longer selected
-  if (lvwMain.Selected = nil) and (DiskMap.Visible) then
+  if (lvwMain.Selected = nil) then
   begin
     DiskMap.Visible := False;
     memo.Visible := False;
@@ -554,6 +554,7 @@ begin
       end
     else
       pnlListLabel.Caption := '';
+
     ViewStyle := OldViewStyle;
     Columns.EndUpdate;
     Items.EndUpdate;
