@@ -151,7 +151,7 @@ var
   Sector: TDSKSector;
 begin
   Result := '';
-  if Side.Tracks < 2 then exit;
+  if (Side.Tracks < 2) or (Side.Track[0].Sectors < 1) or (Side.Track[0].Sector[0].DataSize < 128) then exit;
 
   // Alkatraz copy-protection
   Offset := StrBufPos(Side.Track[0].Sector[0].Data, ' THE ALKATRAZ PROTECTION SYSTEM   (C) 1987  Appleby Associates');
