@@ -455,8 +455,10 @@ var
   ReadSize: integer;
   TrackSizeIdx: integer;
   SizeT: word;
+  FoundIncorrectTrackMarkers: boolean;
 begin
   Result := False;
+  FoundIncorrectTrackMarkers := False;
 
   DiskFile.ReadBuffer(DSKInfoBlock, SizeOf(DSKInfoBlock));
 
@@ -465,6 +467,9 @@ begin
     Creator := CreatorDU54
   else
     Creator := StrBlockClean(DSKInfoBlock.Disk_Creator, 0, 14);
+
+  if (Creator.Trim = '') then
+    Messages.Add('Missing Creator signature.');
 
   if DSKInfoBlock.Disk_NumTracks > MaxTracks then
   begin
@@ -527,6 +532,16 @@ begin
           end;
 
           // Test to make sure this was a track
+          if (TRKInfoBlock.TrackData = DiskInfoTrackBroken) then
+          begin
+            if (not FoundIncorrectTrackMarkers) then
+            begin
+              Messages.Add('Disk image uses incorrect "Track-Info" markers padded with spaces not CRLF.');
+              FoundIncorrectTrackMarkers := True;
+              Corrupt := True;
+            end;
+          end
+          else
           if TRKInfoBlock.TrackData <> DiskInfoTrack then
           begin
             MessageDlg(SysUtils.Format('%s: Side %d track %d not found at offset %d to %d. Load aborted.',

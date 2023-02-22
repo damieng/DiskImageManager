@@ -7,6 +7,7 @@ const
   DiskInfoStandard = 'MV - CPCEMU Disk-File' + #13 + #10 + 'Disk-Info' + #13 + #10;
   DiskInfoExtended = 'EXTENDED CPC DSK File' + #13 + #10 + 'Disk-Info' + #13 + #10;
   DiskInfoTrack = 'Track-Info' + #13 + #10;
+  DiskInfoTrackBroken = 'Track-Info   ';
   DiskSectorOffsetBlock = 'Offset-Info' + #13 + #10;
   CreatorSig = 'SPIN Disk Man';
   CreatorDU54 = 'Disk Image (DU54)' + #13 + #10;
