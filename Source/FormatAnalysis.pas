@@ -264,7 +264,15 @@ begin
   end;
   if (Side.Track[0].Sectors > 7) and (Side.Tracks > 40) and (Side.Track[1].Sectors = 1) and
     (Side.Track[1].Sector[0].ID = 193) and (Side.Track[1].Sector[0].FDCStatus[1] = 32) then
-    Result := 'Speedlock 1989 (probably, unsigned)';
+    Result := 'Speedlock 1989/1990 (probably, unsigned)';
+
+  // Speedlock 1990
+  Offset := StrBufPos(Side.Track[0].Sector[7].Data, 'SPEEDLOCK DISC PROTECTION SYSTEMS (C) 1990 SPEEDLOCK ASSOCIATES');
+  if Offset > -1 then
+  begin
+    Result := 'Speedlock 1990 (signed T0/S7 +' + StrInt(Offset) + ')';
+    exit;
+  end;
 
   // Three Inch Loader
   Offset := StrBufPos(Side.Track[0].Sector[0].Data,
@@ -416,6 +424,21 @@ begin
     begin
       Result := Result + ' (' + Temp.Substring(8) + ')';
       exit;
+    end;
+  end;
+
+  // Amsoft/EXOPAL
+  if (Side.Tracks > 3) and (Side.Track[3].Sectors > 0) and (Side.Track[3].Sector[0].DataSize = 512) then
+  begin
+    Offset := StrBufPos(Side.Track[3].Sector[0].Data, 'Amsoft disc protection system');
+    if Offset > 1 then
+    begin
+      Offset := StrBufPos(Side.Track[3].Sector[0].Data, 'EXOPAL');
+      if Offset > -1 then
+      begin
+        Result := Format('Amsoft/EXOPAL (signed T3S0 +%d)', [Offset]);
+        exit;
+      end;
     end;
   end;
 
