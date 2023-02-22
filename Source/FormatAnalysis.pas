@@ -147,7 +147,8 @@ end;
 // and structural characteristics.
 function DetectProtection(Side: TDSKSide): string;
 var
-  TIdx, SIdx, Offset: integer;
+  TIdx, SIdx, Offset, LastTIdx: integer;
+  Temp: string;
   Sector: TDSKSector;
 begin
   Result := '';
@@ -157,9 +158,18 @@ begin
   Offset := StrBufPos(Side.Track[0].Sector[0].Data, ' THE ALKATRAZ PROTECTION SYSTEM   (C) 1987  Appleby Associates');
   if Offset > -1 then
   begin
-    Result := 'Alkatraz +3 (signed at ' + StrInt(Offset) + ')';
+    Result := 'Alkatraz +3 (signed at T0/S0 +' + StrInt(Offset) + ')';
     exit;
   end;
+
+  for TIdx := 0 to Side.Tracks - 2 do
+    if (Side.Track[TIdx].Sectors = 18) and (Side.Track[TIdx].SectorSize = 256) then
+      if (Side.Track[TIdx + 1].Sectors > 0) and (Side.Track[TIdx + 1].Sector[0].FDCStatus[2] = 64) then
+      begin
+        Result := Format('Alkatraz CPC (18 sector T%d)', [TIdx]);
+        exit;
+      end;
+
 
   // Frontier copy-protection
   if (Side.Tracks > 10) and (Side.Track[1].Sectors > 0) and (Side.Track[0].Sector[0].DataSize > 1) then
@@ -167,7 +177,7 @@ begin
     Offset := StrBufPos(Side.Track[1].Sector[0].Data, 'W DISK PROTECTION SYSTEM. (C) 1990 BY NEW FRONTIER SOFT.');
     if Offset > -1 then
     begin
-      Result := 'Frontier (signed at ' + StrInt(Offset) + ')';
+      Result := 'Frontier (signed T1/S0 +' + StrInt(Offset) + ')';
       exit;
     end;
 
@@ -179,11 +189,20 @@ begin
   // Hexagon
   if (Side.Track[0].Sectors = 10) and (Side.Track[0].Sector[8].DataSize = 512) then
   begin
-    Offset := StrBufPos(Side.Track[0].Sector[8].Data, 'GON DISK PROTECTION c 1989 A.R.P');
-    if Offset > -1 then
+    for SIdx := 0 to Side.Track[0].Sectors - 1 do
     begin
-      Result := 'Hexagon (signed at ' + StrInt(Offset) + ')';
-      exit;
+      Offset := StrBufPos(Side.Track[0].Sector[SIdx].Data, 'GON DISK PROTECTION c 1989');
+      if Offset > -1 then
+      begin
+        Result := Format('Hexagon (signed T0/S%d +%d)', [SIdx, Offset]);
+        exit;
+      end;
+      Offset := StrBufPos(Side.Track[0].Sector[SIdx].Data, 'GON Disk Protection c 1989');
+      if Offset > -1 then
+      begin
+        Result := Format('Hexagon (signed T0/S%d +%d)', [SIdx, Offset]);
+        exit;
+      end;
     end;
 
     if (Side.Track[1].Sectors = 1) and (Side.Track[1].Sector[0].FDCSize = 6) and
@@ -197,7 +216,7 @@ begin
     Offset := StrBufPos(Side.Track[0].Sector[2].Data, 'PAUL OWENS' + #128 + 'PROTECTION SYS');
     if Offset > -1 then
     begin
-      Result := 'Paul Owens (signed at ' + StrInt(Offset) + ')';
+      Result := 'Paul Owens (signed T0/S2 +' + StrInt(Offset) + ')';
       exit;
     end
     else
@@ -209,7 +228,7 @@ begin
   Offset := StrBufPos(Side.Track[0].Sector[0].Data, 'SPEEDLOCK +3 DISC PROTECTION SYSTEM COPYRIGHT 1987 SPEEDLOCK ASSOCIATES');
   if Offset > -1 then
   begin
-    Result := 'Speedlock +3 1987 (signed at ' + StrInt(Offset) + ')';
+    Result := 'Speedlock +3 1987 (signed T0/S0 +' + StrInt(Offset) + ')';
     exit;
   end;
 
@@ -221,7 +240,7 @@ begin
   Offset := StrBufPos(Side.Track[0].Sector[0].Data, 'SPEEDLOCK +3 DISC PROTECTION SYSTEM COPYRIGHT 1988 SPEEDLOCK ASSOCIATES');
   if Offset > -1 then
   begin
-    Result := 'Speedlock +3 1988 (signed at ' + StrInt(Offset) + ')';
+    Result := 'Speedlock +3 1988 (signed T0/S0 +' + StrInt(Offset) + ')';
     exit;
   end;
   if (Side.Track[0].Sectors = 9) and (Side.Track[1].Sectors = 5) and (Side.Track[1].Sector[0].DataSize = 1024) and
@@ -232,7 +251,7 @@ begin
   Offset := StrBufPos(Side.Track[0].Sector[0].Data, 'SPEEDLOCK DISC PROTECTION SYSTEMS (C) 1988 SPEEDLOCK ASSOCIATES');
   if Offset > -1 then
   begin
-    Result := 'Speedlock 1988 (signed at ' + StrInt(Offset) + ')';
+    Result := 'Speedlock 1988 (signed T0/S0 +' + StrInt(Offset) + ')';
     exit;
   end;
 
@@ -240,7 +259,7 @@ begin
   Offset := StrBufPos(Side.Track[0].Sector[0].Data, 'SPEEDLOCK DISC PROTECTION SYSTEMS (C) 1989 SPEEDLOCK ASSOCIATES');
   if Offset > -1 then
   begin
-    Result := 'Speedlock 1989 (signed at ' + StrInt(Offset) + ')';
+    Result := 'Speedlock 1989 (signed T0/S0 +' + StrInt(Offset) + ')';
     exit;
   end;
   if (Side.Track[0].Sectors > 7) and (Side.Tracks > 40) and (Side.Track[1].Sectors = 1) and
@@ -252,7 +271,7 @@ begin
     '***Loader Copyright Three Inch Software 1988, All Rights Reserved. Three Inch Software, 73 Surbiton Road, Kingston upon Thames, KT1 2HG***');
   if Offset > -1 then
   begin
-    Result := 'Three Inch Loader type 1 (signed at ' + StrInt(Offset) + ')';
+    Result := 'Three Inch Loader type 1 (signed T0/S0 +' + StrInt(Offset) + ')';
     exit;
   end;
 
@@ -262,7 +281,7 @@ begin
       '***Loader Copyright Three Inch Software 1988, All Rights Reserved. Three Inch Software, 73 Surbiton Road, Kingston upon Thames, KT1 2HG***');
     if Offset > -1 then
     begin
-      Result := 'Three Inch Loader type 1-0-7 (signed at ' + StrInt(Offset) + ')';
+      Result := 'Three Inch Loader type 1-0-7 (signed T0/S7 +' + StrInt(Offset) + ')';
       exit;
     end;
   end;
@@ -271,7 +290,7 @@ begin
     '***Loader Copyright Three Inch Software 1988, All Rights Reserved. 01-546 2754');
   if Offset > -1 then
   begin
-    Result := 'Three Inch Loader type 2 (signed at ' + StrInt(Offset) + ')';
+    Result := 'Three Inch Loader type 2 (signed T0/S0 +' + StrInt(Offset) + ')';
     exit;
   end;
 
@@ -281,7 +300,7 @@ begin
     Offset := StrBufPos(Side.Track[1].Sector[4].Data, 'Loader ' + #127 + '1988 Three Inch Software');
     if Offset > -1 then
     begin
-      Result := 'Three Inch Loader type 3-1-4 (signed at ' + StrInt(Offset) + ')';
+      Result := 'Three Inch Loader type 3-1-4 (signed T1/S4 +' + StrInt(Offset) + ')';
       exit;
     end;
   end;
@@ -291,29 +310,18 @@ begin
   begin
     Offset := StrBufPos(Side.Track[0].Sector[2].Data, 'Laser Load   By C.J.Pink For Consult Computer    Systems');
     if Offset > -1 then
-      Result := 'Laser Load by C.J. Pink (signed at ' + StrInt(Offset) + ')';
+      Result := 'Laser Load by C.J. Pink (signed T0/S2 +' + StrInt(Offset) + ')';
   end;
 
   // P.M.S.Loader
   Offset := StrBufPos(Side.Track[0].Sector[0].Data, 'P.M.S.LOADER [C]1987');
   if Offset > -1 then
   begin
-    Result := 'P.M.S. Loader 1987 (signed at ' + StrInt(Offset) + ')';
+    Result := 'P.M.S. Loader 1987 (signed T0/S0 +' + StrInt(Offset) + ')';
     exit;
   end;
   if ((Side.Tracks > 2) and Side.Track[0].IsFormatted) and (not Side.Track[1].IsFormatted and Side.Track[2].IsFormatted) then
     Result := 'P.M.S. Loader 1987 (probably, unsigned)';
-
-  /// ERE/Remi HERBULOT (La Bataille D'Angleterre CPC)
-  if (Side.Track[0].Sectors > 4) then
-  begin
-    Offset := StrBufPos(Side.Track[0].Sector[5].Data, 'PROTECTION      Remi HERBULOT   ');
-    if Offset > 0 then
-    begin
-      Result := 'ERE/Remi HERBULOT (signed at ' + StrInt(Offset) + ')';
-      exit;
-    end;
-  end;
 
   // Players?
   for TIdx := 0 to Side.Tracks - 1 do
@@ -328,13 +336,110 @@ begin
       Result := Format('Players (maybe, super-sized %d byte track %d)', [Side.GetLargestTrackSize(), TIdx]);
     end;
 
+  // Remi Herbulot
+  if (Side.Track[0].Sectors > 6) then
+    for SIdx := 0 to Side.Track[0].Sectors - 1 do
+    begin
+      Offset := StrBufPos(Side.Track[0].Sector[SIdx].Data, 'PROTECTION      Remi HERBULOT');
+      if Offset > -1 then
+      begin
+        // Is used in conjuntion with following schemes so do not exit
+        Result := Format('ERE/Remi HERBULOT (signed T0/S%d +%d)', [SIdx, Offset]);
+      end;
+
+      Offset := StrBufPos(Side.Track[0].Sector[SIdx].Data, 'PROTECTION  V2.1Remi HERBULOT');
+      if Offset > -1 then
+      begin
+        // Is used in conjuntion with following schemes so do not exit
+        Result := Format('ERE/Remi HERBULOT 2.1 (signed T0/S%d +%d)', [SIdx, Offset]);
+      end;
+    end;
+
+  // KBI (CPC)
+  LastTIdx := -1;
+  for TIdx := 0 to Side.Tracks - 1 do
+    if (Side.Track[TIdx].Sectors = 19) then
+    begin
+      LastTIdx := TIdx;
+      Offset := StrBufPos(Side.Track[TIdx].Sector[1].Data, '(c) 1986 for KBI ');
+      if Offset > -1 then
+      begin
+        if (Result <> '') then Result := ' + ' + Result;
+        Result := Format('KBI-19 (signed T%d/S1 +%d)%s', [TIdx, Offset, Result]);
+        exit;
+      end;
+
+      Offset := StrBufPos(Side.Track[TIdx].Sector[0].Data, 'ALAIN LAURENT GENERATION 5 1989');
+      if Offset > -1 then
+      begin
+        if (Result <> '') then Result := ' + ' + Result;
+        Result := Format('CAAV (signed T%d/S0 +%d)%s', [TIdx, Offset, Result]);
+        exit;
+      end;
+    end;
+
+  if (LastTIdx > 0) then
+  begin
+    if (Result <> '') then Result := ' + ' + Result;
+    Result := Format('KBI-19 or CAAV (probably, unsigned track %d)%s', [LastTIdx, Result]);
+    exit;
+  end;
+
+  if (Side.Tracks >= 40) and (Side.Track[39].Sectors = 10) and (Side.Track[38].Sectors = 9) then
+  begin
+    Sector := Side.Track[39].Sector[9];
+    if (Sector.FDCStatus[1] = 32) and (Sector.FDCStatus[2] = 32) then
+    begin
+      Result := 'KBI-10';
+      exit;
+    end;
+  end;
+
+  // DiscSYS
+  for TIdx := 0 to Side.Tracks - 1 do
+  begin
+    if (Side.Track[TIdx].Sectors = 16) then
+      for SIdx := 0 to Side.Track[TIdx].Sectors - 1 do
+      begin
+        Sector := Side.Track[TIdx].Sector[SIdx];
+        if (Sector.ID = SIdx) and (Sector.Track = SIdx) and (Sector.Side = SIdx) and (Sector.ID = SIdx) and
+          (Sector.FDCSize = SIdx) then
+          Result := Format('DiscSYS on track %d', [TIdx]);
+      end;
+  end;
+
+  if (Result.StartsWith('DiscSYS')) and (Side.Tracks > 2) and (Side.Track[2].Sectors > 4) and
+    (Side.Track[2].Sector[4].DataSize > 160) then
+  begin
+    Temp := StrBlockClean(Side.Track[2].Sector[4].Data, 85, 22).TrimRight();
+    if Temp.StartsWith('discsys', True) then
+    begin
+      Result := Result + ' (' + Temp.Substring(8) + ')';
+      exit;
+    end;
+  end;
+
+  // Armourloc - possibly anti-hacker rather than anti-copy as no weird sectors
+  if (Side.Track[0].Sectors = 9) and (StrBufPos(Side.Track[0].Sector[0].Data, '0K free') = 2) then
+  begin
+    Result := 'ARMOURLOC';
+  end;
+
+  if (Side.Tracks > 3) and (Side.Track[0].IsFormatted) and (not Side.Track[1].IsFormatted) and (Side.Track[2].IsFormatted) then
+  begin
+    Offset := StrBufPos(Side.Track[0].Sector[0].Data, 'Disc format (c) 1986 Studio B Ltd.');
+    if Offset > -1 then
+      Result := Format('Studio B Disc format (signed T0S0 +%d)', [Offset]);
+
+    Offset := StrBufPos(Side.Track[2].Sector[0].Data, 'DISCLOC');
+    if Offset > -1 then
+      Result := Format('DiscLoc/Oddball (signed T2S0 +%d)', [Offset]);
+  end;
+
   // Unknown copy protection
   if (Result = '') and (not side.ParentDisk.IsUniform(True)) and (side.ParentDisk.HasFDCErrors) then
-  begin
     Result := 'Unknown copy protection';
-  end;
 end;
-
 
 function DetectInterleave(Track: TDskTrack): string;
 var
