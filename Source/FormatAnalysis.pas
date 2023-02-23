@@ -428,6 +428,27 @@ begin
       Result := Format('Players (maybe, super-sized %d byte track %d)', [Side.GetLargestTrackSize(), TIdx]);
     end;
 
+  // Infogrames / Loriciel Gap
+  if (Side.Tracks > 39) and (Side.Track[39].Sectors = 9) then
+    for SIdx := 0 to Side.Track[39].Sectors - 1 do
+    begin
+      Sector := Side.Track[39].Sector[SIdx];
+      if (Sector.FDCSize = 2) and (Sector.DataSize = 540) then // Can be used with others...
+        Result := Format('Infogrames/Logiciel (gap data sector T39/S%d)', [SIdx]);
+    end;
+
+  // Rainbow Arts weak sector
+  if (Side.Tracks > 40) and (Side.Track[40].Sectors = 9) then
+    for SIdx := 0 to Side.Track[40].Sectors - 1 do
+    begin
+      Sector := Side.Track[40].Sector[SIdx];
+      if (Sector.ID = 198) and (Sector.FDCStatus[1] = 32) and (Sector.FDCStatus[2] = 32) then
+      begin
+        Result := Format('Rainbow Arts (weak sector T40/S%d)', [SIdx]);
+        exit;
+      end;
+    end;
+
   // Remi Herbulot
   if (Side.Track[0].Sectors > 6) then
     for SIdx := 0 to Side.Track[0].Sectors - 1 do
