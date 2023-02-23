@@ -792,7 +792,7 @@ end;
 
 procedure TfrmMain.RefreshListSectorData(Sector: TDSKSector);
 var
-  Idx: integer;
+  Idx, LastIdx: integer;
   Raw: byte;
   SecData, SecHex, NextChar: string;
 begin
@@ -834,26 +834,32 @@ begin
       end;
       SecData := '';
       SecHex := '';
+      LastIdx := Idx;
     end;
 
-    if Idx < Sector.DataSize then
-    begin
-      Raw := Sector.Data[Idx];
+    Raw := Sector.Data[Idx];
 
-      NextChar := Chr(Raw);
-      if (Settings.Mapping = 'None') and (Raw > 127) then NextChar := Settings.UnknownASCII;
-      if (Settings.Mapping = '437') then NextChar := CP437ToUTF8(NextChar);
-      if (Settings.Mapping = '850') then NextChar := CP850ToUTF8(NextChar);
-      if (Settings.Mapping = '1252') then NextChar := CP1252ToUTF8(NextChar);
+    NextChar := Chr(Raw);
+    if (Settings.Mapping = 'None') and (Raw > 127) then NextChar := Settings.UnknownASCII;
+    if (Settings.Mapping = '437') then NextChar := CP437ToUTF8(NextChar);
+    if (Settings.Mapping = '850') then NextChar := CP850ToUTF8(NextChar);
+    if (Settings.Mapping = '1252') then NextChar := CP1252ToUTF8(NextChar);
 
-      if Raw <= 31 then
-        SecData := SecData + Settings.UnknownASCII
-      else
-        SecData := SecData + NextChar;
-    end;
+    if Raw <= 31 then
+      SecData := SecData + Settings.UnknownASCII
+    else
+      SecData := SecData + NextChar;
 
     SecHex := SecHex + StrHex(Raw) + ' ';
   end;
+
+  if SecData <> '' then
+    with lvwMain.Items.Add do
+    begin
+      Caption := StrInt(LastIdx);
+      Subitems.Add(SecHex);
+      Subitems.Add(SecData);
+    end;
 end;
 
 // Menu: Help > About
