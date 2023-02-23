@@ -1195,23 +1195,20 @@ end;
 
 procedure TfrmMain.itmSectorResetFDCClick(Sender: TObject);
 var
-  Track: TDSKTrack;
   Sector: TDSKSector;
 begin
-  if tvwMain.Selected <> nil then
-  begin
-    if TObject(tvwMain.Selected.Data).ClassType = TDSKTrack then
-      if ConfirmChange('reset FDC flags for', 'track') then
-      begin
-        Track := TDSKTrack(tvwMain.Selected.Data);
-        for Sector in Track.Sector do
-          Sector.ResetFDC;
-      end;
-    if (TObject(tvwMain.Selected.Data).ClassType = TDSKSector) then
-      if ConfirmChange('reset FDC flags for', 'sector') then
-        TDSKSector(tvwMain.Selected.Data).ResetFDC;
-    UpdateMenus;
-  end;
+  Sector := GetSelectedSector(popSector.PopupComponent);
+
+  if (Sector <> nil) and (ConfirmChange('reset FDC flags for', 'sector')) then
+    TDSKSector(tvwMain.Selected.Data).ResetFDC;
+
+  if (popSector.PopupComponent = tvwMain) and (tvwMain.Selected <> nil) then
+    if (TObject(tvwMain.Selected.Data).ClassType = TDSKTrack) and (ConfirmChange('reset FDC flags for', 'track')) then
+      for Sector in TDSKTrack(tvwMain.Selected.Data).Sector do
+        Sector.ResetFDC;
+
+  RefreshList;
+  UpdateMenus;
 end;
 
 function TfrmMain.GetSelectedSector(Sender: TObject): TDSKSector;
@@ -1219,6 +1216,9 @@ begin
   Result := nil;
   if (Sender = lvwMain) and (lvwMain.Selected <> nil) then
     Result := TDSKSector(lvwMain.Selected.Data);
+  if (Sender = tvwMain) and (tvwMain.Selected <> nil) then
+    if TObject(tvwMain.Selected.Data).ClassType = TDSKSector then
+      Result := TDSKSector(tvwMain.Selected.Data);
 end;
 
 procedure TfrmMain.itmSectorBlankDataClick(Sender: TObject);
@@ -1230,23 +1230,31 @@ begin
   begin
     Sector.DataSize := Sector.ParentTrack.SectorSize;
     Sector.FillSector(Sector.ParentTrack.Filler);
-    UpdateMenus;
   end;
+
+  // TODO: Format track would require more details
+
+  UpdateMenus;
+  RefreshList;
 end;
 
 procedure TfrmMain.itmSectorUnformatClick(Sender: TObject);
+var
+  Sector: TDSKSector;
 begin
-  if tvwMain.Selected = nil then exit;
+  Sector := GetSelectedSector(popSector.PopupComponent);
 
-  if TObject(tvwMain.Selected.Data).ClassType = TDSKTrack then
-    if ConfirmChange('unformat', 'track') then
+  if (Sector <> nil) and (ConfirmChange('unformat', 'sector')) then
+    Sector.Unformat;
+
+  if (popSector.PopupComponent = tvwMain) and (tvwMain.Selected <> nil) then
+    if (TObject(tvwMain.Selected.Data).ClassType = TDSKTrack) and (ConfirmChange('unformat', 'track')) then
     begin
       TDSKTrack(tvwMain.Selected.Data).Unformat;
       tvwMain.Selected.DeleteChildren;
     end;
-  if TObject(tvwMain.Selected.Data).ClassType = TDSKSector then
-    if ConfirmChange('unformat', 'sector') then
-      TDSKSector(tvwMain.Selected.Data).Unformat;
+
+  RefreshList;
   UpdateMenus;
 end;
 
@@ -1255,16 +1263,19 @@ var
   Track: TDSKTrack;
   Sector: TDSKSector;
 begin
-  if tvwMain.Selected = nil then exit;
+  Sector := GetSelectedSector(popSector.PopupComponent);
 
-  if TObject(tvwMain.Selected.Data).ClassType = TDSKTrack then
-  begin
-    Track := TDSKTrack(tvwMain.Selected.Data);
-    for Sector in Track.Sector do
-      TfrmSector.Create(Self, Sector);
-  end;
-  if TObject(tvwMain.Selected.Data).ClassType = TDSKSector then
-    TfrmSector.Create(Self, TDSKSector(tvwMain.Selected.Data));
+  if Sector <> nil then
+    TfrmSector.Create(Self, Sector);
+
+  if (popSector.PopupComponent = tvwMain) and (tvwMain.Selected <> nil) then
+    if TObject(tvwMain.Selected.Data).ClassType = TDSKTrack then
+    begin
+      Track := TDSKTrack(tvwMain.Selected.Data);
+      for Sector in Track.Sector do
+        TfrmSector.Create(Self, Sector);
+    end;
+
   UpdateMenus;
 end;
 
