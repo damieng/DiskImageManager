@@ -224,55 +224,107 @@ begin
       Result := 'Paul Owens (probably, unsigned)';
   end;
 
-  // Speedlock +3 1987
-  Offset := StrBufPos(Side.Track[0].Sector[0].Data, 'SPEEDLOCK +3 DISC PROTECTION SYSTEM COPYRIGHT 1987 SPEEDLOCK ASSOCIATES');
-  if Offset > -1 then
-  begin
-    Result := 'Speedlock +3 1987 (signed T0/S0 +' + StrInt(Offset) + ')';
-    exit;
-  end;
+  // Speedlock signatures somewhere... (usually 0 but not always)
+  for TIdx := 0 to Side.Tracks - 1 do
+    for SIdx := 0 to Side.Track[TIdx].Sectors - 1 do
+    begin
+      Sector := Side.Track[TIdx].Sector[SIdx];
 
+      // Speedlock 1985 (CPC)
+      Offset := StrBufPos(Sector.Data, 'SPEEDLOCK PROTECTION SYSTEM (C) 1985 ');
+      if Offset > -1 then
+      begin
+        Result := Format('Speedlock 1985 (signed T%d/S%d +%d)', [TIdx, SIdx, Offset]);
+        exit;
+      end;
+
+      // Speedlock 1986 (CPC)
+      Offset := StrBufPos(Sector.Data, 'SPEEDLOCK PROTECTION SYSTEM (C) 1986 ');
+      if Offset > -1 then
+      begin
+        Result := Format('Speedlock 1986 (signed T%d/S%d +%d)', [TIdx, SIdx, Offset]);
+        exit;
+      end;
+
+      // Speedlock 1987 (CPC)
+      Offset := StrBufPos(Sector.Data, 'SPEEDLOCK DISC PROTECTION SYSTEMS COPYRIGHT 1987 ');
+      if Offset > -1 then
+      begin
+        Result := Format('Speedlock disc 1987 (signed T%d/S%d +%d)', [TIdx, SIdx, Offset]);
+        exit;
+      end;
+
+      // Speedlock 1987 vD/2.1 (CPC)
+      Offset := StrBufPos(Sector.Data, 'SPEEDLOCK PROTECTION SYSTEM (C) 1987 D.LOOKER & D.AUBREY JONES : VERSION D/2.1');
+      if Offset > -1 then
+      begin
+        Result := Format('Speedlock 1987 v2.1 (signed T%d/S%d +%d)', [TIdx, SIdx, Offset]);
+        exit;
+      end;
+
+      // Speedlock 1987 (CPC)
+      Offset := StrBufPos(Sector.Data, 'SPEEDLOCK PROTECTION SYSTEM (C) 1987 ');
+      if Offset > -1 then
+      begin
+        Result := Format('Speedlock 1987 (signed T%d/S%d +%d)', [TIdx, SIdx, Offset]);
+        exit;
+      end;
+
+      // Speedlock +3 1987
+      Offset := StrBufPos(Sector.Data, 'SPEEDLOCK +3 DISC PROTECTION SYSTEM COPYRIGHT 1987 SPEEDLOCK ASSOCIATES');
+      if Offset > -1 then
+      begin
+        Result := Format('Speedlock +3 1987 (signed T%d/S%d +%d)', [TIdx, SIdx, Offset]);
+        exit;
+      end;
+
+      // Speedlock +3 1988
+      Offset := StrBufPos(Sector.Data, 'SPEEDLOCK +3 DISC PROTECTION SYSTEM COPYRIGHT 1988 SPEEDLOCK ASSOCIATES');
+      if Offset > -1 then
+      begin
+        Result := Format('Speedlock +3 1988 (signed T%d/S%d +%d)', [TIdx, SIdx, Offset]);
+        exit;
+      end;
+
+      // Speedlock 1988
+      Offset := StrBufPos(Sector.Data, 'SPEEDLOCK DISC PROTECTION SYSTEMS (C) 1988 SPEEDLOCK ASSOCIATES');
+      if Offset > -1 then
+      begin
+        Result := Format('Speedlock 1988 (signed T%d/S%d +%d)', [TIdx, SIdx, Offset]);
+        exit;
+      end;
+
+      // Speedlock 1989
+      Offset := StrBufPos(Sector.Data, 'SPEEDLOCK DISC PROTECTION SYSTEMS (C) 1989 SPEEDLOCK ASSOCIATES');
+      if Offset > -1 then
+      begin
+        Result := Format('Speedlock 1989 (signed T%d/S%d +%d)', [TIdx, SIdx, Offset]);
+        exit;
+      end;
+
+      // Speedlock 1990
+      Offset := StrBufPos(Sector.Data, 'SPEEDLOCK DISC PROTECTION SYSTEMS (C) 1990 SPEEDLOCK ASSOCIATES');
+      if Offset > -1 then
+      begin
+        Result := Format('Speedlock 1990 (signed T%d/S%d +%d)', [TIdx, SIdx, Offset]);
+        exit;
+      end;
+    end;
+
+  // Unsigned Speedlock +3 1987
   if (Side.Track[0].Sectors = 9) and (Side.Track[1].Sectors = 5) and (Side.Track[1].Sector[0].DataSize = 1024) and
     (Side.Track[0].Sector[6].FDCStatus[2] = 64) and (Side.Track[0].Sector[8].FDCStatus[2] = 0) then
     Result := 'Speedlock +3 1987 (probably, unsigned)';
 
-  // Speedlock +3 1988
-  Offset := StrBufPos(Side.Track[0].Sector[0].Data, 'SPEEDLOCK +3 DISC PROTECTION SYSTEM COPYRIGHT 1988 SPEEDLOCK ASSOCIATES');
-  if Offset > -1 then
-  begin
-    Result := 'Speedlock +3 1988 (signed T0/S0 +' + StrInt(Offset) + ')';
-    exit;
-  end;
+  // Unsigned Speedlock +3 1988
   if (Side.Track[0].Sectors = 9) and (Side.Track[1].Sectors = 5) and (Side.Track[1].Sector[0].DataSize = 1024) and
     (Side.Track[0].Sector[6].FDCStatus[2] = 64) and (Side.Track[0].Sector[8].FDCStatus[2] = 64) then
     Result := 'Speedlock +3 1988 (probably, unsigned)';
 
-  // Speedlock 1988
-  Offset := StrBufPos(Side.Track[0].Sector[0].Data, 'SPEEDLOCK DISC PROTECTION SYSTEMS (C) 1988 SPEEDLOCK ASSOCIATES');
-  if Offset > -1 then
-  begin
-    Result := 'Speedlock 1988 (signed T0/S0 +' + StrInt(Offset) + ')';
-    exit;
-  end;
-
-  // Speedlock 1989
-  Offset := StrBufPos(Side.Track[0].Sector[0].Data, 'SPEEDLOCK DISC PROTECTION SYSTEMS (C) 1989 SPEEDLOCK ASSOCIATES');
-  if Offset > -1 then
-  begin
-    Result := 'Speedlock 1989 (signed T0/S0 +' + StrInt(Offset) + ')';
-    exit;
-  end;
+  // Unsigned Speedlock 1989/1990
   if (Side.Track[0].Sectors > 7) and (Side.Tracks > 40) and (Side.Track[1].Sectors = 1) and
     (Side.Track[1].Sector[0].ID = 193) and (Side.Track[1].Sector[0].FDCStatus[1] = 32) then
     Result := 'Speedlock 1989/1990 (probably, unsigned)';
-
-  // Speedlock 1990
-  Offset := StrBufPos(Side.Track[0].Sector[7].Data, 'SPEEDLOCK DISC PROTECTION SYSTEMS (C) 1990 SPEEDLOCK ASSOCIATES');
-  if Offset > -1 then
-  begin
-    Result := 'Speedlock 1990 (signed T0/S7 +' + StrInt(Offset) + ')';
-    exit;
-  end;
 
   // Three Inch Loader
   Offset := StrBufPos(Side.Track[0].Sector[0].Data,
@@ -321,15 +373,47 @@ begin
       Result := 'Laser Load by C.J. Pink (signed T0/S2 +' + StrInt(Offset) + ')';
   end;
 
+  // W.R.M. (Martech)
+  if (Side.Tracks > 9) and (Side.Track[9].Sectors > 9) and (Side.Track[8].Sector[9].DataSize > 128) then
+    if StrBufPos(Side.Track[0].Sector[9].Data, 'W.R.M Disc') = 0 then
+      if StrBufPos(Side.Track[0].Sector[9].Data, 'Protection') > 0 then
+        if StrBufPos(Side.Track[0].Sector[9].Data, 'System (c) 1987') > 0 then
+        begin
+          Result := 'W.R.M Disc Protection (signed T0/S9 +0)';
+          exit;
+        end;
+
   // P.M.S.Loader
+  Offset := StrBufPos(Side.Track[0].Sector[0].Data, '[C] P.M.S. 1986');
+  if Offset > -1 then
+  begin
+    Result := 'P.M.S. 1986 (signed T0/S0 +' + StrInt(Offset) + ')';
+    exit;
+  end;
+
+  Offset := StrBufPos(Side.Track[0].Sector[0].Data, 'P.M.S.LOADER [C]1986');
+  if Offset > -1 then
+  begin
+    Result := 'P.M.S. Loader 1986 (signed T0/S0 +' + StrInt(Offset) + ')';
+    exit;
+  end;
+
+  Offset := StrBufPos(Side.Track[0].Sector[0].Data, 'P.M.S. LOADER [C]1986');
+  if Offset > -1 then
+  begin
+    Result := 'P.M.S. Loader 1986 (signed T0/S0 +' + StrInt(Offset) + ')';
+    exit;
+  end;
+
   Offset := StrBufPos(Side.Track[0].Sector[0].Data, 'P.M.S.LOADER [C]1987');
   if Offset > -1 then
   begin
     Result := 'P.M.S. Loader 1987 (signed T0/S0 +' + StrInt(Offset) + ')';
     exit;
   end;
+
   if ((Side.Tracks > 2) and Side.Track[0].IsFormatted) and (not Side.Track[1].IsFormatted and Side.Track[2].IsFormatted) then
-    Result := 'P.M.S. Loader 1987 (probably, unsigned)';
+    Result := 'P.M.S. Loader 1986/1987 (maybe, unsigned)';
 
   // Players?
   for TIdx := 0 to Side.Tracks - 1 do
@@ -404,6 +488,7 @@ begin
   end;
 
   // DiscSYS
+  LastTIdx := -1;
   for TIdx := 0 to Side.Tracks - 1 do
   begin
     if (Side.Track[TIdx].Sectors = 16) then
@@ -412,20 +497,39 @@ begin
         Sector := Side.Track[TIdx].Sector[SIdx];
         if (Sector.ID = SIdx) and (Sector.Track = SIdx) and (Sector.Side = SIdx) and (Sector.ID = SIdx) and
           (Sector.FDCSize = SIdx) then
+        begin
           Result := Format('DiscSYS on track %d', [TIdx]);
+          LastTIdx := TIdx;
+        end;
       end;
   end;
 
-  if (Result.StartsWith('DiscSYS')) and (Side.Tracks > 2) and (Side.Track[2].Sectors > 4) and
-    (Side.Track[2].Sector[4].DataSize > 160) then
-  begin
-    Temp := StrBlockClean(Side.Track[2].Sector[4].Data, 85, 22).TrimRight();
-    if Temp.StartsWith('discsys', True) then
+  if LastTIdx > -1 then
+    if (Side.Tracks > 2) and (Side.Track[2].Sectors > 4) and (Side.Track[2].Sector[4].DataSize > 160) then
     begin
-      Result := Result + ' (' + Temp.Substring(8) + ')';
-      exit;
+      Temp := StrBlockClean(Side.Track[2].Sector[4].Data, 85, 22).Trim();
+      if Temp.StartsWith('discsys', True) then
+      begin
+        Result := Result + ' (' + Temp.Substring(8) + ')';
+        exit;
+      end;
+      if Temp.StartsWith('multi-', True) then
+      begin
+        Result := Result + ' (' + Temp + ')';
+        exit;
+      end;
     end;
-  end;
+
+  if LastTIdx = 1 then
+    for SIdx := 0 to Side.Track[0].Sectors - 1 do
+    begin
+      Offset := StrBufPos(Side.Track[0].Sector[SIdx].Data, 'MEAN PROTECTION SYSTEM');
+      if Offset > -1 then
+      begin
+        Result := Format('Mean Protection System (signed T0S%d +%d)', [SIdx, Offset]);
+        exit;
+      end;
+    end;
 
   // Amsoft/EXOPAL
   if (Side.Tracks > 3) and (Side.Track[3].Sectors > 0) and (Side.Track[3].Sector[0].DataSize = 512) then
