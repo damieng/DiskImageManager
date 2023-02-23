@@ -822,7 +822,7 @@ begin
     end;
   end;
 
-  for Idx := 0 to Sector.DataSize do
+  for Idx := 0 to Sector.DataSize - 1 do
   begin
     if (Idx mod Settings.BytesPerLine = 0) and (Idx > 0) then
     begin
