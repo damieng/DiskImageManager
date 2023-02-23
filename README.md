@@ -102,8 +102,6 @@ To be able to build and visually edit the forms you will need to install the sup
 ## TODO
 
 * Extend support for SamDisk DSK extensions
-* Additional disk formats
-* Additional copy protection recognition
 
 ## Licence
 
