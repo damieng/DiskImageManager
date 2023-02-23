@@ -41,15 +41,26 @@ Capable of identifying the following original disk formats even when de-skewed b
 
 ### Copy protection identification
 
-Identification of copy-protection schemes both signed and unsigned versions:
+Identification of copy-protection schemes both signed and somtimes unsigned:
 
-* Alkatraz +3
+* Alkatraz +3/CPC
 * Frontier
 * Hexagon
 * Paul Owens
 * Speedlock +3 1987/1988
-* Speedlock 1988/1989
-* Three Inch Loader type 1/2
+* Speedlock 1985/1986//1987/1987v2.1/1988/1989/1990
+* Three Inch Loader type 1/2/3
+* Laser Load
+* W.R.M Disc Protection (Martech)
+* P.M.S. Loader 1986/1987
+* Players 16-sector
+* ERE/Remi HERBULOT
+* KBI-19/KBI-10/CAAV
+* DiscSYS 2/2.5/3/Mean
+* Amsoft EXOPAL
+* ARMORLOC
+* Studio B Disc format
+* DiscLoc by Oddball
 
 ### File system
 
