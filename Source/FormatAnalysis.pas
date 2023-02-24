@@ -187,27 +187,30 @@ begin
   end;
 
   // Hexagon
-  if (Side.Track[0].Sectors = 10) and (Side.Track[0].Sector[8].DataSize = 512) then
+  if (Side.Track[0].Sectors = 10) and (Side.Track[0].Sector[8].DataSize = 512) and (Side.Tracks > 2) then
   begin
-    for SIdx := 0 to Side.Track[0].Sectors - 1 do
+    for TIdx := 0 to 3 do
     begin
-      Offset := StrBufPos(Side.Track[0].Sector[SIdx].Data, 'GON DISK PROTECTION c 1989');
-      if Offset > -1 then
+      for SIdx := 0 to Side.Track[TIdx].Sectors - 1 do
       begin
-        Result := Format('Hexagon (signed T0/S%d +%d)', [SIdx, Offset]);
-        exit;
+        Offset := StrBufPos(Side.Track[TIdx].Sector[SIdx].Data, 'HEXAGON DISK PROTECTION c 1989');
+        if Offset > -1 then
+        begin
+          Result := Format('Hexagon (signed T%d/S%d +%d)', [TIdx, SIdx, Offset]);
+          exit;
+        end;
+        Offset := StrBufPos(Side.Track[TIdx].Sector[SIdx].Data, 'HEXAGON Disk Protection c 1989');
+        if Offset > -1 then
+        begin
+          Result := Format('Hexagon (signed T%d/S%d +%d)', [TIdx, SIdx, Offset]);
+          exit;
+        end;
       end;
-      Offset := StrBufPos(Side.Track[0].Sector[SIdx].Data, 'GON Disk Protection c 1989');
-      if Offset > -1 then
-      begin
-        Result := Format('Hexagon (signed T0/S%d +%d)', [SIdx, Offset]);
-        exit;
-      end;
-    end;
 
-    if (Side.Track[1].Sectors = 1) and (Side.Track[1].Sector[0].FDCSize = 6) and
-      (Side.Track[1].Sector[0].FDCStatus[1] = 32) and (Side.Track[1].Sector[0].FDCStatus[2] = 96) then
-      Result := 'Hexagon (probably, unsigned)';
+      if (Side.Track[TIdx].IsFormatted) and (Side.Track[TIdx].Sectors = 1) and (Side.Track[TIdx].Sector[0].FDCSize = 6) and
+        (Side.Track[TIdx].Sector[0].FDCStatus[1] = 32) and (Side.Track[TIdx].Sector[0].FDCStatus[2] = 96) then
+        Result := 'Hexagon (probably, unsigned)';
+    end;
   end;
 
   // Paul Owens
