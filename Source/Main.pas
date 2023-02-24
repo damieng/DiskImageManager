@@ -125,9 +125,8 @@ type
     function AddTree(Parent: TTreeNode; Text: string; ImageIdx: integer; NodeObject: TObject): TTreeNode;
     function AddListInfo(Key: string; Value: string): TListItem;
     function AddListTrack(Track: TDSKTrack; ShowModulation: boolean; ShowDataRate: boolean): TListItem;
-    function AddListSector(Sector: TDSKSector): TListItem;
+    function AddListSector(Sector: TDSKSector; ShowCopies: boolean): TListItem;
     function AddListSides(Side: TDSKSide): TListItem;
-    procedure SetListSimple;
     function GetSelectedSector(Sender: TObject): TDSKSector;
     function GetTitle(Data: TTreeNode): string;
     function GetCurrentImage: TDSKImage;
@@ -135,6 +134,10 @@ type
     function AddColumn(Caption: string): TListColumn;
     function AddColumns(Captions: array of string): TListColumnArray;
     function FindTreeNodeFromData(Node: TTreeNode; Data: TObject): TTreeNode;
+    function MapByte(Raw: byte): string;
+
+    procedure WriteSectorLine(Offset: integer; SecHex: string; SecData: string);
+    procedure SetListSimple;
     procedure OnApplicationDropFiles(Sender: TObject; const FileNames: array of string);
     procedure UpdateRecentFilesMenu;
   public
@@ -587,19 +590,30 @@ end;
 procedure TfrmMain.RefreshListImage(Image: TDSKImage);
 var
   SIdx: integer;
-  ImageFormat, Protection: string;
+  Side: TDSKSide;
+  ImageFormat, Protection, Features: string;
 begin
   SetListSimple;
   if Image <> nil then
     with Image do
     begin
       AddListInfo('Creator', Creator);
-      ImageFormat := DSKImageFormats[FileFormat];
 
+      ImageFormat := DSKImageFormats[FileFormat];
       if Image.HasV5Extensions then ImageFormat := ImageFormat + ' v5';
       if Corrupt then ImageFormat := ImageFormat + ' (Corrupt)';
-
       AddListInfo('Image Format', ImageFormat);
+
+      Features := '';
+      for Side in Image.Disk.Side do
+      begin
+        if Side.HasDataRate then Features := Features + 'Data Rate, ';
+        if Side.HasRecordingMode then Features := Features + 'Recording Mode, ';
+        if Side.HasVariantSectors then Features := Features + 'Variant Sectors, ';
+      end;
+      if not Features.IsEmpty then
+        AddListInfo('V5 features', Features.Substring(0, Features.Length - 2));
+
       AddListInfo('Sides', StrInt(Disk.Sides));
       if Disk.Sides > 0 then
       begin
@@ -770,6 +784,10 @@ begin
   lvwMain.PopupMenu := popSector;
 
   AddColumns(['Sector', 'Track', 'Side', 'ID', 'FDC size', 'FDC flags', 'Data size']);
+
+  if Track.HasMultiSectoredSector then
+    AddColumn('Copies');
+
   with lvwMain.Columns.Add do
   begin
     Caption := 'Status';
@@ -777,10 +795,10 @@ begin
   end;
 
   for Sector in Track.Sector do
-    AddListSector(Sector);
+    AddListSector(Sector, Track.HasMultiSectoredSector);
 end;
 
-function TfrmMain.AddListSector(Sector: TDSKSector): TListItem;
+function TfrmMain.AddListSector(Sector: TDSKSector; ShowCopies: boolean): TListItem;
 var
   NewListItem: TListItem;
 begin
@@ -789,28 +807,32 @@ begin
   begin
     Caption := StrInt(Sector.Sector);
     Data := Sector;
-    SubItems.Add(StrInt(Sector.Track));
-    SubItems.Add(StrInt(Sector.Side));
-    SubItems.Add(StrInt(Sector.ID));
-    SubItems.Add(StrInt(Sector.FDCSize));
-    SubItems.Add(Format('%d, %d', [Sector.FDCStatus[1], Sector.FDCStatus[2]]));
-    if (Sector.DataSize <> Sector.AdvertisedSize) then
-      SubItems.Add(Format('%d (%d)', [Sector.DataSize, Sector.AdvertisedSize]))
-    else
-      SubItems.Add(StrInt(Sector.DataSize));
-    SubItems.Add(DSKSectorStatus[Sector.Status]);
+    with SubItems do
+    begin
+      Add(StrInt(Sector.Track));
+      Add(StrInt(Sector.Side));
+      Add(StrInt(Sector.ID));
+      Add(Format('%d (%d)', [Sector.FDCSize, FDCSectorSizes[Sector.FDCSize]]));
+      Add(Format('%d, %d', [Sector.FDCStatus[1], Sector.FDCStatus[2]]));
+      if (Sector.DataSize <> Sector.AdvertisedSize) then
+        Add(Format('%d (%d)', [Sector.DataSize, Sector.AdvertisedSize]))
+      else
+        Add(StrInt(Sector.DataSize));
+      if ShowCopies then
+        Add(StrInt(Sector.GetCopyCount));
+      Add(DSKSectorStatus[Sector.Status]);
+    end;
   end;
   Result := NewListItem;
 end;
 
 procedure TfrmMain.RefreshListSectorData(Sector: TDSKSector);
 var
-  Idx, LastIdx: integer;
+  Idx, RowOffset, Offset, TrueSectorSize, VariantNumber: integer;
   Raw: byte;
-  SecData, SecHex, NextChar: string;
+  HasVariants: boolean;
+  RowData, RowHex: string;
 begin
-  SecData := '';
-  SecHex := '';
   lvwMain.Font := Settings.SectorFont;
 
   with lvwMain.Columns do
@@ -835,44 +857,80 @@ begin
     end;
   end;
 
+  RowOffset := 0;
+  RowData := '';
+  RowHex := '';
+
+  HasVariants := Sector.GetCopyCount > 1;
+  TrueSectorSize := FDCSectorSizes[Sector.FDCSize];
+  VariantNumber := 0;
+
+  Offset := 0;
+
   for Idx := 0 to Sector.DataSize - 1 do
   begin
-    if (Idx mod Settings.BytesPerLine = 0) and (Idx > 0) then
-    begin
+    // If we're starting a new sector variant label it
+    if HasVariants and (Idx mod TrueSectorSize = 0) then
       with lvwMain.Items.Add do
       begin
-        Caption := StrInt(Idx - Settings.BytesPerLine);
-        Subitems.Add(SecHex);
-        Subitems.Add(SecData);
+        Inc(VariantNumber);
+        Subitems.Add('Sector variant #' + IntToStr(VariantNumber));
       end;
-      SecData := '';
-      SecHex := '';
-      LastIdx := Idx;
+
+    // Emit a new line every X bytes depending on setting
+    if (Offset mod Settings.BytesPerLine = 0) and (Offset > 0) then
+    begin
+      WriteSectorLine(RowOffset, RowHex, RowData);
+      RowOffset := Offset;
+      RowData := '';
+      RowHex := '';
     end;
 
+    // Gather up the data for the next line we'll write
     Raw := Sector.Data[Idx];
+    RowData := RowData + MapByte(Raw);
+    RowHex := RowHex + StrHex(Raw) + ' ';
+    Inc(Offset);
 
-    NextChar := Chr(Raw);
-    if (Settings.Mapping = 'None') and (Raw > 127) then NextChar := Settings.UnknownASCII;
-    if (Settings.Mapping = '437') then NextChar := CP437ToUTF8(NextChar);
-    if (Settings.Mapping = '850') then NextChar := CP850ToUTF8(NextChar);
-    if (Settings.Mapping = '1252') then NextChar := CP1252ToUTF8(NextChar);
-
-    if Raw <= 31 then
-      SecData := SecData + Settings.UnknownASCII
-    else
-      SecData := SecData + NextChar;
-
-    SecHex := SecHex + StrHex(Raw) + ' ';
+    // Flush and reset the offset for every variant sector
+    if HasVariants and (Offset = TrueSectorSize) then
+    begin
+      WriteSectorLine(RowOffset, RowHex, RowData);
+      RowOffset := 0;
+      RowData := '';
+      RowHex := '';
+      Offset := 0;
+    end;
   end;
 
-  if SecData <> '' then
-    with lvwMain.Items.Add do
-    begin
-      Caption := StrInt(LastIdx);
-      Subitems.Add(SecHex);
-      Subitems.Add(SecData);
-    end;
+  // Flush any leftover gathered data
+  if RowData <> '' then
+    WriteSectorLine(RowOffset, RowHex, RowData);
+end;
+
+procedure TfrmMain.WriteSectorLine(Offset: integer; SecHex: string; SecData: string);
+begin
+  with lvwMain.Items.Add do
+  begin
+    Caption := StrInt(Offset);
+    Subitems.Add(SecHex);
+    Subitems.Add(SecData);
+  end;
+end;
+
+function TfrmMain.MapByte(Raw: byte): string;
+begin
+  if Raw <= 31 then
+  begin
+    Result := Settings.UnknownASCII;
+    exit;
+  end;
+
+  Result := Chr(Raw);
+  if (Settings.Mapping = 'None') and (Raw > 127) then Result := Settings.UnknownASCII;
+  if (Settings.Mapping = '437') then Result := CP437ToUTF8(Result);
+  if (Settings.Mapping = '850') then Result := CP850ToUTF8(Result);
+  if (Settings.Mapping = '1252') then Result := CP1252ToUTF8(Result);
 end;
 
 // Menu: Help > About
@@ -1130,7 +1188,7 @@ begin
       begin
         AbandonSave := False;
         if Image.HasV5Extensions and (MessageDlg(
-          'This image has modulation or data rate info that "Standard DSK format" does not support. ' +
+          'This image has modulation, data rate that "Standard DSK format" does not support. ' +
           'Save anyway and lose this information?', mtWarning, [mbYes, mbNo], 0) <> mrOk) then
           AbandonSave := True;
 

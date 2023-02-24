@@ -1,11 +1,11 @@
 object frmMain: TfrmMain
-  Left = 1280
+  Left = 1691
   Height = 384
-  Top = 394
+  Top = 650
   Width = 556
   AllowDropFiles = True
-  ClientHeight = 364
-  ClientWidth = 556
+  ClientHeight = 0
+  ClientWidth = 0
   Color = clBtnFace
   Font.CharSet = ANSI_CHARSET
   Font.Pitch = fpVariable

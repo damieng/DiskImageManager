@@ -122,6 +122,7 @@ type
     function GetLargestTrackSize: integer;
     function HasDataRate: boolean;
     function HasRecordingMode: boolean;
+    function HasVariantSectors: boolean;
 
     property HighTrackCount: byte read GetHighTrackCount;
     property ParentDisk: TDSKDisk read FParentDisk;
@@ -156,7 +157,8 @@ type
     procedure Format(Formatter: TDSKFormatSpecification);
     procedure Unformat;
     function GetTrackSizeFromSectors: word;
-    function GetFirstLogicalSector(): TDSKSector;
+    function GetFirstLogicalSector: TDSKSector;
+    function HasMultiSectoredSector: boolean;
 
     property IsFormatted: boolean read GetIsFormatted;
     property LowSectorID: byte read GetLowSectorID;
@@ -191,6 +193,7 @@ type
     function GetFillByte: integer;
     function GetModChecksum(ModValue: integer): integer;
     function FindText(Text: string; CaseSensitive: boolean): integer;
+    function GetCopyCount: integer;
 
     procedure FillSector(Filler: byte);
     procedure ResetFDC;
@@ -452,7 +455,7 @@ var
   Side: TDSKSide;
 begin
   for Side in Disk.Side do
-    if Side.HasDataRate or Side.HasDataRate then
+    if Side.HasDataRate or Side.HasDataRate or Side.HasVariantSectors then
     begin
       Result := True;
       exit;
@@ -1210,6 +1213,20 @@ begin
   Result := False;
 end;
 
+function TDSKSide.HasVariantSectors: boolean;
+var
+  Track: TDSKTrack;
+  Sector: TDSKSector;
+begin
+  for Track in self.Track do
+    for Sector in Track.Sector do
+      if Sector.GetCopyCount > 1 then
+      begin
+        Result := True;
+        exit;
+      end;
+  Result := False;
+end;
 
 procedure TDSKSide.SetTracks(NewTracks: byte);
 var
@@ -1275,6 +1292,19 @@ begin
   for Sector in self.Sector do
     if Sector.ID < Result.ID then
       Result := Sector;
+end;
+
+function TDSKTrack.HasMultiSectoredSector: boolean;
+var
+  CheckSector: TDSKSector;
+begin
+  Result := False;
+  for CheckSector in Sector do
+    if CheckSector.GetCopyCount > 1 then
+    begin
+      Result := True;
+      exit;
+    end;
 end;
 
 function TDSKTrack.GetIsFormatted: boolean;
@@ -1386,6 +1416,16 @@ begin
       else
         Result := ssFormattedFilled;
   end;
+end;
+
+function TDSKSector.GetCopyCount: integer;
+var
+  DeclaredSize: integer;
+begin
+  Result := 1;
+  DeclaredSize := FDCSectorSizes[FDCSize];
+  if DataSize mod DeclaredSize <> 0 then exit;
+  Result := DataSize div DeclaredSize;
 end;
 
 // Get filler byte or -1 if in use, -2 if unformatted
