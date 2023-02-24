@@ -338,7 +338,7 @@ object frmSector: TfrmSector
           Width = 282
           Anchors = [akTop, akLeft, akRight]
           BorderStyle = bsNone
-          Color = clBtnFace
+          Color = 16382457
           ReadOnly = True
           TabOrder = 0
         end
@@ -349,7 +349,7 @@ object frmSector: TfrmSector
           Width = 282
           Anchors = [akTop, akLeft, akRight]
           BorderStyle = bsNone
-          Color = clNone
+          Color = 16382457
           ReadOnly = True
           TabOrder = 1
         end
