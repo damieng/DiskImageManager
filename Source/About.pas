@@ -14,7 +14,7 @@ unit About;
 interface
 
 uses
-  LCLIntf, Forms, ExtCtrls, StdCtrls, Graphics, SysUtils, ShellApi, Windows;
+  LCLIntf, Forms, ExtCtrls, StdCtrls, Graphics, SysUtils, Windows;
 
 type
   TfrmAbout = class(TForm)

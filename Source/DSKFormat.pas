@@ -30,7 +30,8 @@ type
     TIB_pad1: array[0..2] of byte;
     TIB_TrackNum: byte;
     TIB_SideNum: byte;
-    TIB_pad2: word;
+    TIB_DataRate: byte;
+    TIB_RecordingMode: byte;
     TIB_SectorSize: byte;
     TIB_NumSectors: byte;
     TIB_GapLength: byte;

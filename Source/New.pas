@@ -22,7 +22,11 @@ type
   { TfrmNew }
 
   TfrmNew = class(TForm)
+    cboRecordingMode: TComboBox;
+    cboDataRate: TComboBox;
     lblBlockSizeDec: TLabel;
+    lblRecordingMode: TLabel;
+    lblDataRate: TLabel;
     memDPBHex: TMemo;
     pnlInfo: TPanel;
     pnlTabs: TPanel;
@@ -94,6 +98,8 @@ type
     lblBootDetails: TLabel;
     btnBootClear: TBitBtn;
     btnBootBin: TBitBtn;
+    procedure cboDataRateChange(Sender: TObject);
+    procedure cboRecordingModeChange(Sender: TObject);
     procedure edtFillerChange(Sender: TObject);
     procedure btnCancelClick(Sender: TObject);
     procedure btnFormatClick(Sender: TObject);
@@ -169,6 +175,8 @@ begin
     udInterleave.Position := Interleave;
     udSkewTrack.Position := SkewTrack;
     udSkewSide.Position := SkewSide;
+    cboRecordingMode.ItemIndex := Ord(RecordingMode);
+    cboDataRate.ItemIndex := Ord(DataRate);
   end;
   IsLoading := False;
   UpdateSummary;
@@ -179,8 +187,8 @@ var
   NewWarn: TListItem;
   hexDPB: string;
 begin
-  if IsLoading then
-    exit;
+  if IsLoading then exit;
+
   // Set summary details
   if lvwSummary.Items.Count > 0 then
   begin
@@ -259,6 +267,12 @@ begin
   begin
     NewWarn := lvwWarnings.Items.Add;
     NewWarn.Caption := 'Format requires disk specification on PCW/+3';
+  end;
+
+  if CurrentFormat.RecordingMode = rmFM then
+  begin
+    NewWarn := lvwWarnings.Items.Add;
+    NewWarn.Caption := '+3/PCW/CPC requires custom code to read FM';
   end;
 
   if CurrentFormat.GetDirectoryEntries > 256 then
@@ -390,10 +404,16 @@ begin
     end;
   lvwFormats.EndUpdate;
 
-  CurrentFormat := TDSKFormatSpecification.Create(1);
   for Idx := 0 to Length(DSKSpecSides) - 2 do
     cboSides.Items.Add(DSKSpecSides[TDSKSpecSide(Idx)]);
 
+  for Idx := 0 to Length(DSKRecordingMode) - 1 do
+    cboRecordingMode.Items.Add(DSKRecordingMode[TDSKRecordingMode(Idx)]);
+
+  for Idx := 0 to Length(DSKDataRate) - 1 do
+    cboDataRate.Items.Add(DSKDataRate[TDSKDataRate(Idx)]);
+
+  CurrentFormat := TDSKFormatSpecification.Create(1);
   BootOffset := 0;
   BootChecksumRequired := False;
   pagTabs.ActivePage := tabFormat;
@@ -517,6 +537,18 @@ end;
 procedure TfrmNew.edtFirstSectorChange(Sender: TObject);
 begin
   CurrentFormat.FirstSector := udFirstSector.Position;
+  UpdateSummary;
+end;
+
+procedure TfrmNew.cboRecordingModeChange(Sender: TObject);
+begin
+  CurrentFormat.RecordingMode := TDSKRecordingMode(cboRecordingMode.ItemIndex);
+  UpdateSummary;
+end;
+
+procedure TfrmNew.cboDataRateChange(Sender: TObject);
+begin
+  CurrentFormat.DataRate := TDSKDataRate(cboDataRate.ItemIndex);
   UpdateSummary;
 end;
 

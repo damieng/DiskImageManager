@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 426
+  Left = 1280
   Height = 384
-  Top = 263
+  Top = 394
   Width = 556
   AllowDropFiles = True
   ClientHeight = 364

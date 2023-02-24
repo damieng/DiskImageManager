@@ -1,12 +1,12 @@
 object frmNew: TfrmNew
-  Left = 1095
-  Height = 294
-  Top = 466
-  Width = 513
+  Left = 1648
+  Height = 304
+  Top = 509
+  Width = 538
   BorderStyle = bsDialog
   Caption = 'New'
-  ClientHeight = 294
-  ClientWidth = 513
+  ClientHeight = 304
+  ClientWidth = 538
   Color = clBtnFace
   Font.CharSet = ANSI_CHARSET
   Font.Color = clWindowText
@@ -18,25 +18,26 @@ object frmNew: TfrmNew
   LCLVersion = '2.2.4.0'
   object pnlInfo: TPanel
     Left = 299
-    Height = 264
+    Height = 274
     Top = 0
-    Width = 214
+    Width = 239
     Align = alClient
     BevelOuter = bvNone
     BorderWidth = 6
-    ClientHeight = 264
-    ClientWidth = 214
+    ClientHeight = 274
+    ClientWidth = 239
     TabOrder = 0
     object lvwWarnings: TListView
       Left = 6
-      Height = 122
-      Top = 136
-      Width = 202
+      Height = 130
+      Top = 138
+      Width = 227
       Align = alBottom
       Columns = <      
         item
+          AutoSize = True
           Caption = 'Value'
-          Width = 198
+          Width = 44
         end>
       Font.CharSet = ANSI_CHARSET
       Font.Color = clMaroon
@@ -45,6 +46,7 @@ object frmNew: TfrmNew
       ParentFont = False
       ReadOnly = True
       RowSelect = True
+      ScrollBars = ssAutoBoth
       ShowColumnHeaders = False
       TabOrder = 0
       ViewStyle = vsReport
@@ -53,7 +55,7 @@ object frmNew: TfrmNew
       Left = 6
       Height = 19
       Top = 6
-      Width = 202
+      Width = 227
       Align = alTop
       BevelOuter = bvNone
       Caption = 'Summary'
@@ -69,7 +71,7 @@ object frmNew: TfrmNew
       Left = 6
       Height = 79
       Top = 25
-      Width = 202
+      Width = 227
       Align = alTop
       Columns = <      
         item
@@ -81,7 +83,7 @@ object frmNew: TfrmNew
           Alignment = taRightJustify
           AutoSize = True
           Caption = 'Value'
-          Width = 81
+          Width = 64
         end>
       Items.LazData = {
         B900000004000000FFFFFFFFFFFFFFFFFFFFFFFF010000000D0000004469736B
@@ -100,9 +102,9 @@ object frmNew: TfrmNew
     end
     object pnlWarnings: TPanel
       Left = 6
-      Height = 19
-      Top = 117
-      Width = 202
+      Height = 20
+      Top = 118
+      Width = 227
       Align = alBottom
       BevelOuter = bvNone
       Caption = 'Warnings'
@@ -117,19 +119,19 @@ object frmNew: TfrmNew
   end
   object pnlTabs: TPanel
     Left = 0
-    Height = 264
+    Height = 274
     Top = 0
     Width = 299
     Align = alLeft
     Alignment = taRightJustify
     BevelOuter = bvNone
     BorderWidth = 5
-    ClientHeight = 264
+    ClientHeight = 274
     ClientWidth = 299
     TabOrder = 1
     object pagTabs: TPageControl
       Left = 5
-      Height = 254
+      Height = 264
       Top = 5
       Width = 289
       ActivePage = tabFormat
@@ -140,7 +142,7 @@ object frmNew: TfrmNew
       TabOrder = 0
       object tabFormat: TTabSheet
         Caption = 'Basic'
-        ClientHeight = 228
+        ClientHeight = 238
         ClientWidth = 281
         object lblFormatDesc: TLabel
           Left = 8
@@ -154,7 +156,7 @@ object frmNew: TfrmNew
         end
         object lvwFormats: TListView
           Left = 8
-          Height = 200
+          Height = 210
           Top = 24
           Width = 256
           Anchors = [akTop, akLeft, akRight, akBottom]
@@ -188,7 +190,7 @@ object frmNew: TfrmNew
       end
       object tabDetails: TTabSheet
         Caption = 'Advanced'
-        ClientHeight = 228
+        ClientHeight = 238
         ClientWidth = 281
         ImageIndex = 1
         object lblSides: TLabel
@@ -319,7 +321,7 @@ object frmNew: TfrmNew
           Left = 88
           Height = 21
           Top = 8
-          Width = 137
+          Width = 121
           ItemHeight = 13
           OnChange = cboSidesChange
           Style = csDropDownList
@@ -636,10 +638,46 @@ object frmNew: TfrmNew
           Caption = '1024'
           ParentColor = False
         end
+        object cboRecordingMode: TComboBox
+          Left = 64
+          Height = 21
+          Top = 208
+          Width = 73
+          ItemHeight = 13
+          OnChange = cboRecordingModeChange
+          Style = csDropDownList
+          TabOrder = 27
+        end
+        object lblRecordingMode: TLabel
+          Left = 8
+          Height = 13
+          Top = 212
+          Width = 52
+          Caption = 'Modulation'
+          ParentColor = False
+        end
+        object lblDataRate: TLabel
+          Left = 143
+          Height = 13
+          Top = 212
+          Width = 23
+          Caption = 'Rate'
+          ParentColor = False
+        end
+        object cboDataRate: TComboBox
+          Left = 175
+          Height = 21
+          Top = 208
+          Width = 97
+          ItemHeight = 13
+          OnChange = cboDataRateChange
+          Style = csDropDownList
+          TabOrder = 28
+        end
       end
       object tabDiskSpec: TTabSheet
         Caption = 'Specification'
-        ClientHeight = 228
+        ClientHeight = 238
         ClientWidth = 281
         ImageIndex = 2
         object lblSpecDesc: TLabel
@@ -663,7 +701,7 @@ object frmNew: TfrmNew
         end
         object memDPBHex: TMemo
           Left = 8
-          Height = 40
+          Height = 50
           Top = 88
           Width = 257
           Anchors = [akTop, akLeft, akRight, akBottom]
@@ -680,7 +718,7 @@ object frmNew: TfrmNew
       end
       object tabBoot: TTabSheet
         Caption = 'Boot'
-        ClientHeight = 228
+        ClientHeight = 238
         ClientWidth = 281
         ImageIndex = 3
         OnShow = tabBootShow
@@ -813,15 +851,15 @@ object frmNew: TfrmNew
   object pnlButtons: TPanel
     Left = 0
     Height = 30
-    Top = 264
-    Width = 513
+    Top = 274
+    Width = 538
     Align = alBottom
     BevelOuter = bvNone
     ClientHeight = 30
-    ClientWidth = 513
+    ClientWidth = 538
     TabOrder = 2
     object btnFormat: TButton
-      Left = 350
+      Left = 375
       Height = 25
       Top = 0
       Width = 75
@@ -832,7 +870,7 @@ object frmNew: TfrmNew
       TabOrder = 0
     end
     object btnCancel: TButton
-      Left = 431
+      Left = 456
       Height = 25
       Top = 0
       Width = 75
@@ -844,7 +882,7 @@ object frmNew: TfrmNew
   end
   object dlgOpenBoot: TOpenDialog
     Options = [ofReadOnly, ofHideReadOnly, ofFileMustExist, ofEnableSizing]
-    Left = 8
-    Top = 264
+    Left = 16
+    Top = 256
   end
 end

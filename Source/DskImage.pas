@@ -58,6 +58,7 @@ type
 
     function SaveFile(SaveFileName: TFileName; SaveFileFormat: TDSKImageFormat; Copy: boolean; Compress: boolean): boolean;
     function FindText(From: TDSKSector; Text: string; CaseSensitive: boolean): TDSKSector;
+    function HasV5Extensions: boolean;
 
     property Creator: string read FCreator write FCreator;
     property Corrupt: boolean read FCorrupt write FCorrupt;
@@ -119,12 +120,16 @@ type
     destructor Destroy; override;
 
     function GetLargestTrackSize: integer;
+    function HasDataRate: boolean;
+    function HasRecordingMode: boolean;
 
     property HighTrackCount: byte read GetHighTrackCount;
     property ParentDisk: TDSKDisk read FParentDisk;
     property Tracks: byte read GetTracks write SetTracks;
   end;
 
+  TDSKDataRate = (drUnknown, drSingleOrDoubleDensity, drHighDensity, drExtendedDensity);
+  TDSKRecordingMode = (rmUnknown, rmFM, rmMFM);
 
   // Disk track
   TDSKTrack = class(TObject)
@@ -135,9 +140,11 @@ type
     function GetSectors: byte;
     procedure SetSectors(NewSectors: byte);
   public
+    DataRate: TDSKDataRate;
     Filler: byte;
     GapLength: byte;
     Logical: word;
+    RecordingMode: TDSKRecordingMode;
     Sector: array of TDSKSector;
     SectorSize: word;
     Side: byte;
@@ -290,6 +297,8 @@ type
     SkewTrack: shortint;
     Sides: TDSKSpecSide;
     TracksPerSide: word;
+    RecordingMode: TDSKRecordingMode;
+    DataRate: TDSKDataRate;
 
     constructor Create(Format: integer);
     function GetCapacityBytes: integer;
@@ -342,6 +351,19 @@ const
     'Formatted (track filler)',
     'Formatted (odd filler)',
     'Formatted (in use)'
+    );
+
+  DSKRecordingMode: array[TDSKRecordingMode] of string = (
+    'Unknown',
+    'MFM',
+    'FM'
+    );
+
+  DSKDataRate: array[TDSKDataRate] of string = (
+    'Unknown',
+    'Single/Double',
+    'High',
+    'Extended'
     );
 
   // FileSystem
@@ -425,6 +447,19 @@ begin
   FIsChanged := NewValue;
 end;
 
+function TDSKImage.HasV5Extensions: boolean;
+var
+  Side: TDSKSide;
+begin
+  for Side in Disk.Side do
+    if Side.HasDataRate or Side.HasDataRate then
+    begin
+      Result := True;
+      exit;
+    end;
+  Result := False;
+end;
+
 function TDSKImage.FindText(From: TDSKSector; Text: string; CaseSensitive: boolean): TDSKSector;
 var
   NextSector: TDSKSector;
@@ -502,7 +537,6 @@ begin
             SizeT := 0;
         end;
 
-        TRKInfoBlock.TrackData := 'Damien';
         TOff := DiskFile.Position;
         Logical := (TIdx * DSKInfoBlock.Disk_NumSides) + SIdx;
 
@@ -558,6 +592,13 @@ begin
             SectorSize := FDCSectorSizes[TRKInfoBlock.TIB_SectorSize];
           GapLength := TRKInfoBlock.TIB_GapLength;
           Filler := TRKInfoBlock.TIB_FillerByte;
+
+          // Extended V5 support for data rate and recording mode
+          if FileFormat = diExtendedDSK then
+          begin
+            DataRate := TDSKDataRate(TRKInfoBlock.TIB_DataRate);
+            RecordingMode := TDSKRecordingMode(TRKInfoBlock.TIB_RecordingMode);
+          end;
 
           // Load the actual sectors in
           EOff := 0;
@@ -726,6 +767,12 @@ begin
           TIB_SectorSize := GetFDCSectorSize(SectorSize);
           TIB_GapLength := GapLength;
           TIB_FillerByte := Filler;
+          // Extended V5 support for data rate and recording mode
+          if SaveFileFormat = diExtendedDSK then
+          begin
+            TIB_DataRate := Ord(DataRate);
+            TIB_RecordingMode := Ord(RecordingMode);
+          end;
         end;
 
         // Write the actual sectors out
@@ -1135,6 +1182,35 @@ begin
   end;
 end;
 
+function TDSKSide.HasDataRate: boolean;
+var
+  Track: TDSKTrack;
+begin
+  for Track in self.Track do
+    if Track.DataRate <> drUnknown then
+    begin
+      Result := True;
+      exit;
+    end;
+
+  Result := False;
+end;
+
+function TDSKSide.HasRecordingMode: boolean;
+var
+  Track: TDSKTrack;
+begin
+  for Track in self.Track do
+    if Track.RecordingMode <> rmUnknown then
+    begin
+      Result := True;
+      exit;
+    end;
+
+  Result := False;
+end;
+
+
 procedure TDSKSide.SetTracks(NewTracks: byte);
 var
   OldTracks: byte;
@@ -1255,6 +1331,8 @@ begin
   SectorSize := Formatter.SectorSize;
   Sectors := Formatter.SectorsPerTrack;
   GapLength := Formatter.GapFormat;
+  DataRate := Formatter.DataRate;
+  RecordingMode := Formatter.RecordingMode;
 
   case Formatter.Sides of
     dsSideSingle: Logical := Track;
@@ -1842,6 +1920,8 @@ begin
   Interleave := 1;
   SkewSide := 0;
   SkewTrack := 0;
+  RecordingMode := rmMFM;
+  DataRate := drSingleOrDoubleDensity;
 
   // And make appropriate changes
   case Format of

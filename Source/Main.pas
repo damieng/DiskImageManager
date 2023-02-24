@@ -124,7 +124,7 @@ type
     NextNewFile: integer;
     function AddTree(Parent: TTreeNode; Text: string; ImageIdx: integer; NodeObject: TObject): TTreeNode;
     function AddListInfo(Key: string; Value: string): TListItem;
-    function AddListTrack(Track: TDSKTrack): TListItem;
+    function AddListTrack(Track: TDSKTrack; ShowModulation: boolean; ShowDataRate: boolean): TListItem;
     function AddListSector(Sector: TDSKSector): TListItem;
     function AddListSides(Side: TDSKSide): TListItem;
     procedure SetListSimple;
@@ -587,17 +587,19 @@ end;
 procedure TfrmMain.RefreshListImage(Image: TDSKImage);
 var
   SIdx: integer;
-  Protection: string;
+  ImageFormat, Protection: string;
 begin
   SetListSimple;
   if Image <> nil then
     with Image do
     begin
       AddListInfo('Creator', Creator);
-      if Corrupt then
-        AddListInfo('Image Format', DSKImageFormats[FileFormat] + ' (Corrupt)')
-      else
-        AddListInfo('Image Format', DSKImageFormats[FileFormat]);
+      ImageFormat := DSKImageFormats[FileFormat];
+
+      if Image.HasV5Extensions then ImageFormat := ImageFormat + ' v5';
+      if Corrupt then ImageFormat := ImageFormat + ' (Corrupt)';
+
+      AddListInfo('Image Format', ImageFormat);
       AddListInfo('Sides', StrInt(Disk.Sides));
       if Disk.Sides > 0 then
       begin
@@ -702,7 +704,11 @@ end;
 procedure TfrmMain.RefreshListTrack(Side: TDSKSide);
 var
   Track: TDSKTrack;
+  ShowModulation, ShowDataRate: boolean;
 begin
+  ShowModulation := Side.HasRecordingMode;
+  ShowDataRate := Side.HasDataRate;
+
   AddColumn('Logical');
   AddColumn('Physical');
   AddColumn('Track size');
@@ -710,13 +716,15 @@ begin
   AddColumn('Sector size');
   AddColumn('Gap');
   AddColumn('Filler');
+  if ShowModulation then AddColumn('Modulation');
+  if ShowDataRate then AddColumn('Data rate');
   AddColumn('');
 
   for Track in Side.Track do
-    AddListTrack(Track);
+    AddListTrack(Track, ShowModulation, ShowDataRate);
 end;
 
-function TfrmMain.AddListTrack(Track: TDSKTrack): TListItem;
+function TfrmMain.AddListTrack(Track: TDSKTrack; ShowModulation: boolean; ShowDataRate: boolean): TListItem;
 var
   NewListItem: TListItem;
 begin
@@ -725,13 +733,18 @@ begin
   begin
     Caption := StrInt(Track.Logical);
     Data := Track;
-    Subitems.Add(StrInt(Track.Track));
-    Subitems.Add(StrInt(Track.Size));
-    Subitems.Add(StrInt(Track.Sectors));
-    Subitems.Add(StrInt(Track.SectorSize));
-    Subitems.Add(StrInt(Track.GapLength));
-    Subitems.Add(StrHex(Track.Filler));
-    Subitems.Add('');
+    with SubItems do
+    begin
+      Add(StrInt(Track.Track));
+      Add(StrInt(Track.Size));
+      Add(StrInt(Track.Sectors));
+      Add(StrInt(Track.SectorSize));
+      Add(StrInt(Track.GapLength));
+      Add(StrHex(Track.Filler));
+      if ShowModulation then Add(DSKRecordingMode[Track.RecordingMode]);
+      if ShowDataRate then Add(DSKDataRate[Track.DataRate]);
+      Subitems.Add('');
+    end;
   end;
   Result := NewListItem;
 end;
@@ -1096,6 +1109,8 @@ begin
 end;
 
 procedure TfrmMain.SaveImageAs(Image: TDSKImage; Copy: boolean; NewName: string);
+var
+  AbandonSave: boolean;
 begin
   if NewName <> '' then
     dlgSave.FileName := NewName
@@ -1104,23 +1119,29 @@ begin
 
   case Image.FileFormat of
     diStandardDSK: dlgSave.FilterIndex := 1;
-    diExtendedDSK: dlgSave.FilterIndex := 2;
+    else
+      dlgSave.FilterIndex := 2;
   end;
 
   if dlgSave.Execute then
     case dlgSave.FilterIndex of
+      2: Image.SaveFile(dlgSave.FileName, diExtendedDSK, Copy, Settings.RemoveEmptyTracks);
       1:
       begin
-        if (not Image.Disk.IsTrackSizeUniform) and Settings.WarnConversionProblems then
-          if MessageDlg('This image has variable track sizes that "Standard DSK format" does not support. ' +
-            'Save anyway using largest track size?', mtWarning, [mbYes, mbNo], 0) = mrOk then
-            Image.SaveFile(dlgSave.FileName, diStandardDSK, True, False)
-          else
-            exit
-        else
+        AbandonSave := False;
+        if Image.HasV5Extensions and (MessageDlg(
+          'This image has modulation or data rate info that "Standard DSK format" does not support. ' +
+          'Save anyway and lose this information?', mtWarning, [mbYes, mbNo], 0) <> mrOk) then
+          AbandonSave := True;
+
+        if (not Image.Disk.IsTrackSizeUniform) and Settings.WarnConversionProblems and
+          (MessageDlg('This image has variable track sizes that "Standard DSK format" does not support. ' +
+          'Save anyway using largest track size?', mtWarning, [mbYes, mbNo], 0) <> mrOk) then
+          AbandonSave := True;
+
+        if not AbandonSave then
           Image.SaveFile(dlgSave.FileName, diStandardDSK, Copy, False);
       end;
-      2: Image.SaveFile(dlgSave.FileName, diExtendedDSK, Copy, Settings.RemoveEmptyTracks);
     end;
 end;
 
