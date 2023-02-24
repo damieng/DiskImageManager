@@ -158,7 +158,7 @@ begin
   Offset := StrBufPos(Side.Track[0].Sector[0].Data, ' THE ALKATRAZ PROTECTION SYSTEM   (C) 1987  Appleby Associates');
   if Offset > -1 then
   begin
-    Result := 'Alkatraz +3 (signed at T0/S0 +' + StrInt(Offset) + ')';
+    Result := Format('Alkatraz +3 (signed at T0/S0 +%d', [Offset]);
     exit;
   end;
 
@@ -170,14 +170,13 @@ begin
         exit;
       end;
 
-
   // Frontier copy-protection
   if (Side.Tracks > 10) and (Side.Track[1].Sectors > 0) and (Side.Track[0].Sector[0].DataSize > 1) then
   begin
     Offset := StrBufPos(Side.Track[1].Sector[0].Data, 'W DISK PROTECTION SYSTEM. (C) 1990 BY NEW FRONTIER SOFT.');
     if Offset > -1 then
     begin
-      Result := 'Frontier (signed T1/S0 +' + StrInt(Offset) + ')';
+      Result := Format('Frontier (signed T1/S0 +%d)', [Offset]);
       exit;
     end;
 
@@ -219,7 +218,7 @@ begin
     Offset := StrBufPos(Side.Track[0].Sector[2].Data, 'PAUL OWENS' + #128 + 'PROTECTION SYS');
     if Offset > -1 then
     begin
-      Result := 'Paul Owens (signed T0/S2 +' + StrInt(Offset) + ')';
+      Result := Format('Paul Owens (signed T0/S2 +%d)', [Offset]);
       exit;
     end
     else
@@ -334,7 +333,7 @@ begin
     '***Loader Copyright Three Inch Software 1988, All Rights Reserved. Three Inch Software, 73 Surbiton Road, Kingston upon Thames, KT1 2HG***');
   if Offset > -1 then
   begin
-    Result := 'Three Inch Loader type 1 (signed T0/S0 +' + StrInt(Offset) + ')';
+    Result := Format('Three Inch Loader type 1 (signed T0/S0 +%d)', [Offset]);
     exit;
   end;
 
@@ -344,7 +343,7 @@ begin
       '***Loader Copyright Three Inch Software 1988, All Rights Reserved. Three Inch Software, 73 Surbiton Road, Kingston upon Thames, KT1 2HG***');
     if Offset > -1 then
     begin
-      Result := 'Three Inch Loader type 1-0-7 (signed T0/S7 +' + StrInt(Offset) + ')';
+      Result := Format('Three Inch Loader type 1-0-7 (signed T0/S7 +%d)', [Offset]);
       exit;
     end;
   end;
@@ -353,7 +352,7 @@ begin
     '***Loader Copyright Three Inch Software 1988, All Rights Reserved. 01-546 2754');
   if Offset > -1 then
   begin
-    Result := 'Three Inch Loader type 2 (signed T0/S0 +' + StrInt(Offset) + ')';
+    Result := Format('Three Inch Loader type 2 (signed T0/S0 +%d)', [Offset]);
     exit;
   end;
 
@@ -363,7 +362,7 @@ begin
     Offset := StrBufPos(Side.Track[1].Sector[4].Data, 'Loader ' + #127 + '1988 Three Inch Software');
     if Offset > -1 then
     begin
-      Result := 'Three Inch Loader type 3-1-4 (signed T1/S4 +' + StrInt(Offset) + ')';
+      Result := Format('Three Inch Loader type 3-1-4 (signed T1/S4 +%d)', [Offset]);
       exit;
     end;
   end;
@@ -373,7 +372,7 @@ begin
   begin
     Offset := StrBufPos(Side.Track[0].Sector[2].Data, 'Laser Load   By C.J.Pink For Consult Computer    Systems');
     if Offset > -1 then
-      Result := 'Laser Load by C.J. Pink (signed T0/S2 +' + StrInt(Offset) + ')';
+      Result := Format('Laser Load by C.J. Pink (signed T0/S2 +%d)', [Offset]);
   end;
 
   // W.R.M. (Martech)
@@ -390,28 +389,28 @@ begin
   Offset := StrBufPos(Side.Track[0].Sector[0].Data, '[C] P.M.S. 1986');
   if Offset > -1 then
   begin
-    Result := 'P.M.S. 1986 (signed T0/S0 +' + StrInt(Offset) + ')';
-    exit;
-  end;
-
-  Offset := StrBufPos(Side.Track[0].Sector[0].Data, 'P.M.S.LOADER [C]1986');
-  if Offset > -1 then
-  begin
-    Result := 'P.M.S. Loader 1986 (signed T0/S0 +' + StrInt(Offset) + ')';
+    Result := Format('P.M.S. 1986 (signed T0/S0 +%d)', [Offset]);
     exit;
   end;
 
   Offset := StrBufPos(Side.Track[0].Sector[0].Data, 'P.M.S. LOADER [C]1986');
   if Offset > -1 then
   begin
-    Result := 'P.M.S. Loader 1986 (signed T0/S0 +' + StrInt(Offset) + ')';
+    Result := Format('P.M.S. Loader 1986 v1 (signed T0/S0 +%d)', [Offset]);
+    exit;
+  end;
+
+  Offset := StrBufPos(Side.Track[0].Sector[0].Data, 'P.M.S.LOADER [C]1986');
+  if Offset > -1 then
+  begin
+    Result := Format('P.M.S. Loader 1986 v2 (signed T0/S0 +%d)', [Offset]);
     exit;
   end;
 
   Offset := StrBufPos(Side.Track[0].Sector[0].Data, 'P.M.S.LOADER [C]1987');
   if Offset > -1 then
   begin
-    Result := 'P.M.S. Loader 1987 (signed T0/S0 +' + StrInt(Offset) + ')';
+    Result := Format('P.M.S. 1987 (signed T0/S0 +%d)', [Offset]);
     exit;
   end;
 
