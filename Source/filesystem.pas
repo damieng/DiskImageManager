@@ -334,7 +334,7 @@ var
   FileData: TDiskByteArray;
 begin
   FileData := nil;
-  SetLength(FileData, Size);
+  SetLength(FileData, Size + HeaderSize);
 
   BytesLeft := Size + HeaderSize;
   TargetIdx := 0;
@@ -372,7 +372,7 @@ begin
   if (not WithHeader) and ((HeaderType = 'PLUS3DOS') or (HeaderType = 'AMSDOS')) then
     Result := Copy(FileData, HeaderSize, Size - HeaderSize)
   else
-    Result := Copy(FileData, Size);
+    Result := Copy(FileData, 0, Size);
 end;
 
 end.

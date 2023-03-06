@@ -372,7 +372,7 @@ object frmMain: TfrmMain
       Caption = 'Copy details to clipboard'
       OnClick = itmEditCopyClick
     end
-    object Separator2: TMenuItem
+    object itmCopySep: TMenuItem
       Caption = '-'
     end
     object itmSaveFileAs: TMenuItem
@@ -383,7 +383,7 @@ object frmMain: TfrmMain
       Caption = 'Save file with header as...'
       OnClick = itmSaveFileWithHeaderAsClick
     end
-    object Separator3: TMenuItem
+    object itmSaveFileSep: TMenuItem
       Caption = '-'
     end
     object itmSaveSelectedFilesTo: TMenuItem

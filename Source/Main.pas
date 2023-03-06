@@ -51,8 +51,8 @@ type
     dlgSaveBinary: TSaveDialog;
     dlgSelectDirectory: TSelectDirectoryDialog;
     Separator1: TMenuItem;
-    Separator2: TMenuItem;
-    Separator3: TMenuItem;
+    itmCopySep: TMenuItem;
+    itmSaveFileSep: TMenuItem;
     splVertical: TSplitter;
     staBar: TStatusBar;
     pnlRight: TPanel;
@@ -343,6 +343,8 @@ begin
     itmSaveFileAs.Caption := Format('Save %s as...', [DiskFile.FileName]);
     itmSaveFileWithHeaderAs.Caption := Format('Save %s with header as...', [DiskFile.FileName]);
   end;
+
+  itmSaveFileSep.Visible:= itmSaveFileWithHeaderAs.Visible and itmSaveSelectedFilesTo.Visible;
 end;
 
 function TfrmMain.FindTreeNodeFromData(Node: TTreeNode; Data: TObject): TTreeNode;
