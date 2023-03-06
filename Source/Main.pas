@@ -33,6 +33,8 @@ type
     itmSaveFileAs: TMenuItem;
     itmSaveSelectedFilesTo: TMenuItem;
     itmCopyMapToClipboard: TMenuItem;
+    itmSaveFileWithHeaderAs: TMenuItem;
+    itmSaveSelectedFilesWithHeadersTo: TMenuItem;
     mnuMain: TMainMenu;
     itmDisk: TMenuItem;
     itmOpen: TMenuItem;
@@ -49,6 +51,8 @@ type
     dlgSaveBinary: TSaveDialog;
     dlgSelectDirectory: TSelectDirectoryDialog;
     Separator1: TMenuItem;
+    Separator2: TMenuItem;
+    Separator3: TMenuItem;
     splVertical: TSplitter;
     staBar: TStatusBar;
     pnlRight: TPanel;
@@ -91,8 +95,10 @@ type
     procedure itmOpenClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure itmOpenRecentClick(Sender: TObject);
+    procedure itmSaveFileWithHeaderAsClick(Sender: TObject);
     procedure itmSaveSelectedFilesToClick(Sender: TObject);
     procedure itmSaveFileAsClick(Sender: TObject);
+    procedure itmSaveSelectedFilesWithHeadersToClick(Sender: TObject);
     procedure lvwMainDblClickFile(Sender: TObject);
     procedure popListItemPopup(Sender: TObject);
     procedure tvwMainChange(Sender: TObject; Node: TTreeNode);
@@ -136,6 +142,8 @@ type
     function FindTreeNodeFromData(Node: TTreeNode; Data: TObject): TTreeNode;
     function MapByte(Raw: byte): string;
 
+    procedure SaveExtractedFile(WithHeader: boolean);
+    procedure SaveExtractedFilesToFolder(WithHeader: boolean);
     procedure WriteSectorLine(Offset: integer; SecHex: string; SecData: string);
     procedure SetListSimple;
     procedure OnApplicationDropFiles(Sender: TObject; const FileNames: array of string);
@@ -235,7 +243,17 @@ begin
   end;
 end;
 
+procedure TfrmMain.itmSaveSelectedFilesWithHeadersToClick(Sender: TObject);
+begin
+  SaveExtractedFilesToFolder(true);
+end;
+
 procedure TfrmMain.itmSaveSelectedFilesToClick(Sender: TObject);
+begin
+  SaveExtractedFilesToFolder(false);
+end;
+
+procedure TfrmMain.SaveExtractedFilesToFolder(WithHeader: boolean);
 var
   ListItem: TListItem;
   Folder: string;
@@ -251,7 +269,7 @@ begin
     begin
       DiskFile := TDSKFile(ListItem.Data);
       Stream := TFileStream.Create(Folder + DiskFile.FileName, fmCreate);
-      Data := DiskFile.GetData();
+      Data := DiskFile.GetData(WithHeader);
       try
         Stream.WriteBuffer(Pointer(Data)^, Length(Data));
       finally
@@ -260,7 +278,17 @@ begin
     end;
 end;
 
+procedure TfrmMain.itmSaveFileWithHeaderAsClick(Sender: TObject);
+begin
+     SaveExtractedFile(true);
+end;
+
 procedure TfrmMain.itmSaveFileAsClick(Sender: TObject);
+begin
+  SaveExtractedFile(false);
+end;
+
+procedure TfrmMain.SaveExtractedFile(WithHeader: boolean);
 var
   DiskFile: TDSKFile;
   Data: TDiskByteArray;
@@ -275,7 +303,7 @@ begin
   if not dlgSaveBinary.Execute then exit;
 
   Stream := TFileStream.Create(dlgSaveBinary.FileName, fmCreate);
-  Data := DiskFile.GetData();
+  Data := DiskFile.GetData(WithHeader);
   try
     Stream.WriteBuffer(Pointer(Data)^, Length(Data));
   finally
@@ -301,13 +329,19 @@ var
 begin
   itmSaveSelectedFilesTo.Visible := tvwMain.Selected.Text = 'Files';
   itmSaveSelectedFilesTo.Enabled := lvwMain.SelCount > 0;
+  itmSaveSelectedFilesWithHeadersTo.Visible := itmSaveSelectedFilesTo.Visible;
+  itmSaveSelectedFilesWithHeadersTo.Enabled := itmSaveSelectedFilesTo.Enabled;
 
   itmSaveFileAs.Visible := False;
+  itmSaveFileWithHeaderAs.Visible := False;
+
   if (lvwMain.SelCount = 1) and (lvwMain.Selected.Data <> nil) and (TObject(lvwMain.Selected.Data).ClassType = TDSKFile) then
   begin
     itmSaveFileAs.Visible := True;
+    itmSaveFileWithHeaderAs.Visible := True;
     DiskFile := TDSKFile((lvwMain.Selected).Data);
     itmSaveFileAs.Caption := Format('Save %s as...', [DiskFile.FileName]);
+    itmSaveFileWithHeaderAs.Caption := Format('Save %s with header as...', [DiskFile.FileName]);
   end;
 end;
 

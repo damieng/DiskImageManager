@@ -4,8 +4,8 @@ object frmMain: TfrmMain
   Top = 650
   Width = 556
   AllowDropFiles = True
-  ClientHeight = 0
-  ClientWidth = 0
+  ClientHeight = 364
+  ClientWidth = 556
   Color = clBtnFace
   Font.CharSet = ANSI_CHARSET
   Font.Pitch = fpVariable
@@ -372,13 +372,27 @@ object frmMain: TfrmMain
       Caption = 'Copy details to clipboard'
       OnClick = itmEditCopyClick
     end
+    object Separator2: TMenuItem
+      Caption = '-'
+    end
     object itmSaveFileAs: TMenuItem
       Caption = 'Save file as...'
       OnClick = itmSaveFileAsClick
     end
+    object itmSaveFileWithHeaderAs: TMenuItem
+      Caption = 'Save file with header as...'
+      OnClick = itmSaveFileWithHeaderAsClick
+    end
+    object Separator3: TMenuItem
+      Caption = '-'
+    end
     object itmSaveSelectedFilesTo: TMenuItem
       Caption = 'Save selected files to...'
       OnClick = itmSaveSelectedFilesToClick
+    end
+    object itmSaveSelectedFilesWithHeadersTo: TMenuItem
+      Caption = 'Save selected files with headers to...'
+      OnClick = itmSaveSelectedFilesWithHeadersToClick
     end
   end
   object dlgFind: TFindDialog

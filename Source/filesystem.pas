@@ -60,7 +60,7 @@ type
     Size: integer;
     Meta: string;
 
-    function GetData: TDiskByteArray;
+    function GetData(WithHeader: boolean): TDiskByteArray;
 
     constructor Create(ParentFileSystem: TDSKFileSystem);
     destructor Destroy; override;
@@ -322,7 +322,7 @@ begin
   inherited Destroy;
 end;
 
-function TDSKFile.GetData: TDiskByteArray;
+function TDSKFile.GetData(WithHeader:boolean): TDiskByteArray;
 var
   Block, BytesLeft, TargetIdx, BlockSize, SectorsLeft, SectorsPerBlock: integer;
   Disk: TDSKDisk;
@@ -364,8 +364,8 @@ begin
     until SectorsLeft = 0;
   end;
 
-  // Strip any headers (maybe make this optional in the future)
-  if (HeaderType = 'PLUS3DOS') or (HeaderType = 'AMSDOS') then
+  // Strip any headers
+  if (not WithHeader) and ((HeaderType = 'PLUS3DOS') or (HeaderType = 'AMSDOS')) then
     Result := Copy(FileData, 128, Size - 128)
   else
     Result := FileData;
