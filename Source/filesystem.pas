@@ -58,6 +58,7 @@ type
     HeaderType: string;
     Checksum: boolean;
     Size: integer;
+    HeaderSize: integer;
     Meta: string;
 
     function GetData(WithHeader: boolean): TDiskByteArray;
@@ -198,6 +199,7 @@ begin
     ReadOnly := Data[Offset + READONLY_OFFSET] > 127;
     System := Data[Offset + SYSTEM_OFFSET] > 127;
     Archived := Data[Offset + ARCHIVED_OFFSET] > 127;
+    HeaderSize := 0;
 
     Extent := Data[Offset + EXTENT_LOW];
     AllocOffset := Offset + ALLOCATION_OFFSET;
@@ -250,6 +252,7 @@ begin
   DiskFile.Checksum := True;
   DiskFile.HeaderType := 'AMSDOS';
   DiskFile.Size := Data[64] + (Data[65] << 8) + (Data[66] << 16);
+  DiskFile.HeaderSize := 128;
 
   LoadAddr := Data[21] + (Data[22] << 8);
   ExecAddr := Data[26] + (Data[27] << 8);
@@ -286,6 +289,7 @@ begin
   DiskFile.Checksum := CalcChecksum = Data[127];
   DiskFile.HeaderType := Sig;
   DiskFile.Size := Data[11] + (Data[12] << 8) + (Data[13] << 16) + (Data[14] << 24);
+  DiskFile.HeaderSize := 128;
 
   Length := Data[16] + (Data[17] << 8);
   Param1 := Data[18] + (Data[19] << 8);
@@ -322,7 +326,7 @@ begin
   inherited Destroy;
 end;
 
-function TDSKFile.GetData(WithHeader:boolean): TDiskByteArray;
+function TDSKFile.GetData(WithHeader: boolean): TDiskByteArray;
 var
   Block, BytesLeft, TargetIdx, BlockSize, SectorsLeft, SectorsPerBlock: integer;
   Disk: TDSKDisk;
@@ -332,7 +336,7 @@ begin
   FileData := nil;
   SetLength(FileData, Size);
 
-  BytesLeft := Size;
+  BytesLeft := Size + HeaderSize;
   TargetIdx := 0;
   Disk := FParentFileSystem.FParentDisk;
   BlockSize := Disk.Specification.GetBlockSize();
@@ -366,9 +370,9 @@ begin
 
   // Strip any headers
   if (not WithHeader) and ((HeaderType = 'PLUS3DOS') or (HeaderType = 'AMSDOS')) then
-    Result := Copy(FileData, 128, Size - 128)
+    Result := Copy(FileData, HeaderSize, Size - HeaderSize)
   else
-    Result := FileData;
+    Result := Copy(FileData, Size);
 end;
 
 end.
