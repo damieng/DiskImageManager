@@ -83,7 +83,7 @@ object frmNew: TfrmNew
           Alignment = taRightJustify
           AutoSize = True
           Caption = 'Value'
-          Width = 64
+          Width = 89
         end>
       Items.LazData = {
         B900000004000000FFFFFFFFFFFFFFFFFFFFFFFF010000000D0000004469736B
@@ -875,6 +875,7 @@ object frmNew: TfrmNew
       Top = 0
       Width = 75
       Anchors = [akTop, akRight]
+      Cancel = True
       Caption = 'Close'
       OnClick = btnCancelClick
       TabOrder = 1
