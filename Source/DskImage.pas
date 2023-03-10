@@ -704,6 +704,7 @@ var
   SIdx, TIdx, EIdx, EOff: integer;
   TrackSize: word;
   Side: TDSKSide;
+  Track: TDSKTrack;
 begin
   Result := False;
   FillChar(DSKInfoBlock, SizeOf(DSKInfoBlock), 0);
@@ -734,7 +735,6 @@ begin
             else
               Disk_ExtTrackSize[(TIdx * Disk_NumSides) + SIdx] := 0;
       end;
-
       else
       begin
         DiskInfoBlock := DiskInfoStandard;
@@ -745,8 +745,13 @@ begin
 
         for SIdx := 0 to Disk_NumSides - 1 do
           for TIdx := 0 to Disk_NumTracks - 1 do
-            if (Disk.Side[SIdx].Track[TIdx].Size > Disk_StdTrackSize) then
-              Disk_StdTrackSize := Disk.Side[SIdx].Track[TIdx].Size + 256;
+          begin
+            Track := Disk.Side[SIdx].Track[TIdx];
+            Track.DataRate := drUnknown;
+            Track.RecordingMode := rmUnknown;
+            if (Track.Size > Disk_StdTrackSize) then
+              Disk_StdTrackSize := Track.Size + 256;
+          end;
       end;
     end;
   end;

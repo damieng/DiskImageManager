@@ -1225,12 +1225,12 @@ begin
         AbandonSave := False;
         if Image.HasV5Extensions and (MessageDlg(
           'This image has modulation, data rate that "Standard DSK format" does not support. ' +
-          'Save anyway and lose this information?', mtWarning, [mbYes, mbNo], 0) <> mrOk) then
+          'Save anyway and lose this information?', mtWarning, [mbYes, mbNo], 0) <> mrYes) then
           AbandonSave := True;
 
         if (not Image.Disk.IsTrackSizeUniform) and Settings.WarnConversionProblems and
           (MessageDlg('This image has variable track sizes that "Standard DSK format" does not support. ' +
-          'Save anyway using largest track size?', mtWarning, [mbYes, mbNo], 0) <> mrOk) then
+          'Save anyway using largest track size?', mtWarning, [mbYes, mbNo], 0) <> mrYes) then
           AbandonSave := True;
 
         if not AbandonSave then
