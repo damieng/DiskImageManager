@@ -99,10 +99,6 @@ To be able to build and visually edit the forms you will need to install the sup
 ![Screenshot showing sector properties](https://user-images.githubusercontent.com/118951/216734959-67a68b52-5f0e-4d28-812f-c9cf1edbaaf9.png)
 ![Screenshot of advanced formatter](https://user-images.githubusercontent.com/118951/216734979-edae81e3-bc49-44b1-80a8-fe19f41c2e13.png)
 
-## TODO
-
-* Extend support for SamDisk DSK extensions
-
 ## Licence
 
 Copyright 2002-2023 Damien Guard.
@@ -112,3 +108,5 @@ Licensed under the Apache License, Version 2.0 (the "License"); you may not use 
 http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+
+Some icons courtesy of Mark James (FamFamFam) Silk Icon Pack licensed under a Creative Commons Attribution 2.5 License. [ http://creativecommons.org/licenses/by/2.5/ ]
