@@ -35,6 +35,7 @@ type
     itmCopyMapToClipboard: TMenuItem;
     itmSaveFileWithHeaderAs: TMenuItem;
     itmSaveSelectedFilesWithHeadersTo: TMenuItem;
+    itmToolbar: TMenuItem;
     mnuMain: TMainMenu;
     itmDisk: TMenuItem;
     itmOpen: TMenuItem;
@@ -54,14 +55,13 @@ type
     itmCopySep: TMenuItem;
     itmSaveFileSep: TMenuItem;
     splVertical: TSplitter;
-    staBar: TStatusBar;
+    statusBar: TStatusBar;
     pnlRight: TPanel;
     pnlListLabel: TPanel;
-    ToolBar1: TToolBar;
+    toolbar: TToolBar;
     tbnNew: TToolButton;
     tbnOpen: TToolButton;
     tbnSave: TToolButton;
-    ToolButton1: TToolButton;
     ToolButton2: TToolButton;
     ToolButton4: TToolButton;
     tbnCopy: TToolButton;
@@ -109,6 +109,7 @@ type
     procedure itmSaveSelectedFilesToClick(Sender: TObject);
     procedure itmSaveFileAsClick(Sender: TObject);
     procedure itmSaveSelectedFilesWithHeadersToClick(Sender: TObject);
+    procedure itmToolbarClick(Sender: TObject);
     procedure lvwMainDblClickFile(Sender: TObject);
     procedure popListItemPopup(Sender: TObject);
     procedure tvwMainChange(Sender: TObject; Node: TTreeNode);
@@ -256,6 +257,12 @@ end;
 procedure TfrmMain.itmSaveSelectedFilesWithHeadersToClick(Sender: TObject);
 begin
   SaveExtractedFilesToFolder(true);
+end;
+
+procedure TfrmMain.itmToolbarClick(Sender: TObject);
+begin
+  toolbar.Visible := not itmToolbar.Checked;
+  itmToolbar.Checked := toolbar.Visible;
 end;
 
 procedure TfrmMain.itmSaveSelectedFilesToClick(Sender: TObject);
@@ -1157,6 +1164,7 @@ begin
   lvwMain.Hide;
   for Idx := 0 to Strings.Count - 1 do
     memo.Lines.Append(Strings[Idx]);
+  memo.Lines.Delete(memo.Lines.Count - 1);
   memo.Show;
 end;
 
@@ -1311,8 +1319,8 @@ end;
 
 procedure TfrmMain.itmStatusBarClick(Sender: TObject);
 begin
-  staBar.Visible := not itmStatusBar.Checked;
-  itmStatusBar.Checked := staBar.Visible;
+  statusBar.Visible := not itmStatusBar.Checked;
+  itmStatusBar.Checked := statusBar.Visible;
 end;
 
 procedure TfrmMain.itmSaveClick(Sender: TObject);

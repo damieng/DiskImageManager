@@ -112,6 +112,10 @@ begin
       Height := Reg.ReadInteger(S, 'Height', Height);
       Width := Reg.ReadInteger(S, 'Width', Width);
       tvwMain.Width := Reg.ReadInteger(S, 'TreeWidth', tvwMain.Width);
+      toolbar.Visible := Reg.ReadBool(S, 'Toolbar', True);
+      itmToolbar.Checked := toolbar.Visible;
+      statusbar.Visible := Reg.ReadBool(S, 'StatusBar', True);
+      itmStatusBar.Checked := statusBar.Visible;
     end;
 
   S := 'SectorView';
@@ -182,6 +186,8 @@ begin
     Reg.WriteInteger(S, 'Width', Width);
     Reg.WriteInteger(S, 'TreeWidth', tvwMain.Width);
     Reg.WriteString(S, 'Font', FontToDescription(Font));
+    Reg.WriteBool(S, 'Toolbar', toolbar.Visible);
+    Reg.WriteBool(S, 'StatusBar', statusBar.Visible);
   end;
   Reg.WriteString(S, 'OpenView', OpenView);
 
