@@ -23,6 +23,8 @@ type
 
   TfrmSector = class(TForm)
     bevIdentity: TBevel;
+    edtIndexPos: TEdit;
+    lblIndexPos: TLabel;
     pnlTab: TPanel;
     pnlButtons: TPanel;
     pagTabs: TPageControl;
@@ -54,22 +56,17 @@ type
     lblFill: TLabel;
     edtFill: TEdit;
     udFill: TUpDown;
-    lblFillHex: TLabel;
-    lblSizeBytes: TLabel;
     lblPad: TLabel;
     edtPad: TEdit;
     udPad: TUpDown;
-    lblPadHex: TLabel;
     lblFDCSize: TLabel;
     edtFDCSize: TEdit;
     udFDCSize: TUpDown;
     procedure btnCancelClick(Sender: TObject);
     procedure btnApplyClick(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
-    procedure edtFillChange(Sender: TObject);
     procedure cboStatusChange(Sender: TObject);
     procedure edtSizeChange(Sender: TObject);
-    procedure edtPadChange(Sender: TObject);
   private
     FSector: TDSKSector;
     SecStat: TDSKSectorStatus;
@@ -112,6 +109,7 @@ begin
 
   // Details
   udSectorID.Position := FSector.ID;
+  edtIndexPos.Text := StrInt(FSector.IndexPointOffset);
   udFDCSize.Position := FSector.FDCSize;
   udSize.Position := FSector.DataSize;
   if (FSector.GetFillByte >= 0) then
@@ -163,6 +161,7 @@ begin
     begin
       // Details
       ID := udSectorID.Position;
+      IndexPointOffset := IntStr(edtIndexPos.Text);
 
       // Status
       if (SecStat = ssFormattedBlank) or (SecStat = ssFormattedFilled) then
@@ -205,11 +204,6 @@ begin
   frmMain.RefreshList;
 end;
 
-procedure TfrmSector.edtFillChange(Sender: TObject);
-begin
-  lblFillHex.Caption := IntToHex(udFill.Position, 2);
-end;
-
 procedure TfrmSector.cboStatusChange(Sender: TObject);
 begin
   SecStat := TDSKSectorStatus(cboStatus.ItemIndex);
@@ -249,7 +243,6 @@ begin
   lblPad.Visible := ShowPad;
   edtPad.Visible := ShowPad;
   udPad.Visible := ShowPad;
-  lblPadHex.Visible := ShowPad;
 end;
 
 procedure TfrmSector.UpdateFill;
@@ -262,12 +255,6 @@ begin
   lblFill.Visible := ShowFill;
   edtFill.Visible := ShowFill;
   udFill.Visible := ShowFill;
-  lblFillHex.Visible := ShowFill;
-end;
-
-procedure TfrmSector.edtPadChange(Sender: TObject);
-begin
-  lblPadHex.Caption := IntToHex(udPad.Position, 2);
 end;
 
 end.

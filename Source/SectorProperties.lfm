@@ -51,8 +51,8 @@ object frmSector: TfrmSector
           Left = 8
           Height = 13
           Top = 173
-          Width = 23
-          Caption = 'Size:'
+          Width = 43
+          Caption = 'Byte len:'
           FocusControl = edtSize
           ParentColor = False
         end
@@ -168,9 +168,9 @@ object frmSector: TfrmSector
           ParentFont = False
         end
         object lblFill: TLabel
-          Left = 248
+          Left = 273
           Height = 13
-          Top = 121
+          Top = 147
           Width = 16
           Alignment = taRightJustify
           Caption = 'Fill:'
@@ -178,28 +178,10 @@ object frmSector: TfrmSector
           ParentColor = False
           Visible = False
         end
-        object lblFillHex: TLabel
-          Left = 325
-          Height = 13
-          Top = 121
-          Width = 12
-          Caption = 'FF'
-          FocusControl = edtFill
-          ParentColor = False
-          Visible = False
-        end
-        object lblSizeBytes: TLabel
-          Left = 128
-          Height = 13
-          Top = 173
-          Width = 27
-          Caption = 'bytes'
-          ParentColor = False
-        end
         object lblPad: TLabel
-          Left = 242
+          Left = 145
           Height = 13
-          Top = 149
+          Top = 172
           Width = 22
           Alignment = taRightJustify
           Caption = 'Pad:'
@@ -207,20 +189,8 @@ object frmSector: TfrmSector
           ParentColor = False
           Visible = False
         end
-        object lblPadHex: TLabel
-          Left = 325
-          Height = 13
-          Top = 149
-          Width = 12
-          Caption = 'FF'
-          Color = clDefault
-          FocusControl = edtPad
-          ParentColor = False
-          Transparent = False
-          Visible = False
-        end
         object lblFDCSize: TLabel
-          Left = 219
+          Left = 245
           Height = 13
           Top = 173
           Width = 45
@@ -354,20 +324,19 @@ object frmSector: TfrmSector
           TabOrder = 1
         end
         object edtFill: TEdit
-          Left = 272
+          Left = 297
           Height = 21
-          Top = 118
+          Top = 144
           Width = 33
           MaxLength = 3
-          OnChange = edtFillChange
           TabOrder = 4
           Text = '0'
           Visible = False
         end
         object udFill: TUpDown
-          Left = 305
+          Left = 330
           Height = 21
-          Top = 118
+          Top = 144
           Width = 15
           Associate = edtFill
           Max = 255
@@ -377,20 +346,19 @@ object frmSector: TfrmSector
           Visible = False
         end
         object edtPad: TEdit
-          Left = 272
+          Left = 169
           Height = 21
-          Top = 145
+          Top = 168
           Width = 33
           MaxLength = 3
-          OnChange = edtPadChange
           TabOrder = 7
           Text = '0'
           Visible = False
         end
         object udPad: TUpDown
-          Left = 305
+          Left = 202
           Height = 21
-          Top = 145
+          Top = 168
           Width = 15
           Associate = edtPad
           Max = 255
@@ -400,17 +368,17 @@ object frmSector: TfrmSector
           Visible = False
         end
         object edtFDCSize: TEdit
-          Left = 272
+          Left = 298
           Height = 21
           Top = 169
-          Width = 33
+          Width = 31
           MaxLength = 3
           OnChange = edtSizeChange
           TabOrder = 10
           Text = '0'
         end
         object udFDCSize: TUpDown
-          Left = 305
+          Left = 329
           Height = 21
           Top = 169
           Width = 16
@@ -426,6 +394,24 @@ object frmSector: TfrmSector
           Top = 14
           Width = 291
           Anchors = [akTop, akLeft, akRight]
+        end
+        object lblIndexPos: TLabel
+          Left = 184
+          Height = 13
+          Top = 118
+          Width = 106
+          Caption = 'Index Position Offset:'
+          FocusControl = edtIndexPos
+          ParentColor = False
+        end
+        object edtIndexPos: TEdit
+          Left = 298
+          Height = 21
+          Top = 115
+          Width = 47
+          MaxLength = 5
+          TabOrder = 15
+          Text = '0'
         end
       end
     end

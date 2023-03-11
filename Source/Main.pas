@@ -130,8 +130,8 @@ type
     NextNewFile: integer;
     function AddTree(Parent: TTreeNode; Text: string; ImageIdx: integer; NodeObject: TObject): TTreeNode;
     function AddListInfo(Key: string; Value: string): TListItem;
-    function AddListTrack(Track: TDSKTrack; ShowModulation: boolean; ShowDataRate: boolean): TListItem;
-    function AddListSector(Sector: TDSKSector; ShowCopies: boolean): TListItem;
+    function AddListTrack(Track: TDSKTrack; ShowModulation: boolean; ShowDataRate: boolean; ShowBitLength: boolean): TListItem;
+    function AddListSector(Sector: TDSKSector; ShowCopies: boolean; ShowIndexPointOffsets: boolean): TListItem;
     function AddListSides(Side: TDSKSide): TListItem;
     function GetSelectedSector(Sender: TObject): TDSKSector;
     function GetTitle(Data: TTreeNode): string;
@@ -636,7 +636,12 @@ begin
       AddListInfo('Creator', Creator);
 
       ImageFormat := DSKImageFormats[FileFormat];
-      if Image.HasV5Extensions then ImageFormat := ImageFormat + ' v5';
+      if Image.HasV5Extensions then
+        if Image.HasOffsetInfo then
+          ImageFormat := ImageFormat + ' (SAMdisk)'
+        else
+          ImageFormat := ImageFormat + ' (v5)';
+
       if Corrupt then ImageFormat := ImageFormat + ' (Corrupt)';
       AddListInfo('Image Format', ImageFormat);
 
@@ -646,9 +651,10 @@ begin
         if Side.HasDataRate then Features := Features + 'Data Rate, ';
         if Side.HasRecordingMode then Features := Features + 'Recording Mode, ';
         if Side.HasVariantSectors then Features := Features + 'Variant Sectors, ';
+        if HasOffsetInfo then Features := Features + 'Offset-Info, ';
       end;
       if not Features.IsEmpty then
-        AddListInfo('V5 features', Features.Substring(0, Features.Length - 2));
+        AddListInfo('Features', Features.Substring(0, Features.Length - 2));
 
       AddListInfo('Sides', StrInt(Disk.Sides));
       if Disk.Sides > 0 then
@@ -754,10 +760,11 @@ end;
 procedure TfrmMain.RefreshListTrack(Side: TDSKSide);
 var
   Track: TDSKTrack;
-  ShowModulation, ShowDataRate: boolean;
+  ShowModulation, ShowDataRate, ShowBitLength: boolean;
 begin
   ShowModulation := Side.HasRecordingMode;
   ShowDataRate := Side.HasDataRate;
+  ShowBitLength := Side.HasBitLength;
 
   AddColumn('Logical');
   AddColumn('Physical');
@@ -768,13 +775,15 @@ begin
   AddColumn('Filler');
   if ShowModulation then AddColumn('Modulation');
   if ShowDataRate then AddColumn('Data rate');
+  if ShowBitLength then AddColumn('Bit length');
   AddColumn('');
 
   for Track in Side.Track do
-    AddListTrack(Track, ShowModulation, ShowDataRate);
+    AddListTrack(Track, ShowModulation, ShowDataRate, ShowBitLength);
 end;
 
-function TfrmMain.AddListTrack(Track: TDSKTrack; ShowModulation: boolean; ShowDataRate: boolean): TListItem;
+function TfrmMain.AddListTrack(Track: TDSKTrack; ShowModulation: boolean; ShowDataRate: boolean;
+  ShowBitLength: boolean): TListItem;
 var
   NewListItem: TListItem;
 begin
@@ -793,7 +802,8 @@ begin
       Add(StrHex(Track.Filler));
       if ShowModulation then Add(DSKRecordingMode[Track.RecordingMode]);
       if ShowDataRate then Add(DSKDataRate[Track.DataRate]);
-      Subitems.Add('');
+      if ShowBitLength then Add(StrInt(Track.BitLength div 8));
+      Add('');
     end;
   end;
   Result := NewListItem;
@@ -824,6 +834,9 @@ begin
   if Track.HasMultiSectoredSector then
     AddColumn('Copies');
 
+  if Track.HasIndexPointOffsets then
+    AddColumn('Index Point');
+
   with lvwMain.Columns.Add do
   begin
     Caption := 'Status';
@@ -831,10 +844,10 @@ begin
   end;
 
   for Sector in Track.Sector do
-    AddListSector(Sector, Track.HasMultiSectoredSector);
+    AddListSector(Sector, Track.HasMultiSectoredSector, Track.HasIndexPointOffsets);
 end;
 
-function TfrmMain.AddListSector(Sector: TDSKSector; ShowCopies: boolean): TListItem;
+function TfrmMain.AddListSector(Sector: TDSKSector; ShowCopies: boolean; ShowIndexPointOffsets: boolean): TListItem;
 var
   NewListItem: TListItem;
 begin
@@ -856,6 +869,8 @@ begin
         Add(StrInt(Sector.DataSize));
       if ShowCopies then
         Add(StrInt(Sector.GetCopyCount));
+      if ShowIndexPointOffsets then
+        Add('+' + StrInt(Sector.IndexPointOffset));
       Add(DSKSectorStatus[Sector.Status]);
     end;
   end;
@@ -1225,6 +1240,11 @@ begin
         AbandonSave := False;
         if Image.HasV5Extensions and (MessageDlg(
           'This image has modulation, data rate that "Standard DSK format" does not support. ' +
+          'Save anyway and lose this information?', mtWarning, [mbYes, mbNo], 0) <> mrYes) then
+          AbandonSave := True;
+
+        if Image.HasOffsetInfo and (MessageDlg(
+          'This image has SAMdisk OffsetInfo which "Standard DSK format" does not support. ' +
           'Save anyway and lose this information?', mtWarning, [mbYes, mbNo], 0) <> mrYes) then
           AbandonSave := True;
 

@@ -37,7 +37,7 @@ type
     TIB_GapLength: byte;
     TIB_FillerByte: byte;
     SectorInfoList: array[0..231] of byte;
-    SectorData: array[0..65535] of byte;
+    //    SectorData: array[0..65535] of byte;     // Read separately to avoid messing where Offset-Info should be
   end;
 
   TSCTInfoBlock = packed record // Sector
@@ -48,6 +48,15 @@ type
     SIB_FDC1: byte;
     SIB_FDC2: byte;
     SIB_DataLength: word;
+  end;
+
+  TOFFInfoBlock = packed record // Offset Info (SAMdisk)
+    OFF_Marker: array[0..12] of char;
+    OFF_Unused: byte;
+  end;
+
+  TOFFTrackEntry = packed record
+    OFF_TrackLength: word;
   end;
 
 implementation

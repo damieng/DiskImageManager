@@ -59,6 +59,7 @@ type
     function SaveFile(SaveFileName: TFileName; SaveFileFormat: TDSKImageFormat; Copy: boolean; Compress: boolean): boolean;
     function FindText(From: TDSKSector; Text: string; CaseSensitive: boolean): TDSKSector;
     function HasV5Extensions: boolean;
+    function HasOffsetInfo: boolean;
 
     property Creator: string read FCreator write FCreator;
     property Corrupt: boolean read FCorrupt write FCorrupt;
@@ -123,6 +124,7 @@ type
     function HasDataRate: boolean;
     function HasRecordingMode: boolean;
     function HasVariantSectors: boolean;
+    function HasBitLength: boolean;
 
     property HighTrackCount: byte read GetHighTrackCount;
     property ParentDisk: TDSKDisk read FParentDisk;
@@ -150,6 +152,7 @@ type
     SectorSize: word;
     Side: byte;
     Track: byte;
+    BitLength: word;
 
     constructor Create(ParentSide: TDSKSide);
     destructor Destroy; override;
@@ -159,6 +162,7 @@ type
     function GetTrackSizeFromSectors: word;
     function GetFirstLogicalSector: TDSKSector;
     function HasMultiSectoredSector: boolean;
+    function HasIndexPointOffsets: boolean;
 
     property IsFormatted: boolean read GetIsFormatted;
     property LowSectorID: byte read GetLowSectorID;
@@ -186,6 +190,7 @@ type
     Sector: byte;
     Side: byte;
     Track: byte;
+    IndexPointOffset: word;
 
     constructor Create(ParentTrack: TDSKTrack);
     destructor Destroy; override;
@@ -331,8 +336,8 @@ const
     );
 
   DSKSpecAllocations: array[TDSKAllocationSize] of string = (
-    '8-bit byte',
-    '16-bit word'
+    '8-bit/byte',
+    '16-bit/word'
     );
 
   DSKSpecSides: array[TDSKSpecSide] of string = (
@@ -463,6 +468,23 @@ begin
   Result := False;
 end;
 
+function TDSKImage.HasOffsetInfo: boolean;
+var
+  Side: TDSKSide;
+  Track: TDSKTrack;
+  Sector: TDSKSector;
+begin
+  Result := True;
+  for Side in Disk.Side do
+    for Track in Side.Track do
+    begin
+      if Track.BitLength > 0 then exit;
+      for Sector in Track.Sector do
+        if (Sector.IndexPointOffset > 0) then exit;
+    end;
+  Result := False;
+end;
+
 function TDSKImage.FindText(From: TDSKSector; Text: string; CaseSensitive: boolean): TDSKSector;
 var
   NextSector: TDSKSector;
@@ -488,6 +510,9 @@ var
   DSKInfoBlock: TDSKInfoBlock;
   TRKInfoBlock: TTRKInfoBlock;
   SCTInfoBlock: TSCTInfoBlock;
+  OFFInfoBlock: TOFFInfoBlock;
+  Track: TDSKTrack;
+  OFFTrackEntry: TOFFTrackEntry;
   SIdx, TIdx, EIdx: integer;
   TOff, EOff: integer;
   ReadSize: integer;
@@ -535,7 +560,6 @@ begin
             if (SizeT > 0) then
               SizeT := SizeT - 256; // Remove track-info size
           end;
-
           else
             SizeT := 0;
         end;
@@ -554,19 +578,7 @@ begin
             ReadSize := FileSize - TOff;
           end;
 
-          if ReadSize > SizeOf(TRKInfoBlock) then
-          begin
-            Messages.Add(SysUtils.Format('Side %d track %d indicated %d bytes of data' +
-              ' which is more than the %d bytes I can handle.', [SIdx, TIdx, SizeT,
-              SizeOf(TRKInfoBlock.SectorData)]));
-            Corrupt := True;
-            DiskFile.ReadBuffer(TRKInfoBlock, SizeOf(TRKInfoBlock));
-            DiskFile.Seek(ReadSize - SizeOf(TRKInfoBlock), soCurrent);
-          end
-          else
-          begin
-            DiskFile.ReadBuffer(TRKInfoBlock, ReadSize);
-          end;
+          DiskFile.ReadBuffer(TRKInfoBlock, SizeOf(TRKInfoBlock));
 
           // Test to make sure this was a track
           if (TRKInfoBlock.TrackData = DiskInfoTrackBroken) then
@@ -608,8 +620,7 @@ begin
           for EIdx := 0 to Sectors - 1 do
             with Sector[EIdx] do
             begin
-              Move(TRKInfoBlock.SectorInfoList[EIdx * SizeOf(SCTInfoBlock)],
-                SCTInfoBlock, SizeOf(SCTInfoBlock));
+              Move(TRKInfoBlock.SectorInfoList[EIdx * SizeOf(SCTInfoBlock)], SCTInfoBlock, SizeOf(SCTInfoBlock));
               Sector := EIdx;
               Track := SCTInfoBlock.SIB_TrackNum;
               Side := SCTInfoBlock.SIB_SideNum;
@@ -639,23 +650,31 @@ begin
                 DataSize := MaxSectorSize;
               end;
 
-              if DataSize + EOff > SizeOf(TRKInfoBlock.SectorData) then
-              begin
-                if (SizeOf(TRKInfoBlock.SectorData) - EOff) > 0 then
-                  DataSize := SizeOf(TRKInfoBlock.SectorData) - EOff
-                else
-                  DataSize := 0;
-                Corrupt := True;
-              end;
-
               if DataSize > 0 then
-                Move(TRKInfoBlock.SectorData[EOff], Data, DataSize);
+                DiskFile.ReadBuffer(Data, DataSize);
+
               EOff := EOff + AdvertisedSize;
             end;
         end;
       end;
     end;
 
+  if (FileFormat = diExtendedDSK) and (DiskFile.Position < DiskFile.Size) then
+  begin
+    DiskFile.ReadBuffer(OFFInfoBlock, SizeOf(OFFInfoBlock));
+    if (OFFInfoBlock.OFF_Marker = DiskSectorOffsetBlock) then
+    begin
+      for TIdx := 0 to DSKInfoBlock.Disk_NumTracks - 1 do
+        for SIdx := 0 to DSKInfoBlock.Disk_NumSides - 1 do
+        begin
+          Track := Disk.Side[SIdx].Track[TIdx];
+          DiskFile.ReadBuffer(OFFTrackEntry, SizeOf(OFFTrackEntry));
+          Track.BitLength := OFFTrackEntry.OFF_TrackLength;
+          for EIdx := 0 to Track.Sectors - 1 do
+            Track.Sector[EIdx].IndexPointOffset := DiskFile.ReadWord;
+        end;
+    end;
+  end;
   Result := True;
 end;
 
@@ -701,7 +720,8 @@ var
   DSKInfoBlock: TDSKInfoBlock;
   TRKInfoBlock: TTRKInfoBlock;
   SCTInfoBlock: TSCTInfoBlock;
-  SIdx, TIdx, EIdx, EOff: integer;
+  OFFInfoBlock: TOFFInfoBlock;
+  SIdx, TIdx, EIdx: integer;
   TrackSize: word;
   Side: TDSKSide;
   Track: TDSKTrack;
@@ -758,7 +778,6 @@ begin
 
   DiskFile.WriteBuffer(DSKInfoBlock, SizeOf(DSKInfoBlock));
 
-  // Write the tracks out
   for TIdx := 0 to DSKInfoBlock.Disk_NumTracks - 1 do
     for Side in Disk.Side do
     begin
@@ -783,40 +802,54 @@ begin
           end;
         end;
 
-        // Write the actual sectors out
-        EOff := 0;
-        for EIdx := 0 to Sectors - 1 do
-          with Sector[EIdx] do
-          begin
-            FillChar(SCTInfoBlock, SizeOf(SCTInfoBlock), 0);
-            with SCTInfoBlock do
+        // Write tracks
+        if Size > 0 then
+        begin
+          // Write sector info out
+          for EIdx := 0 to Sectors - 1 do
+            with Sector[EIdx] do
             begin
-              SIB_TrackNum := Track;
-              SIB_SideNum := Side;
-              SIB_ID := ID;
-              SIB_Size := FDCSize;
-              SIB_FDC1 := FDCStatus[1];
-              SIB_FDC2 := FDCStatus[2];
-              if (SaveFileFormat = diExtendedDSK) then
-                SIB_DataLength := DataSize;
+              FillChar(SCTInfoBlock, SizeOf(SCTInfoBlock), 0);
+              with SCTInfoBlock do
+              begin
+                SIB_TrackNum := Track;
+                SIB_SideNum := Side;
+                SIB_ID := ID;
+                SIB_Size := FDCSize;
+                SIB_FDC1 := FDCStatus[1];
+                SIB_FDC2 := FDCStatus[2];
+                if (SaveFileFormat = diExtendedDSK) then
+                  SIB_DataLength := DataSize;
+              end;
+              Move(SCTInfoBlock, TRKInfoBlock.SectorInfoList[EIdx * SizeOf(SCTInfoBlock)], SizeOf(SCTInfoBlock));
             end;
 
-            Move(SCTInfoBlock, TRKInfoBlock.SectorInfoList[EIdx * SizeOf(SCTInfoBlock)], SizeOf(SCTInfoBlock));
-            Move(Data, TRKInfoBlock.SectorData[EOff], DataSize);
-            EOff := EOff + DataSize;
-          end;
+          DiskFile.WriteBuffer(TRKInfoBlock, SizeOf(TRKInfoBlock));
 
-        // Write the whole track out
-        if Size > 0 then
-          case SaveFileFormat of
-            diStandardDSK: DiskFile.WriteBuffer(TRKInfoBlock, DSKInfoBlock.Disk_StdTrackSize);
-            diExtendedDSK:
-              if not (Compress and (Sectors = 0)) then
-                DiskFile.WriteBuffer(TRKInfoBlock, DSKInfoBlock.Disk_ExtTrackSize[(TIdx * Disk.Sides) +
-                  SIdx] * 256);
-          end;
+          // Now write actual sector data
+          if not (Compress and (Sectors = 0)) then
+            for EIdx := 0 to Sectors - 1 do
+              DiskFile.WriteBuffer(Sector[EIdx].Data, Sector[EIdx].DataSize);
+        end;
       end;
     end;
+
+  if (SaveFileFormat = diExtendedDSK) and (HasOffsetInfo) then
+  begin
+    FillChar(OFFInfoBlock, SizeOf(OFFInfoBlock), 0);
+    OFFInfoBlock.OFF_Marker := DiskSectorOffsetBlock;
+    DiskFile.WriteBuffer(OFFInfoBlock, SizeOf(OFFInfoBlock));
+    for TIdx := 0 to DSKInfoBlock.Disk_NumTracks - 1 do
+      for Side in Disk.Side do
+      begin
+        Track := Side.Track[TIdx];
+        DiskFile.WriteWord(Track.BitLength);
+        for EIdx := 0 to Track.Sectors - 1 do
+          DiskFile.WriteWord(Track.Sector[EIdx].IndexPointOffset);
+      end;
+    DiskFile.WriteByte(0); // Not in the spec but in the SAMdisk images
+  end;
+
   Result := True;
 end;
 
@@ -1194,13 +1227,9 @@ function TDSKSide.HasDataRate: boolean;
 var
   Track: TDSKTrack;
 begin
+  Result := True;
   for Track in self.Track do
-    if Track.DataRate <> drUnknown then
-    begin
-      Result := True;
-      exit;
-    end;
-
+    if Track.DataRate <> drUnknown then exit;
   Result := False;
 end;
 
@@ -1208,13 +1237,19 @@ function TDSKSide.HasRecordingMode: boolean;
 var
   Track: TDSKTrack;
 begin
+  Result := True;
   for Track in self.Track do
-    if Track.RecordingMode <> rmUnknown then
-    begin
-      Result := True;
-      exit;
-    end;
+    if Track.RecordingMode <> rmUnknown then exit;
+  Result := False;
+end;
 
+function TDSKSide.HasBitLength: boolean;
+var
+  Track: TDSKTrack;
+begin
+  Result := True;
+  for Track in self.Track do
+    if Track.BitLength > 0 then exit;
   Result := False;
 end;
 
@@ -1223,13 +1258,10 @@ var
   Track: TDSKTrack;
   Sector: TDSKSector;
 begin
+  Result := True;
   for Track in self.Track do
     for Sector in Track.Sector do
-      if Sector.GetCopyCount > 1 then
-      begin
-        Result := True;
-        exit;
-      end;
+      if Sector.GetCopyCount > 1 then exit;
   Result := False;
 end;
 
@@ -1303,13 +1335,20 @@ function TDSKTrack.HasMultiSectoredSector: boolean;
 var
   CheckSector: TDSKSector;
 begin
-  Result := False;
+  Result := True;
   for CheckSector in Sector do
-    if CheckSector.GetCopyCount > 1 then
-    begin
-      Result := True;
-      exit;
-    end;
+    if CheckSector.GetCopyCount > 1 then exit;
+  Result := False;
+end;
+
+function TDSKTrack.HasIndexPointOffsets: boolean;
+var
+  CheckSector: TDSKSector;
+begin
+  Result := True;
+  for CheckSector in Sector do
+    if CheckSector.IndexPointOffset > 0 then exit;
+  Result := False;
 end;
 
 function TDSKTrack.GetIsFormatted: boolean;
@@ -1399,6 +1438,7 @@ begin
   FParentTrack := ParentTrack;
   ResetFDC;
   IsChanged := False;
+  IndexPointOffset := 0;
 end;
 
 destructor TDSKSector.Destroy;
