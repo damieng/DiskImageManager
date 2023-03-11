@@ -57,6 +57,16 @@ type
     staBar: TStatusBar;
     pnlRight: TPanel;
     pnlListLabel: TPanel;
+    ToolBar1: TToolBar;
+    tbnNew: TToolButton;
+    tbnOpen: TToolButton;
+    tbnSave: TToolButton;
+    ToolButton1: TToolButton;
+    ToolButton2: TToolButton;
+    ToolButton4: TToolButton;
+    tbnCopy: TToolButton;
+    tbnFind: TToolButton;
+    tbnCloseAll: TToolButton;
     tvwMain: TTreeView;
     lvwMain: TListView;
     imlSmall: TImageList;
