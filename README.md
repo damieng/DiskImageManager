@@ -81,6 +81,7 @@ Identification of copy-protection schemes both signed and somtimes unsigned:
 * Writing of disk boot sectors as part of the image formatting process 
 
 ## Building
+
 This application requires the [Lazarus development system](http://www.lazarus.freepascal.org/) and was tested using Lazarus IDE v2.2.4 on Windows 11.
 
 To be able to build and visually edit the forms you will need to install the supplied DIMComponents package. To do that:
@@ -98,6 +99,16 @@ To be able to build and visually edit the forms you will need to install the sup
 ![Screenshot with hex sector data](https://user-images.githubusercontent.com/118951/216734940-e23a997e-6ae4-4dcf-ad9e-97ec33795278.png)
 ![Screenshot showing sector properties](https://user-images.githubusercontent.com/118951/216734959-67a68b52-5f0e-4d28-812f-c9cf1edbaaf9.png)
 ![Screenshot of advanced formatter](https://user-images.githubusercontent.com/118951/216734979-edae81e3-bc49-44b1-80a8-fe19f41c2e13.png)
+
+## Future plans
+
+- Rename file
+- File property sheet to view/modify directory entry and headers
+- Optimize disk  (+3, CPC) (defrag + interleave)
+- List BASIC programs (+3, CPC)
+- View image files (+3, CPC)
+- Add files to disk
+- Add/remove headers
 
 ## Licence
 
