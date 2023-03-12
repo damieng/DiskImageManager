@@ -15,7 +15,7 @@ interface
 
 uses
   DskImage, Utils,
-  SysUtils, Classes, Forms, StdCtrls, ComCtrls, ExtCtrls, CheckLst, Dialogs;
+  SysUtils, Classes, Forms, StdCtrls, ComCtrls, ExtCtrls, CheckLst, Dialogs, Graphics;
 
 type
 
@@ -88,9 +88,13 @@ uses Main;
 {$R *.lfm}
 
 constructor TfrmSector.Create(AOwner: TComponent; Sector: TDSKSector);
+var
+  formIcon: TIcon;
 begin
   inherited Create(AOwner);
-  //udSize.Max := MaxSectorSize;
+  formIcon := TIcon.Create();
+  frmMain.imlSmall.GetIcon(5, formIcon);
+  Icon := formIcon;
   FSector := Sector;
   Refresh;
   Show;
@@ -105,7 +109,7 @@ begin
   edtImage.Text := ExtractFileName(FSector.ParentTrack.ParentSide.ParentDisk.ParentImage.FileName);
   edtPhysical.Text := 'Side ' + IntToStr(FSector.Side + 1) + ' > Track ' + IntToStr(FSector.Track) +
     ' > Sector ' + IntToStr(FSector.Sector);
-  Caption := edtPhysical.Text;
+  Caption := edtImage.Text + ' > ' + edtPhysical.Text;
 
   // Details
   udSectorID.Position := FSector.ID;
