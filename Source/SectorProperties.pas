@@ -68,6 +68,7 @@ type
     procedure cboStatusChange(Sender: TObject);
     procedure edtSizeChange(Sender: TObject);
   private
+    formIcon: TIcon;
     FSector: TDSKSector;
     SecStat: TDSKSectorStatus;
     procedure MakeChanges;
@@ -75,6 +76,7 @@ type
     procedure UpdatePad;
   public
     constructor Create(AOwner: TComponent; Sector: TDSKSector); reintroduce;
+    destructor Destroy; override;
     procedure Refresh;
   end;
 
@@ -88,8 +90,6 @@ uses Main;
 {$R *.lfm}
 
 constructor TfrmSector.Create(AOwner: TComponent; Sector: TDSKSector);
-var
-  formIcon: TIcon;
 begin
   inherited Create(AOwner);
   formIcon := TIcon.Create();
@@ -98,6 +98,12 @@ begin
   FSector := Sector;
   Refresh;
   Show;
+end;
+
+destructor TfrmSector.Destroy;
+begin
+  formIcon.Free;
+  inherited Destroy;
 end;
 
 procedure TfrmSector.Refresh;
