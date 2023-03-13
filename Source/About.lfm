@@ -1,13 +1,13 @@
 object frmAbout: TfrmAbout
   Left = 601
-  Height = 88
+  Height = 95
   Top = 545
-  Width = 341
+  Width = 367
   AlphaBlend = True
   AlphaBlendValue = 50
   BorderStyle = bsDialog
-  ClientHeight = 88
-  ClientWidth = 341
+  ClientHeight = 95
+  ClientWidth = 367
   Color = clBtnFace
   Font.CharSet = ANSI_CHARSET
   Font.Color = clWindowText
@@ -149,13 +149,13 @@ object frmAbout: TfrmAbout
     Left = 63
     Height = 2
     Top = 30
-    Width = 265
+    Width = 292
   end
   object lblVersion: TLabel
-    Left = 64
+    Left = 63
     Height = 13
     Top = 32
-    Width = 265
+    Width = 292
     Anchors = [akTop, akRight]
     AutoSize = False
     Caption = '0.0.0'
@@ -165,7 +165,7 @@ object frmAbout: TfrmAbout
     Left = 64
     Height = 30
     Top = 8
-    Width = 265
+    Width = 289
     AutoSize = False
     Font.CharSet = ANSI_CHARSET
     Font.Color = clWindowText
@@ -193,7 +193,7 @@ object frmAbout: TfrmAbout
     OnClick = lblWebClick
   end
   object btnOK: TButton
-    Left = 256
+    Left = 280
     Height = 25
     Top = 56
     Width = 75
