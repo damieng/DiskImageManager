@@ -15,7 +15,7 @@ interface
 
 uses
   DskImage, Main, Utils,
-  SysUtils, Classes, Forms, StdCtrls, ComCtrls, ExtCtrls, Dialogs, Buttons, Math, Controls;
+  SysUtils, Classes, Forms, StdCtrls, ComCtrls, ExtCtrls, Dialogs, Buttons, Math, Controls, Graphics;
 
 type
 
@@ -125,6 +125,7 @@ type
     procedure btnBootClearClick(Sender: TObject);
     procedure edtBlockShiftChange(Sender: TObject);
   private
+    formIcon: TIcon;
     IsLoading: boolean;
     CurrentFormat: TDSKFormatSpecification;
     BootSectorBin: array[0..MaxSectorSize] of byte;
@@ -137,6 +138,9 @@ type
     procedure UpdateFileDetails;
     function IsPlus3Format: boolean;
     function GetFormat: TDSKSpecFormat;
+    destructor Destroy; override;
+  public
+    constructor Create(AOwner: TComponent); override;
   end;
 
 var
@@ -145,6 +149,20 @@ var
 implementation
 
 {$R *.lfm}
+
+constructor TfrmNew.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+  formIcon := TIcon.Create();
+  frmMain.imlSmall.GetIcon(5, formIcon);
+  Icon := formIcon;
+end;
+
+destructor TfrmNew.Destroy;
+begin
+  formIcon.Free;
+  inherited Destroy;
+end;
 
 procedure TfrmNew.edtFillerChange(Sender: TObject);
 begin

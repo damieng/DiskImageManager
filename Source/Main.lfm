@@ -701,26 +701,29 @@ object frmMain: TfrmMain
     object itmCopySep: TMenuItem
       Caption = '-'
     end
-    object itmSaveFileAs: TMenuItem
-      Caption = 'Save file as...'
+    object itmSaveFile: TMenuItem
+      Caption = 'Save file'
       ImageIndex = 23
-      OnClick = itmSaveFileAsClick
+      object itemSaveFileWithHeader: TMenuItem
+        Caption = 'with header as...'
+        OnClick = itmSaveFileWithHeaderAsClick
+      end
+      object itmSaveFileWithoutHeader: TMenuItem
+        Caption = 'without header as...'
+        OnClick = itmSaveFileAsClick
+      end
     end
-    object itmSaveFileWithHeaderAs: TMenuItem
-      Caption = 'Save file with header as...'
-      OnClick = itmSaveFileWithHeaderAsClick
-    end
-    object itmSaveFileSep: TMenuItem
-      Caption = '-'
-    end
-    object itmSaveSelectedFilesTo: TMenuItem
-      Caption = 'Save selected files to...'
+    object itmSaveSelectedFiles: TMenuItem
+      Caption = 'Save selected files'
       ImageIndex = 24
-      OnClick = itmSaveSelectedFilesToClick
-    end
-    object itmSaveSelectedFilesWithHeadersTo: TMenuItem
-      Caption = 'Save selected files with headers to...'
-      OnClick = itmSaveSelectedFilesWithHeadersToClick
+      object itmSaveSelectedWithHeader: TMenuItem
+        Caption = 'with headers to...'
+        OnClick = itmSaveSelectedFilesWithHeadersToClick
+      end
+      object itmSaveSelectedWithoutHeader: TMenuItem
+        Caption = 'without headers to...'
+        OnClick = itmSaveSelectedFilesToClick
+      end
     end
   end
   object dlgFind: TFindDialog
