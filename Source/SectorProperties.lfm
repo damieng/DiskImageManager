@@ -1,7 +1,7 @@
 object frmSector: TfrmSector
-  Left = 2012
+  Left = 1760
   Height = 467
-  Top = 468
+  Top = 465
   Width = 375
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle

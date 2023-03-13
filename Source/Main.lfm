@@ -737,6 +737,7 @@ object frmMain: TfrmMain
     Top = 112
   end
   object dlgSelectDirectory: TSelectDirectoryDialog
+    Title = 'Select directory to save files to'
     Left = 264
     Top = 176
   end
