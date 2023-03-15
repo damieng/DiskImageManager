@@ -138,9 +138,9 @@ type
     procedure UpdateFileDetails;
     function IsPlus3Format: boolean;
     function GetFormat: TDSKSpecFormat;
-    destructor Destroy; override;
   public
     constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
   end;
 
 var

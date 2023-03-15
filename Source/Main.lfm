@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 1278
+  Left = 1408
   Height = 384
-  Top = 634
+  Top = 483
   Width = 556
   AllowDropFiles = True
   ClientHeight = 364
@@ -699,6 +699,13 @@ object frmMain: TfrmMain
       OnClick = itmEditCopyClick
     end
     object itmCopySep: TMenuItem
+      Caption = '-'
+    end
+    object itmFileSector: TMenuItem
+      Caption = 'Jump to first sector'
+      OnClick = itmFileSectorClick
+    end
+    object Separator2: TMenuItem
       Caption = '-'
     end
     object itmSaveFile: TMenuItem

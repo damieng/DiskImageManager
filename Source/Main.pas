@@ -38,6 +38,7 @@ type
     itmSaveFileWithoutHeader: TMenuItem;
     itmSaveSelectedWithHeader: TMenuItem;
     itmSaveSelectedWithoutHeader: TMenuItem;
+    itmFileSector: TMenuItem;
     mnuMain: TMainMenu;
     itmDisk: TMenuItem;
     itmOpen: TMenuItem;
@@ -55,6 +56,7 @@ type
     dlgSelectDirectory: TSelectDirectoryDialog;
     Separator1: TMenuItem;
     itmCopySep: TMenuItem;
+    Separator2: TMenuItem;
     splVertical: TSplitter;
     statusBar: TStatusBar;
     pnlRight: TPanel;
@@ -103,15 +105,16 @@ type
     itmFindNext: TMenuItem;
     dlgFind: TFindDialog;
     procedure itmCopyMapToClipboardClick(Sender: TObject);
+    procedure itmFileSectorClick(Sender: TObject);
     procedure itmOpenClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure itmOpenRecentClick(Sender: TObject);
+    procedure itmRenameFileClick(Sender: TObject);
     procedure itmSaveFileWithHeaderAsClick(Sender: TObject);
     procedure itmSaveSelectedFilesToClick(Sender: TObject);
     procedure itmSaveFileAsClick(Sender: TObject);
     procedure itmSaveSelectedFilesWithHeadersToClick(Sender: TObject);
     procedure itmToolbarClick(Sender: TObject);
-    procedure lvwMainDblClickFile(Sender: TObject);
     procedure popListItemPopup(Sender: TObject);
     procedure tvwMainChange(Sender: TObject; Node: TTreeNode);
     procedure itmAboutClick(Sender: TObject);
@@ -255,6 +258,11 @@ begin
   end;
 end;
 
+procedure TfrmMain.itmRenameFileClick(Sender: TObject);
+begin
+  if lvwMain.SelCount > 0 then lvwMain.Selected.EditCaption;
+end;
+
 procedure TfrmMain.itmSaveSelectedFilesWithHeadersToClick(Sender: TObject);
 begin
   SaveExtractedFilesToFolder(True);
@@ -329,18 +337,6 @@ begin
   end;
 end;
 
-procedure TfrmMain.lvwMainDblClickFile(Sender: TObject);
-var
-  DiskFile: TDSKFile;
-  FoundNode: TTreeNode;
-begin
-  // Jump to the first sector for this file
-  DiskFile := TDSKFile((lvwMain.Selected).Data);
-  FoundNode := FindTreeNodeFromData(tvwMain.Selected.Parent, DiskFile.FirstSector);
-  if FoundNode <> nil then
-    tvwMain.Selected := FoundNode;
-end;
-
 procedure TfrmMain.popListItemPopup(Sender: TObject);
 var
   DiskFile: TDSKFile;
@@ -413,6 +409,18 @@ begin
   Clipboard.Assign(MapImage);
   MapImage.Free;
 
+end;
+
+procedure TfrmMain.itmFileSectorClick(Sender: TObject);
+var
+  DiskFile: TDSKFile;
+  FoundNode: TTreeNode;
+begin
+  // Jump to the first sector for this file
+  DiskFile := TDSKFile((lvwMain.Selected).Data);
+  FoundNode := FindTreeNodeFromData(tvwMain.Selected.Parent, DiskFile.FirstSector);
+  if FoundNode <> nil then
+    tvwMain.Selected := FoundNode;
 end;
 
 function TfrmMain.LoadImage(FileName: TFileName): boolean;
@@ -593,6 +601,7 @@ begin
       begin
         pnlListLabel.Caption := ' ' + AnsiReplaceStr(GetTitle(tvwMain.Selected), '&', '&&');
         lvwMain.Visible := (ItemType(ImageIndex) <> itAnalyse) and (Caption <> 'Strings');
+        lvwMain.ReadOnly := True;
         DiskMap.Visible := ItemType(ImageIndex) = itAnalyse;
         memo.Visible := Caption = 'Strings';
         OnDblClick := nil;
@@ -1145,7 +1154,6 @@ begin
         SubItems.Add(DiskFile.Meta);
       end;
     EndUpdate;
-    OnDblClick := lvwMainDblClickFile;
   end;
 end;
 
