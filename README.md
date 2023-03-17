@@ -94,10 +94,11 @@ To be able to build and visually edit the forms you will need to install the sup
 
 ## Screenshots
 
-![Screenshot identifying a disk format and details](https://user-images.githubusercontent.com/118951/216734998-c292ac84-72ac-494b-af85-fba73b3bcefa.png)
-![Screenshot showing visual map](https://user-images.githubusercontent.com/118951/216735001-94cdd473-3fa1-414b-85b4-16d61604a1f5.png)
-![Screenshot with hex sector data](https://user-images.githubusercontent.com/118951/216734940-e23a997e-6ae4-4dcf-ad9e-97ec33795278.png)
-![Screenshot showing sector properties](https://user-images.githubusercontent.com/118951/216734959-67a68b52-5f0e-4d28-812f-c9cf1edbaaf9.png)
+![Screenshot identifying a disk format and details](https://user-images.githubusercontent.com/118951/225836645-b26ccfed-e0f8-47ff-9ae0-404a803ae309.png)
+![Screenshot showing specification](https://user-images.githubusercontent.com/118951/225836805-d8fd819b-c25d-4d35-9d5f-81cbfc47c211.png)
+![Screenshot showing visual map](https://user-images.githubusercontent.com/118951/225836874-f8a8eb99-e4ce-4320-8412-88148b1ac05b.png)
+![Screenshot with hex sector data](https://user-images.githubusercontent.com/118951/225837013-e97c4fdd-aa6c-4bff-81a4-134813175d57.png)
+![Screenshot of sector properties window](https://user-images.githubusercontent.com/118951/225837089-0b4b316e-65cb-4bec-8ba3-28b2e757a708.png)
 ![Screenshot of advanced formatter](https://user-images.githubusercontent.com/118951/216734979-edae81e3-bc49-44b1-80a8-fe19f41c2e13.png)
 
 ## Future plans
