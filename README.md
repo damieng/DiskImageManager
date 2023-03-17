@@ -94,13 +94,28 @@ To be able to build and visually edit the forms you will need to install the sup
 
 ## Screenshots
 
+### Disk Image analysis
 ![Screenshot identifying a disk format and details](https://user-images.githubusercontent.com/118951/225836645-b26ccfed-e0f8-47ff-9ae0-404a803ae309.png)
+
+### Disk format specification
 ![Screenshot showing specification](https://user-images.githubusercontent.com/118951/225836805-d8fd819b-c25d-4d35-9d5f-81cbfc47c211.png)
+
+### Visual track/sector map
 ![Screenshot showing visual map](https://user-images.githubusercontent.com/118951/225836874-f8a8eb99-e4ce-4320-8412-88148b1ac05b.png)
+
+### Track list with details
 ![Screenshot showing track list](https://user-images.githubusercontent.com/118951/225880528-54d417f6-27cc-41e7-88b1-c0af44923ff9.png)
+
+### Sector list with details
 ![Screenshot showing sector list](https://user-images.githubusercontent.com/118951/225880787-3e223ca9-8243-47ee-afe8-a5bfe89a4561.png)
+
+### Sector hex/ASCII view
 ![Screenshot with hex sector data](https://user-images.githubusercontent.com/118951/225837013-e97c4fdd-aa6c-4bff-81a4-134813175d57.png)
+
+### Sector properties
 ![Screenshot of sector properties window](https://user-images.githubusercontent.com/118951/225837089-0b4b316e-65cb-4bec-8ba3-28b2e757a708.png)
+
+### New disk formatter
 ![Screenshot of advanced formatter](https://user-images.githubusercontent.com/118951/216734979-edae81e3-bc49-44b1-80a8-fe19f41c2e13.png)
 
 ## Future plans
