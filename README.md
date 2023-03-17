@@ -97,6 +97,7 @@ To be able to build and visually edit the forms you will need to install the sup
 ![Screenshot identifying a disk format and details](https://user-images.githubusercontent.com/118951/225836645-b26ccfed-e0f8-47ff-9ae0-404a803ae309.png)
 ![Screenshot showing specification](https://user-images.githubusercontent.com/118951/225836805-d8fd819b-c25d-4d35-9d5f-81cbfc47c211.png)
 ![Screenshot showing visual map](https://user-images.githubusercontent.com/118951/225836874-f8a8eb99-e4ce-4320-8412-88148b1ac05b.png)
+![Screenshot showing track details](https://user-images.githubusercontent.com/118951/225880528-54d417f6-27cc-41e7-88b1-c0af44923ff9.png)
 ![Screenshot with hex sector data](https://user-images.githubusercontent.com/118951/225837013-e97c4fdd-aa6c-4bff-81a4-134813175d57.png)
 ![Screenshot of sector properties window](https://user-images.githubusercontent.com/118951/225837089-0b4b316e-65cb-4bec-8ba3-28b2e757a708.png)
 ![Screenshot of advanced formatter](https://user-images.githubusercontent.com/118951/216734979-edae81e3-bc49-44b1-80a8-fe19f41c2e13.png)
