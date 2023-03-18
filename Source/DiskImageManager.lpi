@@ -94,7 +94,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="11">
+    <Units Count="12">
       <Unit0>
         <Filename Value="DiskImageManager.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -131,7 +131,7 @@
       <Unit6>
         <Filename Value="SectorProperties.pas"/>
         <IsPartOfProject Value="True"/>
-        <ComponentName Value="frmSector"/>
+        <ComponentName Value="frmSectorProperties"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit6>
@@ -156,6 +156,13 @@
         <Filename Value="FormatAnalysis.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit10>
+      <Unit11>
+        <Filename Value="TrackProperties.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmTrackProperties"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit11>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

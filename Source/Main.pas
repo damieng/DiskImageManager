@@ -14,7 +14,7 @@ unit Main;
 interface
 
 uses
-  DiskMap, DskImage, Utils, About, Options, SectorProperties, Settings, FileSystem,
+  DiskMap, DskImage, Utils, About, Options, SectorProperties, TrackProperties, Settings, FileSystem,
   Classes, Graphics, SysUtils, Forms, Dialogs, Menus, ComCtrls, ExtCtrls, Controls,
   Clipbrd, StdCtrls, FileUtil, StrUtils, LazFileUtils, LConvEncoding;
 
@@ -29,6 +29,8 @@ type
 
   TfrmMain = class(TForm)
     itmOpenRecent: TMenuItem;
+    itmTrackProperties: TMenuItem;
+    itmTrackUnformat: TMenuItem;
     memo: TMemo;
     itmSaveFile: TMenuItem;
     itmSaveSelectedFiles: TMenuItem;
@@ -51,9 +53,11 @@ type
     itmHelp: TMenuItem;
     itmAbout: TMenuItem;
     dlgOpen: TOpenDialog;
+    N8: TMenuItem;
     pnlLeft: TPanel;
     dlgSaveBinary: TSaveDialog;
     dlgSelectDirectory: TSelectDirectoryDialog;
+    popTrack: TPopupMenu;
     Separator1: TMenuItem;
     itmCopySep: TMenuItem;
     Separator2: TMenuItem;
@@ -115,6 +119,8 @@ type
     procedure itmSaveFileAsClick(Sender: TObject);
     procedure itmSaveSelectedFilesWithHeadersToClick(Sender: TObject);
     procedure itmToolbarClick(Sender: TObject);
+    procedure itmTrackPropertiesClick(Sender: TObject);
+    procedure itmTrackUnformatClick(Sender: TObject);
     procedure popListItemPopup(Sender: TObject);
     procedure tvwMainChange(Sender: TObject; Node: TTreeNode);
     procedure itmAboutClick(Sender: TObject);
@@ -149,6 +155,7 @@ type
     function AddListSector(Sector: TDSKSector; ShowCopies: boolean; ShowIndexPointOffsets: boolean): TListItem;
     function AddListSides(Side: TDSKSide): TListItem;
     function GetSelectedSector(Sender: TObject): TDSKSector;
+    function GetSelectedTrack(Sender: TObject): TDSKTrack;
     function GetTitle(Data: TTreeNode): string;
     function GetCurrentImage: TDSKImage;
     function IsDiskNode(Node: TTreeNode): boolean;
@@ -272,6 +279,34 @@ procedure TfrmMain.itmToolbarClick(Sender: TObject);
 begin
   toolbar.Visible := not itmToolbar.Checked;
   itmToolbar.Checked := toolbar.Visible;
+end;
+
+procedure TfrmMain.itmTrackPropertiesClick(Sender: TObject);
+var
+  Track: TDSKTrack;
+begin
+  Track := GetSelectedTrack(popTrack.PopupComponent);
+
+  if Track <> nil then
+    TfrmTrackProperties.Create(Self, Track);
+
+  UpdateMenus;
+end;
+
+procedure TfrmMain.itmTrackUnformatClick(Sender: TObject);
+var
+  Track: TDSKTrack;
+begin
+  Track := GetSelectedTrack(popTrack.PopupComponent);
+
+  if (Track <> nil) and (ConfirmChange('unformat', 'track')) then
+  begin
+    Track.Unformat;
+    tvwMain.Selected.DeleteChildren;
+  end;
+
+  RefreshList;
+  UpdateMenus;
 end;
 
 procedure TfrmMain.itmSaveSelectedFilesToClick(Sender: TObject);
@@ -542,8 +577,10 @@ begin
   begin
     AllowImageFile := True;
     ObjectData := TObject(tvwMain.Selected.Data);
-    if (ObjectData.ClassType = TDSKSector) or (ObjectData.ClassType = TDSKTrack) then
+    if ObjectData.ClassType = TDSKSector then
       tvwMain.PopupMenu := popSector;
+    if ObjectData.ClassType = TDSKTrack then
+      tvwMain.PopupMenu := popTrack;
     if ItemType(tvwMain.Selected.ImageIndex) = itAnalyse then
       tvwMain.PopupMenu := popDiskMap;
   end;
@@ -783,6 +820,7 @@ var
   Track: TDSKTrack;
   ShowModulation, ShowDataRate, ShowBitLength: boolean;
 begin
+  lvwMain.PopupMenu := popTrack;
   ShowModulation := Side.HasRecordingMode;
   ShowDataRate := Side.HasDataRate;
   ShowBitLength := Side.HasBitLength;
@@ -1383,6 +1421,16 @@ begin
       Result := TDSKSector(tvwMain.Selected.Data);
 end;
 
+function TfrmMain.GetSelectedTrack(Sender: TObject): TDSKTrack;
+begin
+  Result := nil;
+  if (Sender = lvwMain) and (lvwMain.Selected <> nil) then
+    Result := TDSKTrack(lvwMain.Selected.Data);
+  if (Sender = tvwMain) and (tvwMain.Selected <> nil) then
+    if TObject(tvwMain.Selected.Data).ClassType = TDSKTrack then
+      Result := TDSKTrack(tvwMain.Selected.Data);
+end;
+
 procedure TfrmMain.itmSectorBlankDataClick(Sender: TObject);
 var
   Sector: TDSKSector;
@@ -1409,13 +1457,6 @@ begin
   if (Sector <> nil) and (ConfirmChange('unformat', 'sector')) then
     Sector.Unformat;
 
-  if (popSector.PopupComponent = tvwMain) and (tvwMain.Selected <> nil) then
-    if (TObject(tvwMain.Selected.Data).ClassType = TDSKTrack) and (ConfirmChange('unformat', 'track')) then
-    begin
-      TDSKTrack(tvwMain.Selected.Data).Unformat;
-      tvwMain.Selected.DeleteChildren;
-    end;
-
   RefreshList;
   UpdateMenus;
 end;
@@ -1428,14 +1469,14 @@ begin
   Sector := GetSelectedSector(popSector.PopupComponent);
 
   if Sector <> nil then
-    TfrmSector.Create(Self, Sector);
+    TfrmSectorProperties.Create(Self, Sector);
 
   if (popSector.PopupComponent = tvwMain) and (tvwMain.Selected <> nil) then
     if TObject(tvwMain.Selected.Data).ClassType = TDSKTrack then
     begin
       Track := TDSKTrack(tvwMain.Selected.Data);
       for Sector in Track.Sector do
-        TfrmSector.Create(Self, Sector);
+        TfrmSectorProperties.Create(Self, Sector);
     end;
 
   UpdateMenus;

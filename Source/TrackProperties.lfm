@@ -1,11 +1,11 @@
-object frmSectorProperties: TfrmSectorProperties
-  Left = 1760
+object frmTrackProperties: TfrmTrackProperties
+  Left = 1597
   Height = 467
-  Top = 465
+  Top = 350
   Width = 375
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
-  Caption = 'Sector Properties'
+  Caption = 'Track Properties'
   ClientHeight = 467
   ClientWidth = 375
   Color = clBtnFace
@@ -60,7 +60,6 @@ object frmSectorProperties: TfrmSectorProperties
     Top = 0
     Width = 375
     Align = alClient
-    Alignment = taRightJustify
     BevelOuter = bvNone
     BorderWidth = 5
     ClientHeight = 437
@@ -71,29 +70,29 @@ object frmSectorProperties: TfrmSectorProperties
       Height = 427
       Top = 5
       Width = 365
-      ActivePage = tabSector
+      ActivePage = tabTrack
       Align = alClient
       TabIndex = 0
       TabOrder = 0
-      object tabSector: TTabSheet
-        Caption = 'Sector'
+      object tabTrack: TTabSheet
+        Caption = 'Track'
         ClientHeight = 401
         ClientWidth = 357
-        object lblStatus: TLabel
+        object lblSectorDataRate: TLabel
           Left = 8
           Height = 13
-          Top = 176
-          Width = 35
-          Caption = 'Status:'
-          FocusControl = cboStatus
+          Top = 299
+          Width = 50
+          Caption = 'Data rate:'
+          FocusControl = cboSectorDataRate
           ParentColor = False
         end
         object lblSize: TLabel
-          Left = 8
+          Left = 216
           Height = 13
-          Top = 148
-          Width = 43
-          Caption = 'Byte len:'
+          Top = 118
+          Width = 23
+          Caption = 'Size:'
           FocusControl = edtSize
           ParentColor = False
         end
@@ -111,31 +110,13 @@ object frmSectorProperties: TfrmSectorProperties
           ParentColor = False
           ParentFont = False
         end
-        object lblFDC1: TLabel
-          Left = 8
-          Height = 13
-          Top = 232
-          Width = 35
-          Caption = 'Byte 1:'
-          FocusControl = cklFDC1
-          ParentColor = False
-        end
-        object lblFDC2: TLabel
-          Left = 182
-          Height = 13
-          Top = 232
-          Width = 35
-          Caption = 'Byte 2:'
-          FocusControl = cklFDC2
-          ParentColor = False
-        end
-        object lblSectorID: TLabel
+        object lblLogicalID: TLabel
           Left = 8
           Height = 13
           Top = 118
-          Width = 15
-          Caption = 'ID:'
-          FocusControl = edtSectorID
+          Width = 50
+          Caption = 'Logical ID:'
+          FocusControl = edtLogicalID
           ParentColor = False
         end
         object lblPhysical: TLabel
@@ -153,25 +134,25 @@ object frmSectorProperties: TfrmSectorProperties
           ParentFont = False
         end
         object bevDetails: TBevel
-          Left = 56
+          Left = 89
           Height = 2
           Top = 94
-          Width = 291
+          Width = 258
           Anchors = [akTop, akLeft, akRight]
         end
-        object bevFDC: TBevel
-          Left = 138
+        object bevSectorDetails: TBevel
+          Left = 96
           Height = 2
-          Top = 214
-          Width = 209
+          Top = 182
+          Width = 251
           Anchors = [akTop, akLeft, akRight]
         end
-        object lblFDC: TLabel
+        object lblSectorDetails: TLabel
           Left = 8
           Height = 13
-          Top = 208
-          Width = 125
-          Caption = 'Floppy controller flags'
+          Top = 176
+          Width = 78
+          Caption = 'Sector details'
           Font.CharSet = ANSI_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
@@ -184,8 +165,8 @@ object frmSectorProperties: TfrmSectorProperties
           Left = 8
           Height = 13
           Top = 88
-          Width = 39
-          Caption = 'Details'
+          Width = 73
+          Caption = 'Track details'
           Font.CharSet = ANSI_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
@@ -208,141 +189,90 @@ object frmSectorProperties: TfrmSectorProperties
           ParentColor = False
           ParentFont = False
         end
-        object lblFill: TLabel
-          Left = 273
+        object lblPhysicalID: TLabel
+          Left = 9
           Height = 13
           Top = 147
-          Width = 16
+          Width = 56
           Alignment = taRightJustify
-          Caption = 'Fill:'
-          FocusControl = edtFill
-          ParentColor = False
-          Visible = False
-        end
-        object lblPad: TLabel
-          Left = 145
-          Height = 13
-          Top = 147
-          Width = 22
-          Alignment = taRightJustify
-          Caption = 'Pad:'
-          FocusControl = edtPad
-          ParentColor = False
-          Visible = False
-        end
-        object lblFDCSize: TLabel
-          Left = 243
-          Height = 13
-          Top = 176
-          Width = 45
-          Alignment = taRightJustify
-          Caption = 'FDC size:'
-          FocusControl = edtFDCSize
+          Caption = 'Physical ID:'
+          FocusControl = edtPhysicalID
           ParentColor = False
         end
-        object cklFDC2: TCheckListBox
-          Left = 182
-          Height = 140
-          Top = 248
-          Width = 165
-          Anchors = [akTop, akRight, akBottom]
-          Items.Strings = (
-            'Data address mark missing'
-            'Bad cylinder'
-            'Sector not found'
-            'Scan equal satisfied'
-            'Wrong cylinder detected'
-            'Data CRC error'
-            'Data address mark deleted'
-            'Unused'
-          )
-          ItemHeight = 17
-          TabOrder = 15
-          Data = {
-            080000000000000000000000
-          }
-        end
-        object cklFDC1: TCheckListBox
+        object lblSectorCount: TLabel
           Left = 8
-          Height = 140
-          Top = 248
-          Width = 165
-          Anchors = [akTop, akLeft, akBottom]
-          Items.Strings = (
-            'ID address mark missing'
-            'Write protected during write'
-            'ID missing'
-            'Unused'
-            'Over-run'
-            'ID CRC error'
-            'Unused'
-            'End of cylinder'
-          )
-          ItemHeight = 17
-          TabOrder = 14
-          Data = {
-            080000000000000000000000
-          }
+          Height = 13
+          Top = 204
+          Width = 33
+          Alignment = taRightJustify
+          Caption = 'Count:'
+          FocusControl = edtSectorCount
+          ParentColor = False
         end
-        object edtSectorID: TEdit
-          Left = 56
+        object lblSectorSize: TLabel
+          Left = 12
+          Height = 13
+          Top = 331
+          Width = 23
+          Alignment = taRightJustify
+          Caption = 'Size:'
+          FocusControl = edtSectorSize
+          ParentColor = False
+        end
+        object edtLogicalID: TEdit
+          Left = 72
           Height = 21
           Top = 115
-          Width = 33
+          Width = 49
           Alignment = taRightJustify
           MaxLength = 3
           TabOrder = 2
           Text = '0'
         end
-        object udSectorID: TUpDown
-          Left = 89
+        object udLogicalID: TUpDown
+          Left = 121
           Height = 21
           Top = 115
           Width = 15
-          Associate = edtSectorID
+          Associate = edtLogicalID
           Max = 255
           Min = 0
           Position = 0
           TabOrder = 3
         end
-        object cboStatus: TComboBox
-          Left = 56
+        object cboSectorDataRate: TComboBox
+          Left = 73
           Height = 21
-          Top = 173
-          Width = 145
+          Top = 296
+          Width = 104
           ItemHeight = 13
           Items.Strings = (
-            'Unformatted'
-            'Formatted unused'
-            'Formatted in use'
-            'Formatted filled'
+            'Single/Double'
           )
-          OnChange = cboStatusChange
           Style = csDropDownList
-          TabOrder = 11
+          TabOrder = 15
         end
         object edtSize: TEdit
-          Left = 56
+          Left = 280
           Height = 21
-          Top = 144
+          Top = 115
           Width = 49
           Alignment = taRightJustify
           MaxLength = 5
-          OnChange = edtSizeChange
-          TabOrder = 5
+          TabOrder = 4
           Text = '0'
         end
         object udSize: TUpDown
-          Left = 105
+          Left = 329
           Height = 21
-          Top = 144
+          Top = 115
           Width = 15
           Associate = edtSize
           Increment = 256
           Max = 32767
           Min = 0
           Position = 0
-          TabOrder = 6
+          TabOrder = 5
         end
         object edtImage: TEdit
           Left = 56
@@ -366,73 +296,59 @@ object frmSectorProperties: TfrmSectorProperties
           ReadOnly = True
           TabOrder = 1
         end
-        object edtFill: TEdit
-          Left = 297
+        object edtPhysicalID: TEdit
+          Left = 73
           Height = 21
           Top = 144
-          Width = 33
+          Width = 48
+          Alignment = taRightJustify
+          MaxLength = 3
+          TabOrder = 6
+          Text = '0'
+        end
+        object udPhysicalID: TUpDown
+          Left = 121
+          Height = 21
+          Top = 144
+          Width = 15
+          Associate = edtPhysicalID
+          Max = 255
+          Min = 0
+          Position = 0
+          TabOrder = 7
+        end
+        object edtSectorCount: TEdit
+          Left = 72
+          Height = 21
+          Top = 200
+          Width = 43
           Alignment = taRightJustify
           MaxLength = 3
           TabOrder = 9
           Text = '0'
-          Visible = False
         end
-        object udFill: TUpDown
-          Left = 330
+        object udSectorCount: TUpDown
+          Left = 115
           Height = 21
-          Top = 144
+          Top = 200
           Width = 15
-          Associate = edtFill
+          Associate = edtSectorCount
           Max = 255
           Min = 0
           Position = 0
           TabOrder = 10
-          Visible = False
         end
-        object edtPad: TEdit
-          Left = 169
+        object edtSectorSize: TEdit
+          Left = 73
           Height = 21
-          Top = 143
-          Width = 33
+          Top = 328
+          Width = 43
           Alignment = taRightJustify
+          Color = 16382457
           MaxLength = 3
-          TabOrder = 7
+          ReadOnly = True
+          TabOrder = 16
           Text = '0'
-          Visible = False
-        end
-        object udPad: TUpDown
-          Left = 202
-          Height = 21
-          Top = 143
-          Width = 15
-          Associate = edtPad
-          Max = 255
-          Min = 0
-          Position = 0
-          TabOrder = 8
-          Visible = False
-        end
-        object edtFDCSize: TEdit
-          Left = 299
-          Height = 21
-          Top = 173
-          Width = 31
-          Alignment = taRightJustify
-          MaxLength = 3
-          OnChange = edtSizeChange
-          TabOrder = 12
-          Text = '0'
-        end
-        object udFDCSize: TUpDown
-          Left = 330
-          Height = 21
-          Top = 173
-          Width = 16
-          Associate = edtFDCSize
-          Max = 255
-          Min = 0
-          Position = 0
-          TabOrder = 13
         end
         object bevIdentity: TBevel
           Left = 56
@@ -441,24 +357,86 @@ object frmSectorProperties: TfrmSectorProperties
           Width = 291
           Anchors = [akTop, akLeft, akRight]
         end
-        object lblIndexPos: TLabel
-          Left = 184
+        object lblBitLength: TLabel
+          Left = 216
           Height = 13
-          Top = 118
-          Width = 104
-          Caption = 'Index position offset:'
-          FocusControl = edtIndexPos
+          Top = 147
+          Width = 49
+          Caption = 'Bit length:'
+          FocusControl = edtBitLength
           ParentColor = False
         end
-        object edtIndexPos: TEdit
-          Left = 298
+        object edtBitLength: TEdit
+          Left = 280
           Height = 21
-          Top = 115
+          Top = 144
           Width = 47
           Alignment = taRightJustify
           MaxLength = 5
-          TabOrder = 4
+          TabOrder = 8
           Text = '0'
+        end
+        object lblSectorGap: TLabel
+          Left = 9
+          Height = 13
+          Top = 235
+          Width = 23
+          Alignment = taRightJustify
+          Caption = 'Gap:'
+          FocusControl = edtSectorGap
+          ParentColor = False
+        end
+        object edtSectorGap: TEdit
+          Left = 72
+          Height = 21
+          Top = 232
+          Width = 43
+          Alignment = taRightJustify
+          MaxLength = 3
+          TabOrder = 11
+          Text = '0'
+        end
+        object lblSectorFiller: TLabel
+          Left = 9
+          Height = 13
+          Top = 267
+          Width = 26
+          Alignment = taRightJustify
+          Caption = 'Filler:'
+          FocusControl = edtSectorFiller
+          ParentColor = False
+        end
+        object edtSectorFiller: TEdit
+          Left = 73
+          Height = 21
+          Top = 264
+          Width = 43
+          Alignment = taRightJustify
+          MaxLength = 3
+          TabOrder = 13
+          Text = '0'
+        end
+        object udSectorGap: TUpDown
+          Left = 115
+          Height = 21
+          Top = 232
+          Width = 17
+          Associate = edtSectorGap
+          Max = 255
+          Min = 0
+          Position = 0
+          TabOrder = 12
+        end
+        object udSectorFiller: TUpDown
+          Left = 116
+          Height = 21
+          Top = 264
+          Width = 17
+          Associate = edtSectorFiller
+          Max = 255
+          Min = 0
+          Position = 0
+          TabOrder = 14
         end
       end
     end

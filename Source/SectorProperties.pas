@@ -19,9 +19,9 @@ uses
 
 type
 
-  { TfrmSector }
+  { TfrmSectorProperties }
 
-  TfrmSector = class(TForm)
+  TfrmSectorProperties = class(TForm)
     bevIdentity: TBevel;
     edtIndexPos: TEdit;
     lblIndexPos: TLabel;
@@ -81,7 +81,7 @@ type
   end;
 
 var
-  frmSector: TfrmSector;
+  frmSectorProperties: TfrmSectorProperties;
 
 implementation
 
@@ -89,29 +89,35 @@ uses Main;
 
 {$R *.lfm}
 
-constructor TfrmSector.Create(AOwner: TComponent; Sector: TDSKSector);
+constructor TfrmSectorProperties.Create(AOwner: TComponent; Sector: TDSKSector);
+var
+   SIdx: TDSKSectorStatus;
 begin
   inherited Create(AOwner);
   formIcon := TIcon.Create();
   frmMain.imlSmall.GetIcon(5, formIcon);
   Icon := formIcon;
   FSector := Sector;
+
+  cboStatus.Items.Clear;
+  for SIdx := ssUnformatted to ssFormattedInUse do
+    cboStatus.Items.Add(DSKSectorStatus[SIdx]);
+
   Refresh;
   Show;
 end;
 
-destructor TfrmSector.Destroy;
+destructor TfrmSectorProperties.Destroy;
 begin
   formIcon.Free;
   inherited Destroy;
 end;
 
-procedure TfrmSector.Refresh;
+procedure TfrmSectorProperties.Refresh;
 var
-  SIdx: TDSKSectorStatus;
   FIdx: integer;
 begin
-  // Physical
+  // Identity
   edtImage.Text := ExtractFileName(FSector.ParentTrack.ParentSide.ParentDisk.ParentImage.FileName);
   edtPhysical.Text := 'Side ' + IntToStr(FSector.Side + 1) + ' > Track ' + IntToStr(FSector.Track) +
     ' > Sector ' + IntToStr(FSector.Sector);
@@ -126,12 +132,7 @@ begin
     udFill.Position := FSector.ParentTrack.Filler
   else
     udFill.Position := FSector.GetFillByte;
-
   udPad.Position := udFill.Position;
-
-  cboStatus.Items.Clear;
-  for SIdx := ssUnformatted to ssFormattedInUse do
-    cboStatus.Items.Add(DSKSectorStatus[SIdx]);
 
   SecStat := FSector.Status;
   cboStatus.ItemIndex := Ord(FSector.Status);
@@ -144,23 +145,23 @@ begin
   end;
 end;
 
-procedure TfrmSector.btnCancelClick(Sender: TObject);
+procedure TfrmSectorProperties.btnCancelClick(Sender: TObject);
 begin
   Close;
 end;
 
-procedure TfrmSector.btnApplyClick(Sender: TObject);
+procedure TfrmSectorProperties.btnApplyClick(Sender: TObject);
 begin
   MakeChanges;
 end;
 
-procedure TfrmSector.btnOKClick(Sender: TObject);
+procedure TfrmSectorProperties.btnOKClick(Sender: TObject);
 begin
   MakeChanges;
   Close;
 end;
 
-procedure TfrmSector.MakeChanges;
+procedure TfrmSectorProperties.MakeChanges;
 var
   FIdx: integer;
   OldLength: word;
@@ -189,16 +190,12 @@ begin
           Move(SecData, Data, OldLength);
         end
         else
-        begin
           DataSize := udSize.Position;
-        end;
       end;
 
       // FDC data Size
       if FDCSize <> byte(udFDCSize.Position) then
-      begin
         FDCSize := byte(udFDCSize.Position);
-      end;
 
       // FDC status
       FDCStatus[1] := 0;
@@ -214,7 +211,7 @@ begin
   frmMain.RefreshList;
 end;
 
-procedure TfrmSector.cboStatusChange(Sender: TObject);
+procedure TfrmSectorProperties.cboStatusChange(Sender: TObject);
 begin
   SecStat := TDSKSectorStatus(cboStatus.ItemIndex);
 
@@ -236,7 +233,7 @@ begin
   UpdateFill;
 end;
 
-procedure TfrmSector.edtSizeChange(Sender: TObject);
+procedure TfrmSectorProperties.edtSizeChange(Sender: TObject);
 begin
   if (udSize.Position > 0) and (FSector.DataSize = 0) then
     cboStatus.ItemIndex := Ord(ssFormattedBlank);
@@ -245,7 +242,7 @@ begin
   UpdatePad;
 end;
 
-procedure TfrmSector.UpdatePad;
+procedure TfrmSectorProperties.UpdatePad;
 var
   ShowPad: boolean;
 begin
@@ -255,7 +252,7 @@ begin
   udPad.Visible := ShowPad;
 end;
 
-procedure TfrmSector.UpdateFill;
+procedure TfrmSectorProperties.UpdateFill;
 var
   ShowFill: boolean;
 begin

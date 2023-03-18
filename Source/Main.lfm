@@ -748,4 +748,22 @@ object frmMain: TfrmMain
     Left = 264
     Top = 176
   end
+  object popTrack: TPopupMenu
+    Images = imlSmall
+    Left = 440
+    Top = 240
+    object itmTrackProperties: TMenuItem
+      Caption = 'Properties'
+      Default = True
+      ImageIndex = 21
+      OnClick = itmTrackPropertiesClick
+    end
+    object N8: TMenuItem
+      Caption = '-'
+    end
+    object itmTrackUnformat: TMenuItem
+      Caption = 'Unformat'
+      OnClick = itmTrackUnformatClick
+    end
+  end
 end
