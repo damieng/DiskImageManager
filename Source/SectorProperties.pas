@@ -76,7 +76,6 @@ type
     procedure UpdatePad;
   public
     constructor Create(AOwner: TComponent; Sector: TDSKSector); reintroduce;
-    destructor Destroy; override;
     procedure Refresh;
   end;
 
@@ -91,12 +90,9 @@ uses Main;
 
 constructor TfrmSectorProperties.Create(AOwner: TComponent; Sector: TDSKSector);
 var
-   SIdx: TDSKSectorStatus;
+  SIdx: TDSKSectorStatus;
 begin
   inherited Create(AOwner);
-  formIcon := TIcon.Create();
-  frmMain.imlSmall.GetIcon(5, formIcon);
-  Icon := formIcon;
   FSector := Sector;
 
   cboStatus.Items.Clear;
@@ -105,12 +101,6 @@ begin
 
   Refresh;
   Show;
-end;
-
-destructor TfrmSectorProperties.Destroy;
-begin
-  formIcon.Free;
-  inherited Destroy;
 end;
 
 procedure TfrmSectorProperties.Refresh;
