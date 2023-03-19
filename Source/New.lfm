@@ -26,7 +26,7 @@ object frmNew: TfrmNew
     BorderWidth = 6
     ClientHeight = 274
     ClientWidth = 239
-    TabOrder = 0
+    TabOrder = 1
     object lvwWarnings: TListView
       Left = 6
       Height = 130
@@ -128,7 +128,7 @@ object frmNew: TfrmNew
     BorderWidth = 5
     ClientHeight = 274
     ClientWidth = 299
-    TabOrder = 1
+    TabOrder = 0
     object pagTabs: TPageControl
       Left = 5
       Height = 264
@@ -869,7 +869,7 @@ object frmNew: TfrmNew
       OnClick = btnFormatClick
       TabOrder = 0
     end
-    object btnCancel: TButton
+    object btnClose: TButton
       Left = 456
       Height = 25
       Top = 0
@@ -877,7 +877,7 @@ object frmNew: TfrmNew
       Anchors = [akTop, akRight]
       Cancel = True
       Caption = 'Close'
-      OnClick = btnCancelClick
+      OnClick = btnCloseClick
       TabOrder = 1
     end
   end

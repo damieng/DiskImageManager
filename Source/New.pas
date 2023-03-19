@@ -32,7 +32,7 @@ type
     pnlTabs: TPanel;
     pnlButtons: TPanel;
     btnFormat: TButton;
-    btnCancel: TButton;
+    btnClose: TButton;
     pagTabs: TPageControl;
     tabFormat: TTabSheet;
     tabDetails: TTabSheet;
@@ -101,7 +101,7 @@ type
     procedure cboDataRateChange(Sender: TObject);
     procedure cboRecordingModeChange(Sender: TObject);
     procedure edtFillerChange(Sender: TObject);
-    procedure btnCancelClick(Sender: TObject);
+    procedure btnCloseClick(Sender: TObject);
     procedure btnFormatClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure lvwFormatsChange(Sender: TObject; Item: TListItem; Change: TItemChange);
@@ -169,7 +169,7 @@ begin
   udFiller.Position := StrToInt('$' + edtFiller.Text);
 end;
 
-procedure TfrmNew.btnCancelClick(Sender: TObject);
+procedure TfrmNew.btnCloseClick(Sender: TObject);
 begin
   Close;
 end;
