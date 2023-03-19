@@ -227,7 +227,7 @@ begin
 
     if Blocks.Count > 0 then
     begin
-      HeaderType := 'Raw';
+      HeaderType := 'None';
       FirstSector := FParentDisk.GetSectorByBlock(Blocks[0]);
       if FirstSector <> nil then
       begin

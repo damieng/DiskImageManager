@@ -68,7 +68,6 @@ type
     procedure cboStatusChange(Sender: TObject);
     procedure edtSizeChange(Sender: TObject);
   private
-    formIcon: TIcon;
     FSector: TDSKSector;
     SecStat: TDSKSectorStatus;
     procedure MakeChanges;

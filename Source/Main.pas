@@ -28,7 +28,13 @@ type
   { TfrmMain }
 
   TfrmMain = class(TForm)
+    itmCopyDetailsClipboard1: TMenuItem;
+    itmCopySep1: TMenuItem;
     itmOpenRecent: TMenuItem;
+    itmSaveAllFiles: TMenuItem;
+    itmSaveAllFilesTo: TMenuItem;
+    itmSaveAllFilesWithHeadersTo: TMenuItem;
+    itmSaveAllFilesWithoutHeadersTo: TMenuItem;
     itmTrackProperties: TMenuItem;
     itmTrackUnformat: TMenuItem;
     memo: TMemo;
@@ -41,6 +47,8 @@ type
     itmSaveSelectedWithHeader: TMenuItem;
     itmSaveSelectedWithoutHeader: TMenuItem;
     itmFileSector: TMenuItem;
+    itmSaveHeaderlessFile: TMenuItem;
+    itmSaveSelectedHeaderlessFiles: TMenuItem;
     mnuMain: TMainMenu;
     itmDisk: TMenuItem;
     itmOpen: TMenuItem;
@@ -57,6 +65,7 @@ type
     pnlLeft: TPanel;
     dlgSaveBinary: TSaveDialog;
     dlgSelectDirectory: TSelectDirectoryDialog;
+    popFileSystem: TPopupMenu;
     popTrack: TPopupMenu;
     Separator1: TMenuItem;
     itmCopySep: TMenuItem;
@@ -114,6 +123,9 @@ type
     procedure FormCreate(Sender: TObject);
     procedure itmOpenRecentClick(Sender: TObject);
     procedure itmRenameFileClick(Sender: TObject);
+    procedure itmSaveAllFilesToClick(Sender: TObject);
+    procedure itmSaveAllFilesWithHeadersToClick(Sender: TObject);
+    procedure itmSaveAllFilesWithoutHeadersToClick(Sender: TObject);
     procedure itmSaveFileWithHeaderAsClick(Sender: TObject);
     procedure itmSaveSelectedFilesToClick(Sender: TObject);
     procedure itmSaveFileAsClick(Sender: TObject);
@@ -121,6 +133,7 @@ type
     procedure itmToolbarClick(Sender: TObject);
     procedure itmTrackPropertiesClick(Sender: TObject);
     procedure itmTrackUnformatClick(Sender: TObject);
+    procedure popFileSystemPopup(Sender: TObject);
     procedure popListItemPopup(Sender: TObject);
     procedure tvwMainChange(Sender: TObject; Node: TTreeNode);
     procedure itmAboutClick(Sender: TObject);
@@ -165,7 +178,7 @@ type
     function MapByte(Raw: byte): string;
 
     procedure SaveExtractedFile(WithHeader: boolean);
-    procedure SaveExtractedFilesToFolder(WithHeader: boolean);
+    procedure SaveExtractedFilesToFolder(WithHeader: boolean; AllFiles: boolean);
     procedure WriteSectorLine(Offset: integer; SecHex: string; SecData: string);
     procedure SetListSimple;
     procedure OnApplicationDropFiles(Sender: TObject; const FileNames: array of string);
@@ -270,9 +283,24 @@ begin
   if lvwMain.SelCount > 0 then lvwMain.Selected.EditCaption;
 end;
 
+procedure TfrmMain.itmSaveAllFilesToClick(Sender: TObject);
+begin
+  SaveExtractedFilesToFolder(True, True);
+end;
+
+procedure TfrmMain.itmSaveAllFilesWithHeadersToClick(Sender: TObject);
+begin
+  SaveExtractedFilesToFolder(True, True);
+end;
+
+procedure TfrmMain.itmSaveAllFilesWithoutHeadersToClick(Sender: TObject);
+begin
+  SaveExtractedFilesToFolder(False, True);
+end;
+
 procedure TfrmMain.itmSaveSelectedFilesWithHeadersToClick(Sender: TObject);
 begin
-  SaveExtractedFilesToFolder(True);
+  SaveExtractedFilesToFolder(True, False);
 end;
 
 procedure TfrmMain.itmToolbarClick(Sender: TObject);
@@ -309,13 +337,31 @@ begin
   UpdateMenus;
 end;
 
-procedure TfrmMain.itmSaveSelectedFilesToClick(Sender: TObject);
+procedure TfrmMain.popFileSystemPopup(Sender: TObject);
+var
+  AllHeaderlessFilesSelected: boolean;
+  ListItem: TListItem;
 begin
-  SaveExtractedFilesToFolder(False);
+  AllHeaderlessFilesSelected := True;
+  for ListItem in lvwMain.Items do
+    if (TObject(ListItem.Data).ClassType = TDSKFile) and (TDSKFile(ListItem.Data).HeaderType <> 'None') then
+    begin
+      AllHeaderlessFilesSelected := False;
+      Break;
+    end;
+
+  itmSaveAllFiles.Visible := not AllHeaderlessFilesSelected;
+  itmSaveAllFilesTo.Visible := AllHeaderlessFilesSelected;
 end;
 
-procedure TfrmMain.SaveExtractedFilesToFolder(WithHeader: boolean);
+procedure TfrmMain.itmSaveSelectedFilesToClick(Sender: TObject);
+begin
+  SaveExtractedFilesToFolder(False, False);
+end;
+
+procedure TfrmMain.SaveExtractedFilesToFolder(WithHeader: boolean; AllFiles: boolean);
 var
+  SaveCount: integer;
   ListItem: TListItem;
   Folder: string;
   Stream: TStream;
@@ -324,9 +370,10 @@ var
 begin
   if not dlgSelectDirectory.Execute then exit;
 
+  SaveCount := 0;
   Folder := dlgSelectDirectory.FileName + PathDelim;
   for ListItem in lvwMain.Items do
-    if (ListItem.Selected) and (TObject(ListItem.Data).ClassType = TDSKFile) then
+    if (AllFiles or ListItem.Selected) and (TObject(ListItem.Data).ClassType = TDSKFile) then
     begin
       DiskFile := TDSKFile(ListItem.Data);
       Stream := TFileStream.Create(Folder + DiskFile.FileName, fmCreate);
@@ -336,7 +383,10 @@ begin
       finally
         Stream.Free;
       end;
+      Inc(SaveCount);
     end;
+
+  statusBar.SimpleText := Format('%d files saved to %s', [SaveCount, dlgSelectDirectory.FileName]);
 end;
 
 procedure TfrmMain.itmSaveFileWithHeaderAsClick(Sender: TObject);
@@ -370,24 +420,44 @@ begin
   finally
     Stream.Free;
   end;
+
+  statusBar.SimpleText := Format('File %s saved as %s', [DiskFile.FileName, dlgSaveBinary.FileName]);
 end;
 
 procedure TfrmMain.popListItemPopup(Sender: TObject);
 var
   DiskFile: TDSKFile;
+  AllHeaderlessFilesSelected: boolean;
+  ListItem: TListItem;
 begin
-  itmSaveSelectedFiles.Visible := tvwMain.Selected.Text = 'Files';
-  itmSaveSelectedFiles.Enabled := lvwMain.SelCount > 0;
-
   itmSaveFile.Visible := False;
+  itmSaveHeaderlessFile.Visible := False;
 
   if (lvwMain.SelCount = 1) and (lvwMain.Selected.Data <> nil) and (TObject(lvwMain.Selected.Data).ClassType = TDSKFile) then
   begin
-    itmSaveFile.Visible := True;
     DiskFile := TDSKFile((lvwMain.Selected).Data);
+    itmSaveFile.Visible := DiskFile.HeaderType <> 'None';
     itmSaveFile.Caption := Format('Save %s', [DiskFile.FileName]);
+
+    itmSaveHeaderlessFile.Visible := DiskFile.HeaderType = 'None';
+    itmSaveHeaderlessFile.Caption := Format('Save %s as...', [DiskFile.FileName]);
   end;
+
+  // In the case of multiple files selected we need to know if any have headers
+  AllHeaderlessFilesSelected := True;
+  for ListItem in lvwMain.Items do
+    if (ListItem.Selected) and (TObject(ListItem.Data).ClassType = TDSKFile) then
+      if TDSKFile(ListItem.Data).HeaderType <> 'None' then
+      begin
+        AllHeaderlessFilesSelected := False;
+        Break;
+      end;
+
+  itmSaveSelectedFiles.Visible := not AllHeaderlessFilesSelected;
   itmSaveSelectedFiles.Caption := Format('Save %d selected files', [lvwMain.SelCount]);
+
+  itmSaveSelectedHeaderlessFiles.Visible := AllHeaderlessFilesSelected;
+  itmSaveSelectedHeaderlessFiles.Caption := Format('Save %d selected files to...', [lvwMain.SelCount]);
 end;
 
 function TfrmMain.FindTreeNodeFromData(Node: TTreeNode; Data: TObject): TTreeNode;
@@ -581,6 +651,8 @@ begin
       tvwMain.PopupMenu := popSector;
     if ObjectData.ClassType = TDSKTrack then
       tvwMain.PopupMenu := popTrack;
+    if ObjectData.ClassType = TDSKFileSystem then
+      tvwMain.PopupMenu := popFileSystem;
     if ItemType(tvwMain.Selected.ImageIndex) = itAnalyse then
       tvwMain.PopupMenu := popDiskMap;
   end;

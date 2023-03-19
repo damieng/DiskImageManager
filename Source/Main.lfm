@@ -712,25 +712,35 @@ object frmMain: TfrmMain
       Caption = 'Save file'
       ImageIndex = 23
       object itemSaveFileWithHeader: TMenuItem
-        Caption = 'with header as...'
+        Caption = 'including its header as...'
         OnClick = itmSaveFileWithHeaderAsClick
       end
       object itmSaveFileWithoutHeader: TMenuItem
-        Caption = 'without header as...'
+        Caption = 'without its header as...'
         OnClick = itmSaveFileAsClick
       end
+    end
+    object itmSaveHeaderlessFile: TMenuItem
+      Caption = 'Save file as...'
+      ImageIndex = 23
+      OnClick = itmSaveFileWithHeaderAsClick
     end
     object itmSaveSelectedFiles: TMenuItem
       Caption = 'Save selected files'
       ImageIndex = 24
       object itmSaveSelectedWithHeader: TMenuItem
-        Caption = 'with headers to...'
+        Caption = 'including their headers to...'
         OnClick = itmSaveSelectedFilesWithHeadersToClick
       end
       object itmSaveSelectedWithoutHeader: TMenuItem
-        Caption = 'without headers to...'
+        Caption = 'without their headers to...'
         OnClick = itmSaveSelectedFilesToClick
       end
+    end
+    object itmSaveSelectedHeaderlessFiles: TMenuItem
+      Caption = 'Save selected files to...'
+      ImageIndex = 24
+      OnClick = itmSaveSelectedFilesWithHeadersToClick
     end
   end
   object dlgFind: TFindDialog
@@ -764,6 +774,37 @@ object frmMain: TfrmMain
     object itmTrackUnformat: TMenuItem
       Caption = 'Unformat'
       OnClick = itmTrackUnformatClick
+    end
+  end
+  object popFileSystem: TPopupMenu
+    Images = imlSmall
+    OnPopup = popFileSystemPopup
+    Left = 328
+    Top = 240
+    object itmCopyDetailsClipboard1: TMenuItem
+      Caption = 'Copy details to clipboard'
+      ImageIndex = 16
+      OnClick = itmEditCopyClick
+    end
+    object itmCopySep1: TMenuItem
+      Caption = '-'
+    end
+    object itmSaveAllFiles: TMenuItem
+      Caption = 'Save all files'
+      ImageIndex = 24
+      object itmSaveAllFilesWithHeadersTo: TMenuItem
+        Caption = 'including their headers to...'
+        OnClick = itmSaveAllFilesWithHeadersToClick
+      end
+      object itmSaveAllFilesWithoutHeadersTo: TMenuItem
+        Caption = 'without their headers to...'
+        OnClick = itmSaveAllFilesWithoutHeadersToClick
+      end
+    end
+    object itmSaveAllFilesTo: TMenuItem
+      Caption = 'Save all files to...'
+      ImageIndex = 24
+      OnClick = itmSaveAllFilesToClick
     end
   end
 end
