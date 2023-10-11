@@ -43,7 +43,7 @@ begin
 end;
 
 const
-  EINSTEIN_SIGNATURE: array[0..5] of byte = ($00, $E1, $00, $FB, $00, $FA);
+  EINSTEIN_SIGNATURE: array[0..4] of byte = ($00, $E1, $00, $FB, $00);
 
 function DetectUniformFormat(Disk: TDSKDisk): string;
 var
@@ -88,11 +88,6 @@ begin
       193: Result := 'Amstrad CPC data custom (maybe)';
     end;
   end;
-
-  // Einstein format
-  if FirstSector.DataSize > 10 then
-    if CompareMem(@FirstSector.Data, @EINSTEIN_SIGNATURE, Length(EINSTEIN_SIGNATURE)) then
-      Result := 'Einstein';
 
   // Custom speccy formats (10 sectors, SS)
   if (Disk.Sides = 1) and (FirstTrack.Sectors = 10) then
@@ -141,6 +136,11 @@ begin
           Result := Result + ' MasterDOS';
       end;
   end;
+
+  // Einstein format
+  if FirstSector.DataSize > 10 then
+    if CompareMem(@FirstSector.Data, @EINSTEIN_SIGNATURE, Length(EINSTEIN_SIGNATURE)) then
+      Result := 'Einstein';
 end;
 
 // We have two techniques for copy-protection detection - ASCII signatures
