@@ -383,7 +383,7 @@ implementation
 
 uses FormatAnalysis;
 
-// Image
+  // Image
 constructor TDSKImage.Create;
 begin
   inherited;
@@ -603,8 +603,10 @@ begin
           Side := TRKInfoBlock.TIB_SideNum;
           Sectors := TRKInfoBlock.TIB_NumSectors;
           SectorSize := MaxSectorSize;
-          if (TRKInfoBlock.TIB_SectorSize <= 6) then
-            SectorSize := FDCSectorSizes[TRKInfoBlock.TIB_SectorSize];
+          if (FileFormat = diStandardDSK) and (TRKInfoBlock.TIB_SectorSize <= 6) then
+            SectorSize := FDCSectorSizes[TRKInfoBlock.TIB_SectorSize]
+          else
+            SectorSize := 0;
           GapLength := TRKInfoBlock.TIB_GapLength;
           Filler := TRKInfoBlock.TIB_FillerByte;
 
