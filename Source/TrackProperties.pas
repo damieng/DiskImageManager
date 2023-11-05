@@ -23,6 +23,7 @@ type
   TfrmTrackProperties = class(TForm)
     bevIdentity: TBevel;
     bevSectorDetails: TBevel;
+    cboSectorSize: TComboBox;
     edtBitLength: TEdit;
     edtSectorGap: TEdit;
     edtSectorFiller: TEdit;
@@ -46,7 +47,6 @@ type
     udLogicalID: TUpDown;
     cboSectorDataRate: TComboBox;
     edtSize: TEdit;
-    udSize: TUpDown;
     lblPhysical: TLabel;
     edtImage: TEdit;
     edtPhysical: TEdit;
@@ -59,7 +59,6 @@ type
     edtSectorCount: TEdit;
     udSectorCount: TUpDown;
     lblSectorSize: TLabel;
-    edtSectorSize: TEdit;
     udSectorGap: TUpDown;
     udSectorFiller: TUpDown;
     procedure btnCancelClick(Sender: TObject);
@@ -80,7 +79,7 @@ implementation
 
 uses Main;
 
-{$R *.lfm}
+  {$R *.lfm}
 
 constructor TfrmTrackProperties.Create(AOwner: TComponent; Track: TDSKTrack);
 var
@@ -98,7 +97,18 @@ begin
 end;
 
 procedure TfrmTrackProperties.Refresh;
+var
+  isExtended: boolean;
 begin
+  // Some track details not available depending on format
+  isExtended := FTrack.ParentSide.ParentDisk.ParentImage.FileFormat = diExtendedDSK;
+  lblSectorSize.Visible := not isExtended;
+  cboSectorSize.Visible := not isExtended;
+  lblBitLength.Visible := isExtended;
+  edtBitLength.Visible := isExtended;
+  lblSectorDataRate.Visible := isExtended;
+  cboSectorDataRate.Visible := isExtended;
+
   // Identity
   edtImage.Text := ExtractFileName(FTrack.ParentSide.ParentDisk.ParentImage.FileName);
   edtPhysical.Text := 'Side ' + IntToStr(FTrack.Side + 1) + ' > Track ' + IntToStr(FTrack.Logical);
@@ -107,7 +117,7 @@ begin
   // Track details
   udLogicalID.Position := FTrack.Logical;
   udPhysicalID.Position := FTrack.Track;
-  udSize.Position := FTrack.Size;
+  edtSize.Text := IntToStr(FTrack.Size);
   edtBitLength.Caption := IntToStr(FTrack.BitLength);
 
   // Sector details
@@ -115,9 +125,7 @@ begin
   edtSectorGap.Text := IntToStr(FTrack.GapLength);
   edtSectorFiller.Text := IntToStr(FTrack.Filler);
   cboSectorDataRate.ItemIndex := Ord(FTrack.DataRate);
-
-  // Sector info
-  edtSectorSize.Text := IntToStr(FTrack.SectorSize);
+  cboSectorSize.SelText := IntToStr(FTrack.SectorSize);
 end;
 
 procedure TfrmTrackProperties.btnCancelClick(Sender: TObject);
@@ -151,6 +159,7 @@ begin
       GapLength := udSectorGap.Position;
       Filler := udSectorFiller.Position;
       DataRate := TDSKDataRate(cboSectorDataRate.ItemIndex);
+      SectorSize := StrToInt(cboSectorSize.SelText);
     end;
   frmMain.RefreshList;
 end;

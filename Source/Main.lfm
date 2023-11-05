@@ -1,10 +1,10 @@
 object frmMain: TfrmMain
-  Left = 1408
+  Left = 535
   Height = 384
-  Top = 483
+  Top = 369
   Width = 556
   AllowDropFiles = True
-  ClientHeight = 364
+  ClientHeight = 384
   ClientWidth = 556
   Color = clBtnFace
   Font.CharSet = ANSI_CHARSET
@@ -14,26 +14,27 @@ object frmMain: TfrmMain
   OnClose = FormClose
   OnCreate = FormCreate
   Position = poDesktopCenter
-  LCLVersion = '2.2.4.0'
+  LCLVersion = '3.0.0.1'
   object splVertical: TSplitter
     Left = 180
-    Height = 315
+    Height = 335
     Top = 26
     Width = 4
   end
   object pnlLeft: TPanel
     Left = 0
-    Height = 315
+    Height = 335
     Top = 26
     Width = 180
     Align = alLeft
     BevelOuter = bvNone
-    ClientHeight = 315
+    ClientHeight = 335
     ClientWidth = 180
+    ParentBackground = False
     TabOrder = 0
     object tvwMain: TTreeView
       Left = 0
-      Height = 296
+      Height = 316
       Top = 19
       Width = 180
       Align = alClient
@@ -44,6 +45,7 @@ object frmMain: TfrmMain
       RowSelect = True
       ScrollBars = ssAutoVertical
       ShowLines = False
+      ShowSeparators = False
       TabOrder = 1
       OnChange = tvwMainChange
       OnDblClick = tvwMainDblClick
@@ -59,30 +61,32 @@ object frmMain: TfrmMain
       BevelOuter = bvLowered
       BorderWidth = 1
       Caption = ' Workspace'
+      ParentBackground = False
       TabOrder = 0
     end
   end
   object statusBar: TStatusBar
     Left = 0
     Height = 23
-    Top = 341
+    Top = 361
     Width = 556
     AutoHint = True
     Panels = <>
   end
   object pnlRight: TPanel
     Left = 184
-    Height = 315
+    Height = 335
     Top = 26
     Width = 372
     Align = alClient
     BevelOuter = bvNone
-    ClientHeight = 315
+    ClientHeight = 335
     ClientWidth = 372
+    ParentBackground = False
     TabOrder = 1
     object DiskMap: TSpinDiskMap
       Left = 0
-      Height = 296
+      Height = 316
       Top = 19
       Width = 372
       Align = alClient
@@ -94,20 +98,9 @@ object frmMain: TfrmMain
       TrackMark = 5
       Visible = False
     end
-    object pnlListLabel: TPanel
-      Left = 0
-      Height = 19
-      Top = 0
-      Width = 372
-      Align = alTop
-      Alignment = taLeftJustify
-      BevelOuter = bvLowered
-      BorderWidth = 1
-      TabOrder = 0
-    end
     object memo: TMemo
       Left = 0
-      Height = 296
+      Height = 316
       Top = 19
       Width = 372
       Align = alClient
@@ -117,20 +110,39 @@ object frmMain: TfrmMain
     end
     object lvwMain: TListView
       Left = 0
-      Height = 296
+      Height = 316
       Top = 19
       Width = 372
       Align = alClient
       AllocBy = 20
-      Columns = <>
+      AutoSortIndicator = True
+      Columns = <      
+        item
+          AutoSize = True
+          Width = 0
+        end>
       ColumnClick = False
       GridLines = True
       HideSelection = False
       MultiSelect = True
       ReadOnly = True
       RowSelect = True
+      SortType = stText
       TabOrder = 1
       ViewStyle = vsReport
+      OnCompare = lvwMainCompare
+    end
+    object pnlListLabel: TPanel
+      Left = 0
+      Height = 19
+      Top = 0
+      Width = 372
+      Align = alTop
+      Alignment = taLeftJustify
+      BevelOuter = bvLowered
+      BorderWidth = 1
+      ParentBackground = False
+      TabOrder = 0
     end
   end
   object toolbar: TToolBar

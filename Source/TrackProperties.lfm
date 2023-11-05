@@ -1,7 +1,7 @@
 object frmTrackProperties: TfrmTrackProperties
-  Left = 1597
+  Left = 1191
   Height = 467
-  Top = 350
+  Top = 312
   Width = 375
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
@@ -53,7 +53,7 @@ object frmTrackProperties: TfrmTrackProperties
     0000
   }
   Position = poMainFormCenter
-  LCLVersion = '2.2.4.0'
+  LCLVersion = '3.0.0.1'
   object pnlTab: TPanel
     Left = 0
     Height = 437
@@ -64,6 +64,7 @@ object frmTrackProperties: TfrmTrackProperties
     BorderWidth = 5
     ClientHeight = 437
     ClientWidth = 375
+    ParentBackground = False
     TabOrder = 0
     object pagTabs: TPageControl
       Left = 5
@@ -210,13 +211,12 @@ object frmTrackProperties: TfrmTrackProperties
           ParentColor = False
         end
         object lblSectorSize: TLabel
-          Left = 12
+          Left = 216
           Height = 13
-          Top = 331
+          Top = 204
           Width = 23
           Alignment = taRightJustify
           Caption = 'Size:'
-          FocusControl = edtSectorSize
           ParentColor = False
         end
         object edtLogicalID: TEdit
@@ -250,7 +250,7 @@ object frmTrackProperties: TfrmTrackProperties
             'Single/Double'
           )
           Style = csDropDownList
-          TabOrder = 15
+          TabOrder = 14
         end
         object edtSize: TEdit
           Left = 280
@@ -259,20 +259,9 @@ object frmTrackProperties: TfrmTrackProperties
           Width = 49
           Alignment = taRightJustify
           MaxLength = 5
+          ReadOnly = True
           TabOrder = 4
           Text = '0'
-        end
-        object udSize: TUpDown
-          Left = 329
-          Height = 21
-          Top = 115
-          Width = 15
-          Associate = edtSize
-          Increment = 256
-          Max = 32767
-          Min = 0
-          Position = 0
-          TabOrder = 5
         end
         object edtImage: TEdit
           Left = 56
@@ -303,7 +292,7 @@ object frmTrackProperties: TfrmTrackProperties
           Width = 48
           Alignment = taRightJustify
           MaxLength = 3
-          TabOrder = 6
+          TabOrder = 5
           Text = '0'
         end
         object udPhysicalID: TUpDown
@@ -315,7 +304,7 @@ object frmTrackProperties: TfrmTrackProperties
           Max = 255
           Min = 0
           Position = 0
-          TabOrder = 7
+          TabOrder = 6
         end
         object edtSectorCount: TEdit
           Left = 72
@@ -324,7 +313,7 @@ object frmTrackProperties: TfrmTrackProperties
           Width = 43
           Alignment = taRightJustify
           MaxLength = 3
-          TabOrder = 9
+          TabOrder = 8
           Text = '0'
         end
         object udSectorCount: TUpDown
@@ -336,19 +325,7 @@ object frmTrackProperties: TfrmTrackProperties
           Max = 255
           Min = 0
           Position = 0
-          TabOrder = 10
-        end
-        object edtSectorSize: TEdit
-          Left = 73
-          Height = 21
-          Top = 328
-          Width = 43
-          Alignment = taRightJustify
-          Color = 16382457
-          MaxLength = 3
-          ReadOnly = True
-          TabOrder = 16
-          Text = '0'
+          TabOrder = 9
         end
         object bevIdentity: TBevel
           Left = 56
@@ -373,7 +350,7 @@ object frmTrackProperties: TfrmTrackProperties
           Width = 47
           Alignment = taRightJustify
           MaxLength = 5
-          TabOrder = 8
+          TabOrder = 7
           Text = '0'
         end
         object lblSectorGap: TLabel
@@ -393,7 +370,7 @@ object frmTrackProperties: TfrmTrackProperties
           Width = 43
           Alignment = taRightJustify
           MaxLength = 3
-          TabOrder = 11
+          TabOrder = 10
           Text = '0'
         end
         object lblSectorFiller: TLabel
@@ -413,7 +390,7 @@ object frmTrackProperties: TfrmTrackProperties
           Width = 43
           Alignment = taRightJustify
           MaxLength = 3
-          TabOrder = 13
+          TabOrder = 12
           Text = '0'
         end
         object udSectorGap: TUpDown
@@ -425,7 +402,7 @@ object frmTrackProperties: TfrmTrackProperties
           Max = 255
           Min = 0
           Position = 0
-          TabOrder = 12
+          TabOrder = 11
         end
         object udSectorFiller: TUpDown
           Left = 116
@@ -436,7 +413,30 @@ object frmTrackProperties: TfrmTrackProperties
           Max = 255
           Min = 0
           Position = 0
-          TabOrder = 14
+          TabOrder = 13
+        end
+        object cboSectorSize: TComboBox
+          Left = 280
+          Height = 21
+          Top = 200
+          Width = 64
+          ItemHeight = 13
+          ItemIndex = 0
+          Items.Strings = (
+            '128'
+            '256'
+            '512'
+            '1024'
+            '2048'
+            '4096'
+            '8192'
+            '16384'
+            '32768'
+          )
+          ParentBidiMode = False
+          Style = csDropDownList
+          TabOrder = 15
+          Text = '128'
         end
       end
     end
@@ -450,6 +450,7 @@ object frmTrackProperties: TfrmTrackProperties
     BevelOuter = bvNone
     ClientHeight = 30
     ClientWidth = 375
+    ParentBackground = False
     TabOrder = 1
     object btnOK: TButton
       Left = 133

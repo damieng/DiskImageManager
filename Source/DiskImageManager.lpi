@@ -31,7 +31,7 @@
       <MajorVersionNr Value="2"/>
       <MinorVersionNr Value="5"/>
       <RevisionNr Value="1"/>
-      <BuildNr Value="106"/>
+      <BuildNr Value="108"/>
       <StringTable CompanyName="Envy Technologies" InternalName="Disk Image Manager" LegalCopyright="Copyright 2002-2023 Damien Guard." OriginalFilename="DiskImageManager.exe" ProductName="Disk Image Manager"/>
     </VersionInfo>
     <BuildModes Count="2">
@@ -94,7 +94,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="12">
+    <Units Count="13">
       <Unit0>
         <Filename Value="DiskImageManager.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -143,14 +143,12 @@
         <ResourceBaseClass Value="Form"/>
       </Unit7>
       <Unit8>
-        <Filename Value="settings.pas"/>
+        <Filename Value="Settings.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Settings"/>
       </Unit8>
       <Unit9>
-        <Filename Value="filesystem.pas"/>
+        <Filename Value="FileSystem.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="FileSystem"/>
       </Unit9>
       <Unit10>
         <Filename Value="FormatAnalysis.pas"/>
@@ -163,6 +161,10 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit11>
+      <Unit12>
+        <Filename Value="Comparers.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit12>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -170,6 +172,7 @@
     <PathDelim Value="\"/>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
+      <OtherUnitFiles Value="$(LazarusDir)\lcl\units\$(TargetCPU)-$(TargetOS)"/>
       <UnitOutputDirectory Value="..\out\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>

@@ -14,7 +14,7 @@ unit Main;
 interface
 
 uses
-  DiskMap, DskImage, Utils, About, Options, SectorProperties, TrackProperties, Settings, FileSystem,
+  DiskMap, DskImage, Utils, About, Options, SectorProperties, TrackProperties, Settings, FileSystem, Comparers,
   Classes, Graphics, SysUtils, Forms, Dialogs, Menus, ComCtrls, ExtCtrls, Controls,
   Clipbrd, StdCtrls, FileUtil, StrUtils, LazFileUtils, LConvEncoding;
 
@@ -133,6 +133,7 @@ type
     procedure itmToolbarClick(Sender: TObject);
     procedure itmTrackPropertiesClick(Sender: TObject);
     procedure itmTrackUnformatClick(Sender: TObject);
+    procedure lvwMainCompare(Sender: TObject; Item1, Item2: TListItem; Data: integer; var Compare: integer);
     procedure popFileSystemPopup(Sender: TObject);
     procedure popListItemPopup(Sender: TObject);
     procedure tvwMainChange(Sender: TObject; Node: TTreeNode);
@@ -335,6 +336,11 @@ begin
 
   RefreshList;
   UpdateMenus;
+end;
+
+procedure TfrmMain.lvwMainCompare(Sender: TObject; Item1, Item2: TListItem; Data: integer; var Compare: integer);
+begin
+  Compare := CompareItems(Item1, Item2, lvwMain);
 end;
 
 procedure TfrmMain.popFileSystemPopup(Sender: TObject);
@@ -901,7 +907,8 @@ begin
   AddColumn('Physical');
   AddColumn('Track size');
   AddColumn('Sectors');
-  AddColumn('Sector size');
+  if (Side.ParentDisk.ParentImage.FileFormat = diStandardDSK) then
+    AddColumn('Sector size');
   AddColumn('Gap');
   AddColumn('Filler');
   if ShowModulation then AddColumn('Modulation');
@@ -928,7 +935,8 @@ begin
       Add(StrInt(Track.Track));
       Add(StrInt(Track.Size));
       Add(StrInt(Track.Sectors));
-      Add(StrInt(Track.SectorSize));
+      if (Track.ParentSide.ParentDisk.ParentImage.FileFormat = diStandardDSK) then
+        Add(StrInt(Track.SectorSize));
       Add(StrInt(Track.GapLength));
       Add(StrHex(Track.Filler));
       if ShowModulation then Add(DSKRecordingMode[Track.RecordingMode]);
@@ -1191,7 +1199,16 @@ procedure TfrmMain.RefreshListFiles(FileSystem: TDSKFileSystem);
 var
   DiskFile: TDSKFile;
   Attributes: string;
+  HasHeaders, HasUserAreas: boolean;
 begin
+  HasHeaders := False;
+  HasUserAreas := False;
+  for DiskFile in FileSystem.Directory do
+  begin
+    if DiskFile.User > 0 then HasUserAreas := True;
+    if DiskFile.HeaderType <> 'None' then HasHeaders := True;
+  end;
+
   with lvwMain.Columns do
   begin
     with Add do
@@ -1199,6 +1216,14 @@ begin
       Caption := 'File name';
       AutoSize := True;
     end;
+    if HasUserAreas then
+      with Add do
+      begin
+        Caption := 'User Area';
+        Alignment := taRightJustify;
+        AutoSize := True;
+      end;
+
     with Add do
     begin
       Caption := 'Blocks';
@@ -1222,20 +1247,24 @@ begin
       Caption := 'Attributes';
       AutoSize := True;
     end;
-    with Add do
+
+    if HasHeaders then
     begin
-      Caption := 'Header';
-      AutoSize := True;
-    end;
-    with Add do
-    begin
-      Caption := 'Checksum';
-      AutoSize := True;
-    end;
-    with Add do
-    begin
-      Caption := 'Meta';
-      AutoSize := True;
+      with Add do
+      begin
+        Caption := 'Header';
+        AutoSize := True;
+      end;
+      with Add do
+      begin
+        Caption := 'Checksum';
+        AutoSize := True;
+      end;
+      with Add do
+      begin
+        Caption := 'Meta';
+        AutoSize := True;
+      end;
     end;
   end;
 
@@ -1247,10 +1276,8 @@ begin
       with Items.Add do
       begin
         Data := DiskFile;
-        if DiskFile.User <> 0 then
-          Caption := StrInt(DiskFile.User) + ':' + DiskFile.FileName
-        else
-          Caption := DiskFile.FileName;
+        Caption := DiskFile.FileName;
+        if HasUserAreas then SubItems.Add(StrInt(DiskFile.User));
         SubItems.Add(StrInt(DiskFile.Blocks.Count));
         SubItems.Add(StrFileSize(DiskFile.SizeOnDisk));
         SubItems.Add(StrFileSize(DiskFile.Size));
@@ -1259,9 +1286,12 @@ begin
         if (DiskFile.System) then Attributes := Attributes + 'S';
         if (DiskFile.Archived) then Attributes := Attributes + 'A';
         SubItems.Add(Attributes);
-        SubItems.Add(DiskFile.HeaderType);
-        SubItems.Add(StrYesNo(DiskFile.Checksum));
-        SubItems.Add(DiskFile.Meta);
+        if HasHeaders then
+        begin
+          SubItems.Add(DiskFile.HeaderType);
+          SubItems.Add(StrYesNo(DiskFile.Checksum));
+          SubItems.Add(DiskFile.Meta);
+        end;
       end;
     EndUpdate;
   end;
