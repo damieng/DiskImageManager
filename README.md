@@ -64,9 +64,9 @@ Identification of copy-protection schemes both signed and somtimes unsigned:
 
 ### File system
 
-* Can list a CP/M file system such as used on +3, PCW and CPC.
+* Can list a CP/M file system such as used on +3, PCW and CPC & Tatung Einstein
 * Understands +3 DOS and CPC file headers
-* Experimental binary "File save as..." available from file entry.
+* Binary export/saving available for individual or all files with & without headers
 
 ### Modification
 
@@ -82,7 +82,7 @@ Identification of copy-protection schemes both signed and somtimes unsigned:
 
 ## Building
 
-This application requires the [Lazarus development system](http://www.lazarus.freepascal.org/) and was tested using Lazarus IDE v2.2.4 on Windows 11.
+This application requires the [Lazarus development system](http://www.lazarus.freepascal.org/) and was tested using Lazarus IDE v3.0 RC-2 on Windows 11.
 
 To be able to build and visually edit the forms you will need to install the supplied DIMComponents package. To do that:
 
@@ -111,6 +111,9 @@ To be able to build and visually edit the forms you will need to install the sup
 
 ### Sector hex/ASCII view
 ![Screenshot with hex sector data](https://user-images.githubusercontent.com/118951/225837013-e97c4fdd-aa6c-4bff-81a4-134813175d57.png)
+
+### Track properties
+![Screenshot of track properties window](https://github.com/damieng/DiskImageManager/assets/118951/837f1945-0309-4f71-97eb-7322f4424467)
 
 ### Sector properties
 ![Screenshot of sector properties window](https://user-images.githubusercontent.com/118951/225837089-0b4b316e-65cb-4bec-8ba3-28b2e757a708.png)
