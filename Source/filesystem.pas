@@ -165,6 +165,7 @@ begin
       begin
         PrimaryDiskFile.Blocks.AddList(ExtentEntry.Blocks);
         PrimaryDiskFile.SizeOnDisk := PrimaryDiskFile.SizeOnDisk + ExtentEntry.SizeOnDisk;
+        PrimaryDiskFile.Size := PrimaryDiskFile.Size + ExtentEntry.Size;
         break;
       end;
     end;
@@ -350,7 +351,7 @@ begin
     repeat
       begin
         // Final (possibly partial) sector
-        if (BytesLeft <= Sector.DataSize) then
+        if (BytesLeft < Sector.DataSize) then
         begin
           Move(Sector.Data, FileData[TargetIdx], BytesLeft);
           SectorsLeft := 0;
