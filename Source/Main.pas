@@ -1226,6 +1226,12 @@ begin
 
     with Add do
     begin
+      Caption := 'Index';
+      Alignment := taRightJustify;
+      AutoSize := True;
+    end;
+    with Add do
+    begin
       Caption := 'Blocks';
       Alignment := taRightJustify;
       AutoSize := True;
@@ -1278,6 +1284,7 @@ begin
         Data := DiskFile;
         Caption := DiskFile.FileName;
         if HasUserAreas then SubItems.Add(StrInt(DiskFile.User));
+        SubItems.Add(StrInt(DiskFile.EntryIndex));
         SubItems.Add(StrInt(DiskFile.Blocks.Count));
         SubItems.Add(StrFileSize(DiskFile.SizeOnDisk));
         SubItems.Add(StrFileSize(DiskFile.Size));

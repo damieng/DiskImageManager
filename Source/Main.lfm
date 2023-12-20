@@ -1,10 +1,10 @@
 object frmMain: TfrmMain
-  Left = 535
-  Height = 384
-  Top = 369
+  Left = 2207
+  Height = 378
+  Top = 602
   Width = 556
   AllowDropFiles = True
-  ClientHeight = 384
+  ClientHeight = 378
   ClientWidth = 556
   Color = clBtnFace
   Font.CharSet = ANSI_CHARSET
@@ -14,27 +14,27 @@ object frmMain: TfrmMain
   OnClose = FormClose
   OnCreate = FormCreate
   Position = poDesktopCenter
-  LCLVersion = '3.0.0.1'
+  LCLVersion = '3.0.0.2'
   object splVertical: TSplitter
     Left = 180
-    Height = 335
+    Height = 329
     Top = 26
     Width = 4
   end
   object pnlLeft: TPanel
     Left = 0
-    Height = 335
+    Height = 329
     Top = 26
     Width = 180
     Align = alLeft
     BevelOuter = bvNone
-    ClientHeight = 335
+    ClientHeight = 329
     ClientWidth = 180
     ParentBackground = False
     TabOrder = 0
     object tvwMain: TTreeView
       Left = 0
-      Height = 316
+      Height = 310
       Top = 19
       Width = 180
       Align = alClient
@@ -45,7 +45,6 @@ object frmMain: TfrmMain
       RowSelect = True
       ScrollBars = ssAutoVertical
       ShowLines = False
-      ShowSeparators = False
       TabOrder = 1
       OnChange = tvwMainChange
       OnDblClick = tvwMainDblClick
@@ -68,25 +67,25 @@ object frmMain: TfrmMain
   object statusBar: TStatusBar
     Left = 0
     Height = 23
-    Top = 361
+    Top = 355
     Width = 556
     AutoHint = True
     Panels = <>
   end
   object pnlRight: TPanel
     Left = 184
-    Height = 335
+    Height = 329
     Top = 26
     Width = 372
     Align = alClient
     BevelOuter = bvNone
-    ClientHeight = 335
+    ClientHeight = 329
     ClientWidth = 372
     ParentBackground = False
     TabOrder = 1
     object DiskMap: TSpinDiskMap
       Left = 0
-      Height = 316
+      Height = 310
       Top = 19
       Width = 372
       Align = alClient
@@ -100,7 +99,7 @@ object frmMain: TfrmMain
     end
     object memo: TMemo
       Left = 0
-      Height = 316
+      Height = 310
       Top = 19
       Width = 372
       Align = alClient
@@ -110,7 +109,7 @@ object frmMain: TfrmMain
     end
     object lvwMain: TListView
       Left = 0
-      Height = 316
+      Height = 310
       Top = 19
       Width = 372
       Align = alClient

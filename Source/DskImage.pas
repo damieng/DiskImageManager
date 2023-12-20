@@ -383,7 +383,7 @@ implementation
 
 uses FormatAnalysis;
 
-  // Image
+// Image
 constructor TDSKImage.Create;
 begin
   inherited;
@@ -441,6 +441,7 @@ begin
   else
   begin
     MessageDlg('Unknown file type. Load aborted.', mtWarning, [mbOK], 0);
+    Corrupt := True;
   end;
 end;
 
@@ -595,6 +596,7 @@ begin
           begin
             MessageDlg(SysUtils.Format('%s: Side %d track %d not found at offset %d to %d. Load aborted.',
               [ExtractFileName(FileName), SIdx, TIdx, TOff, DiskFile.Position]), mtError, [mbOK], 0);
+            Corrupt := True;
             exit;
           end;
 

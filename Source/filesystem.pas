@@ -53,6 +53,7 @@ type
     System: boolean;
     Archived: boolean;
     FirstSector: TDSKSector;
+    EntryIndex: integer;
     Extent: integer;
 
     HeaderType: string;
@@ -140,6 +141,7 @@ begin
     if Sector.Data[SectorOffset] < 32 then
     begin
       DiskFile := ReadFileEntry(Sector.Data, SectorOffset);
+      DiskFile.EntryIndex := Index;
       if (DiskFile.FileName <> '') and (DiskFile.Blocks.Count > 0) then
         if DiskFile.Extent = 0 then
           Result.Add(DiskFile)

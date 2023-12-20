@@ -1,7 +1,7 @@
 object frmSectorProperties: TfrmSectorProperties
-  Left = 1760
+  Left = 2710
   Height = 467
-  Top = 465
+  Top = 460
   Width = 375
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
@@ -53,7 +53,7 @@ object frmSectorProperties: TfrmSectorProperties
     0000
   }
   Position = poMainFormCenter
-  LCLVersion = '2.2.4.0'
+  LCLVersion = '3.0.0.2'
   object pnlTab: TPanel
     Left = 0
     Height = 437
@@ -65,6 +65,7 @@ object frmSectorProperties: TfrmSectorProperties
     BorderWidth = 5
     ClientHeight = 437
     ClientWidth = 375
+    ParentBackground = False
     TabOrder = 0
     object pagTabs: TPageControl
       Left = 5
@@ -317,9 +318,9 @@ object frmSectorProperties: TfrmSectorProperties
             'Formatted in use'
             'Formatted filled'
           )
-          OnChange = cboStatusChange
           Style = csDropDownList
           TabOrder = 11
+          OnChange = cboStatusChange
         end
         object edtSize: TEdit
           Left = 56
@@ -328,9 +329,9 @@ object frmSectorProperties: TfrmSectorProperties
           Width = 49
           Alignment = taRightJustify
           MaxLength = 5
-          OnChange = edtSizeChange
           TabOrder = 5
           Text = '0'
+          OnChange = edtSizeChange
         end
         object udSize: TUpDown
           Left = 105
@@ -419,9 +420,9 @@ object frmSectorProperties: TfrmSectorProperties
           Width = 31
           Alignment = taRightJustify
           MaxLength = 3
-          OnChange = edtSizeChange
           TabOrder = 12
           Text = '0'
+          OnChange = edtSizeChange
         end
         object udFDCSize: TUpDown
           Left = 330
@@ -472,6 +473,7 @@ object frmSectorProperties: TfrmSectorProperties
     BevelOuter = bvNone
     ClientHeight = 30
     ClientWidth = 375
+    ParentBackground = False
     TabOrder = 1
     object btnOK: TButton
       Left = 133
@@ -482,8 +484,8 @@ object frmSectorProperties: TfrmSectorProperties
       Caption = 'OK'
       Default = True
       ModalResult = 1
-      OnClick = btnOKClick
       TabOrder = 0
+      OnClick = btnOKClick
     end
     object btnCancel: TButton
       Left = 213
@@ -493,8 +495,8 @@ object frmSectorProperties: TfrmSectorProperties
       Anchors = [akTop, akRight]
       Caption = 'Cancel'
       ModalResult = 2
-      OnClick = btnCancelClick
       TabOrder = 1
+      OnClick = btnCancelClick
     end
     object btnApply: TButton
       Left = 293
@@ -504,8 +506,8 @@ object frmSectorProperties: TfrmSectorProperties
       Anchors = [akTop, akRight]
       Caption = '&Apply'
       ModalResult = 2
-      OnClick = btnApplyClick
       TabOrder = 2
+      OnClick = btnApplyClick
     end
   end
 end
