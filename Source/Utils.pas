@@ -33,6 +33,7 @@ function StrBufPos(ByteArray: array of byte; SubString: string): integer;
 
 function CompareBlock(A: array of char; B: string): boolean;
 function CompareBlockStart(A: array of char; B: string; Start: integer): boolean;
+function CompareBlockInsensitive(A: array of char; B: string): boolean;
 
 function FontToDescription(ThisFont: TFont): string;
 function FontFromDescription(Description: string): TFont;
@@ -84,9 +85,9 @@ var
 begin
   Result := True;
   Idx := 0;
-  while (Result and (Idx < Length(B) - 1)) do
+  while Result and (Idx < Length(B) - 1) do
   begin
-    if (A[Idx] <> B[Idx + 1]) then
+    if A[Idx] <> B[Idx + 1] then
       Result := False;
     Inc(Idx);
   end;
@@ -99,9 +100,27 @@ var
 begin
   Result := True;
   Idx := 0;
-  while (Result and (Idx < Length(B) - 1)) do
+  while Result and (Idx < Length(B) - 1) do
   begin
-    if (A[Idx + Start] <> B[Idx + 1]) then
+    if A[Idx + Start] <> B[Idx + 1] then
+      Result := False;
+    Inc(Idx);
+  end;
+end;
+
+// Compare two char arrays case insensitively
+function CompareBlockInsensitive(A: array of char; B: string): boolean;
+var
+  Idx: integer;
+  AChar, BChar: Char;
+begin
+  Result := True;
+  Idx := 0;
+  while Result and (Idx < Length(B) - 1) do
+  begin
+    AChar := UpCase(A[Idx]);
+    BChar := UpCase(B[Idx + 1]);
+    if AChar <> BChar then
       Result := False;
     Inc(Idx);
   end;

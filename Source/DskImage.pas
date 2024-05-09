@@ -430,7 +430,14 @@ begin
   if CompareBlock(DSKInfoBlock.DiskInfoBlock, 'MV - CPC') then
     FileFormat := diStandardDSK;
   if CompareBlock(DSKInfoBlock.DiskInfoBlock, 'EXTENDED CPC DSK File') then
+    FileFormat := diExtendedDSK
+  else
+  if CompareBlockInsensitive(DSKInfoBlock.DiskInfoBlock, 'EXTENDED CPC DSK FILE') then
+  begin
     FileFormat := diExtendedDSK;
+    Corrupt := True;
+    Messages.Add('File signature has incorrect case.');
+  end;
 
   if FileFormat <> diInvalid then
   begin
