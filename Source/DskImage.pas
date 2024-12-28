@@ -1763,8 +1763,6 @@ var
   Check: extended;
 begin
   FFormat := dsFormatInvalid;
-  FirstSector := FParentDisk.GetFirstSector;
-  if FirstSector = nil then exit;
 
   if FParentDisk.DetectFormat = 'Einstein' then
   begin
@@ -1779,6 +1777,9 @@ begin
     FAllocationSize := asWord;
     exit;
   end;
+
+  FirstSector := FParentDisk.GetLogicalTrack(0).GetFirstLogicalSector();
+  if FirstSector = nil then exit;
 
   with FirstSector do
   begin

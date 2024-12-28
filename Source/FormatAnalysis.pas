@@ -57,8 +57,7 @@ begin
   // Amstrad formats (9 sectors, 512 size, SS or DS)
   if (FirstTrack.Sectors = 9) and (FirstSector.DataSize = 512) then
   begin
-    // TODO: Identify format by lowest sector ID
-    case FirstTrack.LowSectorID of
+    case FirstSector.ID of
       1: begin
         Result := 'Amstrad PCW/Spectrum +3';
         case FirstSector.GetModChecksum(256) of
@@ -82,7 +81,7 @@ begin
   else
   begin
     // Other possible formats...
-    case FirstTrack.LowSectorID of
+    case FirstSector.ID of
       1: if FirstTrack.Sectors = 8 then Result := 'Amstrad CPC IBM';
       65: Result := 'Amstrad CPC system custom (maybe)';
       193: Result := 'Amstrad CPC data custom (maybe)';
@@ -124,7 +123,7 @@ begin
 
   // Sam Coupe formats
   if (Disk.Sides = 2) and (FirstTrack.Sectors = 10) and (Disk.Side[0].HighTrackCount = 80) and
-    (FirstTrack.LowSectorID = 1) and (FirstSector.DataSize = 512) then
+    (FirstSector.ID = 1) and (FirstSector.DataSize = 512) then
   begin
     Result := 'MGT SAM Coupe';
     if StrInByteArray(FirstSector.Data, 'BDOS', 232) then
