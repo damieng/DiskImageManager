@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 2207
+  Left = 1471
   Height = 378
-  Top = 602
+  Top = 378
   Width = 556
   AllowDropFiles = True
   ClientHeight = 378
@@ -14,7 +14,7 @@ object frmMain: TfrmMain
   OnClose = FormClose
   OnCreate = FormCreate
   Position = poDesktopCenter
-  LCLVersion = '3.0.0.2'
+  LCLVersion = '3.2.0.0'
   object splVertical: TSplitter
     Left = 180
     Height = 329
@@ -239,7 +239,8 @@ object frmMain: TfrmMain
         OnClick = itmOpenClick
       end
       object itmOpenRecent: TMenuItem
-        Caption = 'Open recent'
+        Caption = 'Open Recent'
+        Hint = 'Open recently owned files'
       end
       object N1: TMenuItem
         Caption = '-'
@@ -253,7 +254,7 @@ object frmMain: TfrmMain
         OnClick = itmSaveClick
       end
       object itmSaveCopyAs: TMenuItem
-        Caption = '&Save copy as...'
+        Caption = 'Save Copy &As...'
         Enabled = False
         Hint = 'Save current disk image to a file with a new name'
         OnClick = itmSaveCopyAsClick
@@ -269,7 +270,7 @@ object frmMain: TfrmMain
         OnClick = itmCloseClick
       end
       object itmCloseAll: TMenuItem
-        Caption = 'C&lose all'
+        Caption = 'C&lose All'
         Hint = 'Close all disk images'
         ImageIndex = 17
         OnClick = itmCloseAllClick
@@ -295,7 +296,7 @@ object frmMain: TfrmMain
         OnClick = itmEditCopyClick
       end
       object itmEditSelectAll: TMenuItem
-        Caption = 'Se&lect all'
+        Caption = 'Se&lect All'
         Hint = 'Select all items'
         ShortCut = 16449
         OnClick = itmEditSelectAllClick
@@ -311,7 +312,7 @@ object frmMain: TfrmMain
         OnClick = itmFindClick
       end
       object itmFindNext: TMenuItem
-        Caption = 'Find next'
+        Caption = 'Find Next'
         Hint = 'Find the next instance in the disk image'
         ShortCut = 114
         OnClick = itmFindNextClick
@@ -321,12 +322,13 @@ object frmMain: TfrmMain
       Caption = '&View'
       Hint = 'Change view options'
       object itmToolbar: TMenuItem
-        Caption = 'Toolbar'
+        Caption = '&Toolbar'
         Checked = True
+        Hint = 'Toggle the toolbar visibility'
         OnClick = itmToolbarClick
       end
       object itmStatusBar: TMenuItem
-        Caption = 'Status bar'
+        Caption = '&Status Bar'
         Checked = True
         Hint = 'Toggle the status bar visibility'
         OnClick = itmStatusBarClick
@@ -335,7 +337,7 @@ object frmMain: TfrmMain
         Caption = '-'
       end
       object itmDarkUnusedSectors: TMenuItem
-        Caption = '&Dark unused sectors'
+        Caption = '&Darken Unused Sectors'
         Hint = 'Toggle whether unused sectors are shown darker'
         OnClick = itmDarkUnusedSectorsClick
       end
@@ -343,14 +345,13 @@ object frmMain: TfrmMain
         Caption = '-'
       end
       object itmOptions: TMenuItem
-        Caption = 'Options...'
-        Hint = 'Preferences and options'
+        Caption = '&Options...'
+        Hint = 'Set various preferences and options'
         OnClick = itmOptionsClick
       end
     end
     object itmHelp: TMenuItem
       Caption = '&Help'
-      Hint = 'Assistance'
       object itmAbout: TMenuItem
         Caption = '&About Disk Image Manager'
         Hint = 'Show the credits for Disk Image Manager'
@@ -650,12 +651,14 @@ object frmMain: TfrmMain
     Left = 504
     Top = 176
     object itmSaveMapAs: TMenuItem
-      Caption = 'Save &as...'
+      Caption = 'Save As...'
+      Hint = 'Save this disk map as an image'
       ImageIndex = 20
       OnClick = itmSaveMapAsClick
     end
     object itmCopyMapToClipboard: TMenuItem
-      Caption = 'Copy to clipboard'
+      Caption = 'Copy to Clipboard'
+      Hint = 'Copy this disk map to the clipboard as an image'
       ImageIndex = 19
       OnClick = itmCopyMapToClipboardClick
     end
@@ -663,7 +666,8 @@ object frmMain: TfrmMain
       Caption = '-'
     end
     object itmDarkBlankSectorsPop: TMenuItem
-      Caption = '&Dark blank sectors'
+      Caption = '&Darken Unused Sectors'
+      Hint = 'Toggle whether unused sectors are shown darker'
       OnClick = itmDarkBlankSectorsPopClick
     end
   end
@@ -679,6 +683,7 @@ object frmMain: TfrmMain
     object itmSectorProperties: TMenuItem
       Caption = 'Properties'
       Default = True
+      Hint = 'View properties of this sector'
       ImageIndex = 21
       OnClick = itmSectorPropertiesClick
     end
@@ -686,16 +691,19 @@ object frmMain: TfrmMain
       Caption = '-'
     end
     object itmSectorResetFDC: TMenuItem
-      Caption = 'Reset FDC flags'
+      Caption = 'Reset FDC Flags'
+      Hint = 'Reset the disk controller flags for this sector'
       ImageIndex = 22
       OnClick = itmSectorResetFDCClick
     end
     object itmSectorBlankData: TMenuItem
-      Caption = 'Format'
+      Caption = 'Format Sector'
+      Hint = 'Format this sector'
       OnClick = itmSectorBlankDataClick
     end
     object itmSectorUnformat: TMenuItem
-      Caption = 'Unformat'
+      Caption = 'Unformat Sector'
+      Hint = 'Unformat this sector'
       OnClick = itmSectorUnformatClick
     end
   end
@@ -705,7 +713,8 @@ object frmMain: TfrmMain
     Left = 328
     Top = 176
     object itmCopyDetailsClipboard: TMenuItem
-      Caption = 'Copy details to clipboard'
+      Caption = 'Copy Details to Clipboard'
+      Hint = 'Copy details about this file to the clipboard as text'
       ImageIndex = 16
       OnClick = itmEditCopyClick
     end
@@ -713,43 +722,51 @@ object frmMain: TfrmMain
       Caption = '-'
     end
     object itmFileSector: TMenuItem
-      Caption = 'Jump to first sector'
+      Caption = 'Jump to First Sector'
+      Hint = 'Jump to the first sector used by this file'
       OnClick = itmFileSectorClick
     end
     object Separator2: TMenuItem
       Caption = '-'
     end
     object itmSaveFile: TMenuItem
-      Caption = 'Save file'
+      Caption = 'Save File'
+      Hint = 'Save this file'
       ImageIndex = 23
       object itemSaveFileWithHeader: TMenuItem
-        Caption = 'including its header as...'
+        Caption = 'Including Its Header As...'
+        Hint = 'Save this file including its filesystem header'
         OnClick = itmSaveFileWithHeaderAsClick
       end
       object itmSaveFileWithoutHeader: TMenuItem
-        Caption = 'without its header as...'
+        Caption = 'Without Its Header As...'
+        Hint = 'Save this file without its filesystem header'
         OnClick = itmSaveFileAsClick
       end
     end
     object itmSaveHeaderlessFile: TMenuItem
-      Caption = 'Save file as...'
+      Caption = 'Save File As...'
       ImageIndex = 23
       OnClick = itmSaveFileWithHeaderAsClick
     end
     object itmSaveSelectedFiles: TMenuItem
-      Caption = 'Save selected files'
+      Caption = 'Save Selected Files'
+      Hint = 'Save selected files'
       ImageIndex = 24
       object itmSaveSelectedWithHeader: TMenuItem
-        Caption = 'including their headers to...'
+        Caption = 'Including Their Headers To...'
+        Hint = 'Save selected files including their filesystem headers'
         OnClick = itmSaveSelectedFilesWithHeadersToClick
       end
       object itmSaveSelectedWithoutHeader: TMenuItem
-        Caption = 'without their headers to...'
+        Caption = 'Without Their Headers To...'
+        Hint = 'Save selected files without their filesystem headers'
         OnClick = itmSaveSelectedFilesToClick
       end
     end
     object itmSaveSelectedHeaderlessFiles: TMenuItem
-      Caption = 'Save selected files to...'
+      Caption = 'Save Selected Files To...'
+      Hint = 'Save selected files to a folder'
       ImageIndex = 24
       OnClick = itmSaveSelectedFilesWithHeadersToClick
     end
@@ -776,6 +793,7 @@ object frmMain: TfrmMain
     object itmTrackProperties: TMenuItem
       Caption = 'Properties'
       Default = True
+      Hint = 'View properties of this track'
       ImageIndex = 21
       OnClick = itmTrackPropertiesClick
     end
@@ -783,7 +801,8 @@ object frmMain: TfrmMain
       Caption = '-'
     end
     object itmTrackUnformat: TMenuItem
-      Caption = 'Unformat'
+      Caption = 'Unformat Track'
+      Hint = 'Unformat this track'
       OnClick = itmTrackUnformatClick
     end
   end
@@ -793,7 +812,8 @@ object frmMain: TfrmMain
     Left = 328
     Top = 240
     object itmCopyDetailsClipboard1: TMenuItem
-      Caption = 'Copy details to clipboard'
+      Caption = 'Copy File Details to Clipboard'
+      Hint = 'Copy the details of this file to the clipboard as text'
       ImageIndex = 16
       OnClick = itmEditCopyClick
     end
@@ -801,19 +821,23 @@ object frmMain: TfrmMain
       Caption = '-'
     end
     object itmSaveAllFiles: TMenuItem
-      Caption = 'Save all files'
+      Caption = 'Save All Files'
+      Hint = 'Save all files to a specific folder'
       ImageIndex = 24
       object itmSaveAllFilesWithHeadersTo: TMenuItem
-        Caption = 'including their headers to...'
+        Caption = 'Including Their Headers To...'
+        Hint = 'Save all files including their additional file system header information'
         OnClick = itmSaveAllFilesWithHeadersToClick
       end
       object itmSaveAllFilesWithoutHeadersTo: TMenuItem
-        Caption = 'without their headers to...'
+        Caption = 'Without Their Headers To...'
+        Hint = 'Save all files without their additional file system header information'
         OnClick = itmSaveAllFilesWithoutHeadersToClick
       end
     end
     object itmSaveAllFilesTo: TMenuItem
-      Caption = 'Save all files to...'
+      Caption = 'Save All Files To...'
+      Hint = 'Save all files to a specific folder '
       ImageIndex = 24
       OnClick = itmSaveAllFilesToClick
     end
