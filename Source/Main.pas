@@ -435,6 +435,7 @@ var
   DiskFile: TDSKFile;
   AllHeaderlessFilesSelected: boolean;
   ListItem: TListItem;
+  DataSelect: TObject;
 begin
   itmSaveFile.Visible := False;
   itmSaveHeaderlessFile.Visible := False;
@@ -452,12 +453,15 @@ begin
   // In the case of multiple files selected we need to know if any have headers
   AllHeaderlessFilesSelected := True;
   for ListItem in lvwMain.Items do
-    if (ListItem.Selected) and (TObject(ListItem.Data).ClassType = TDSKFile) then
-      if TDSKFile(ListItem.Data).HeaderType <> 'None' then
+    if (ListItem.Selected) and (ListItem.Data <> nil) then
+    begin
+      DataSelect := TObject(ListItem.Data);
+      if (DataSelect.ClassType = TDSKFile) and (TDSKFile(ListItem.Data).HeaderType <> 'None') then
       begin
         AllHeaderlessFilesSelected := False;
         Break;
       end;
+    end;
 
   itmSaveSelectedFiles.Visible := not AllHeaderlessFilesSelected;
   itmSaveSelectedFiles.Caption := Format('Save %d selected files', [lvwMain.SelCount]);
@@ -1598,7 +1602,7 @@ begin
     Result := True;
     exit;
   end;
-  Result := MessageDlg('You are about to ' + Action + ' this ' + Upon + ' ' + CR + CR +
+  Result := MessageDlg('You are about to ' + Action + ' this ' + Upon + '. ' + CR + CR +
     'Do you know what you are doing?', mtWarning, [mbYes, mbNo], 0) = mrYes;
 end;
 
