@@ -527,6 +527,8 @@ var
   TrackSizeIdx: integer;
   SizeT: word;
   FoundIncorrectTrackMarkers: boolean;
+  NextTrackPosition: integer;
+  ErrorMessage: string;
 begin
   Result := False;
   FoundIncorrectTrackMarkers := False;
@@ -555,6 +557,10 @@ begin
 
   // Load the tracks in
   for TIdx := 0 to DSKInfoBlock.Disk_NumTracks - 1 do
+  begin
+    if (TIdx = 1) then
+     Corrupt := False;
+
     for SIdx := 0 to DSKInfoBlock.Disk_NumSides - 1 do
     begin
       with Disk.Side[SIdx].Track[TIdx] do
@@ -601,11 +607,23 @@ begin
           else
           if TRKInfoBlock.TrackData <> DiskInfoTrack then
           begin
-            MessageDlg(SysUtils.Format('%s: Side %d track %d not found at offset %d to %d. Load aborted.',
-              [ExtractFileName(FileName), SIdx, TIdx, TOff, DiskFile.Position]), mtError, [mbOK], 0);
-            Corrupt := True;
-            exit;
+            DiskFile.Position := NextTrackPosition;
+            DiskFile.ReadBuffer(TRKInfoBlock, SizeOf(TRKInfoBlock));
+            Messages.Add(SysUtils.Format('Side %d track %d contained %d bytes unused by a sector', [SIdx, TIdx, NextTrackPosition - TOff]));
+            TOff := DiskFile.Position - 256;
+
+            if TRKInfoBlock.TrackData <> DiskInfoTrack then
+            begin
+              ErrorMessage := SysUtils.Format('Side %d track %d not found at offset %d to %d. Load stopped.',
+                [SIdx, TIdx, TOff, DiskFile.Position]);
+              Messages.Add(ErrorMessage);
+              MessageDlg(ExtractFileName(FileName) + ': ' + ErrorMessage, mtError, [mbOK], 0);
+              Corrupt := True;
+              exit;
+            end;
           end;
+
+          NextTrackPosition := TOff + SizeT + 256;
 
           // Set various track info properties
           Track := TRKInfoBlock.TIB_TrackNum;
@@ -669,6 +687,7 @@ begin
         end;
       end;
     end;
+  end;
 
   if (FileFormat = diExtendedDSK) and (DiskFile.Position < DiskFile.Size) then
   begin
