@@ -497,6 +497,7 @@ function TDSKImage.FindText(From: TDSKSector; Text: string; CaseSensitive: boole
 var
   NextSector: TDSKSector;
 begin
+  Result := nil;
   if From = nil then
     NextSector := Disk.Side[0].Track[0].Sector[0]
   else
@@ -532,6 +533,7 @@ var
 begin
   Result := False;
   FoundIncorrectTrackMarkers := False;
+  NextTrackPosition := 0;
 
   DiskFile.ReadBuffer(DSKInfoBlock, SizeOf(DSKInfoBlock));
 
@@ -1353,6 +1355,7 @@ function TDSKTrack.GetFirstLogicalSector: TDSKSector;
 var
   Sector: TDSKSector;
 begin
+  Result := nil;
   if not IsFormatted then exit;
 
   Result := self.Sector[0];

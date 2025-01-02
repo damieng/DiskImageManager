@@ -280,7 +280,7 @@ var
   Sig: string;
   CalcChecksum: byte;
   Idx: integer;
-  Length, Param1, Param2: word;
+  Param1: word;
 begin
   Sig := StrBlockClean(Data, 0, 8);
   if Sig <> 'PLUS3DOS' then exit;
@@ -294,9 +294,7 @@ begin
   DiskFile.Size := Data[11] + (Data[12] << 8) + (Data[13] << 16) + (Data[14] << 24);
   DiskFile.HeaderSize := 128;
 
-  Length := Data[16] + (Data[17] << 8);
   Param1 := Data[18] + (Data[19] << 8);
-  Param2 := Data[20] + (Data[21] << 8);
 
   case Data[15] of
     0: begin
@@ -307,7 +305,7 @@ begin
     end;
     1: DiskFile.Meta := Format('DATA %s(%d)', [char(Data[19] - 64), Data[129] + (Data[130] << 8)]);
     2: DiskFile.Meta := Format('DATA %s$(%d)', [char(Data[19] - 128), Data[129] + (Data[130] << 8)]);
-    3: DiskFile.Meta := Format('CODE %d,%d', [Param1, Length]);
+    3: DiskFile.Meta := Format('CODE %d,%d', [Param1,  Data[16] + (Data[17] << 8)]);
     else
       DiskFile.Meta := Format('Custom 0x%x', [Data[15]]);
   end;
