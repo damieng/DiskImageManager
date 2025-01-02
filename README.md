@@ -2,9 +2,9 @@
 
 Disk Image Manager is an application for examining and manipulating disk images in the Standard and Extended DSK format used by many Spectrum, Amstrad PCW and CPC emulators.
 
-Many of this tools features and functions were driven by the Spectrum Disk Preservation team which used this format and tool to help manage the selection and testing of disk images archived to The World of Spectrum and The TZX Vault.
+Many of this tool's features and functions were driven by the Spectrum Disk Preservation team which used this format and tool to help manage the selection and testing of disk images archived to The World of Spectrum and The TZX Vault.
 
-These images are traditionally created with CPDRead under DOS but Simon Owen's mordern [SamDisk](http://simonowen.com/samdisk/) works great under Windows and provides for much more advanced imaging especially around copy-protected disks.
+These images are traditionally created with CPDRead under DOS but Simon Owen's modern [SamDisk](http://simonowen.com/samdisk/) works great under Windows and provides for much more advanced imaging especially around copy-protected disks.
 
 ## Features
 
@@ -125,7 +125,7 @@ To be able to build and visually edit the forms you will need to install the sup
 
 - Rename file
 - File property sheet to view/modify directory entry and headers
-- Optimize disk  (+3, CPC) (defrag + interleave)
+- Optimize disk (+3, CPC) (defrag + interleave)
 - List BASIC programs (+3, CPC)
 - View image files (+3, CPC)
 - Add files to disk
