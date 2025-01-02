@@ -20,7 +20,6 @@
         <TextName Value="Disk Image Manager"/>
         <TextDesc Value="A manager for Spectrum, PCW and CPC .DSK files."/>
       </XPManifest>
-      <Icon Value="0"/>
     </General>
     <i18n>
       <EnableI18N LFM="False"/>
