@@ -62,6 +62,7 @@ type
     itmAbout: TMenuItem;
     dlgOpen: TOpenDialog;
     N8: TMenuItem;
+    pnlMemo: TPanel;
     pnlLeft: TPanel;
     dlgSaveBinary: TSaveDialog;
     dlgSelectDirectory: TSelectDirectoryDialog;
@@ -676,7 +677,7 @@ begin
   if (lvwMain.Selected = nil) then
   begin
     DiskMap.Visible := False;
-    memo.Visible := False;
+    pnlMemo.Visible := False;
     lvwMain.Visible := True;
   end;
 
@@ -722,7 +723,7 @@ begin
         lvwMain.Visible := (ItemType(ImageIndex) <> itAnalyse) and (Caption <> 'Strings');
         lvwMain.ReadOnly := True;
         DiskMap.Visible := ItemType(ImageIndex) = itAnalyse;
-        memo.Visible := Caption = 'Strings';
+        pnlMemo.Visible := Caption = 'Strings';
         OnDblClick := nil;
         if Data <> nil then
         begin
@@ -1319,7 +1320,7 @@ begin
   for Idx := 0 to Strings.Count - 1 do
     memo.Lines.Append(Strings[Idx]);
   memo.Lines.Delete(memo.Lines.Count - 1);
-  memo.Show;
+  pnlMemo.Show;
 end;
 
 // Menu: View > Options
