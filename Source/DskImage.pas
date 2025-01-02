@@ -1805,14 +1805,14 @@ begin
     case ID of
       65: begin // CPC System
         SetDefaults;
-        Source := 'Sector 0 has ID of 65';
+        Source := 'First logical sector has ID of 65';
         FFormat := dsFormatCPC_System;
         FReservedTracks := 2;
         exit;
       end;
       193: begin // CPC Data
         SetDefaults;
-        Source := 'Sector 0 has ID of 193';
+        Source := 'First logical sector has ID of 193';
         FFormat := dsFormatCPC_Data;
         FReservedTracks := 0;
         exit;
