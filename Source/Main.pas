@@ -234,7 +234,7 @@ var
   Idx: integer;
 begin
   Settings := TSettings.Create(self);
-  Settings.Load;
+  Settings.Load(Application.HasOption('c', 'clear'));
 
   NextNewFile := 0;
   Caption := Application.Title;
@@ -244,7 +244,8 @@ begin
 
   FileNames := TStringList.Create();
   for Idx := 1 to ParamCount do
-    FileNames.Add(ParamStr(Idx));
+      if (not ParamStr(Idx).StartsWith('--')) then
+         FileNames.Add(ParamStr(Idx));
   LoadFiles(FileNames.ToStringArray());
 
   FileNames.Free;
