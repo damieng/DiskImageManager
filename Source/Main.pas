@@ -243,7 +243,7 @@ begin
   Application.AddOnDropFilesHandler(OnApplicationDropFiles);
 
   FileNames := TStringList.Create();
-  for Idx := 0 to ParamCount - 1 do
+  for Idx := 1 to ParamCount do
     FileNames.Add(ParamStr(Idx));
   LoadFiles(FileNames.ToStringArray());
 
