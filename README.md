@@ -82,7 +82,7 @@ Identification of copy-protection schemes both signed and somtimes unsigned:
 
 ## Building
 
-This application requires the [Lazarus development system](http://www.lazarus.freepascal.org/) and was tested using Lazarus IDE v3.2 on Windows 11.
+This application requires the [Lazarus development system](http://www.lazarus.freepascal.org/) and was tested using Lazarus IDE v4.2 on Windows 11.
 
 To be able to build and visually edit the forms you will need to install the supplied DIMComponents package. To do that:
 
@@ -133,7 +133,7 @@ To be able to build and visually edit the forms you will need to install the sup
 
 ## Licence
 
-Copyright 2002-2023 Damien Guard.
+Copyright 2002-2025 Damien Guard.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
