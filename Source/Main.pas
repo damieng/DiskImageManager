@@ -49,6 +49,10 @@ type
     itmFileSector: TMenuItem;
     itmSaveHeaderlessFile: TMenuItem;
     itmSaveSelectedHeaderlessFiles: TMenuItem;
+    itmCollapseAll: TMenuItem;
+    itmExpandAll: TMenuItem;
+    itmCollapseChildren: TMenuItem;
+    itmExpandChildren: TMenuItem;
     mnuMain: TMainMenu;
     itmDisk: TMenuItem;
     itmOpen: TMenuItem;
@@ -71,6 +75,7 @@ type
     Separator1: TMenuItem;
     itmCopySep: TMenuItem;
     Separator2: TMenuItem;
+    Separator3: TMenuItem;
     splVertical: TSplitter;
     statusBar: TStatusBar;
     pnlRight: TPanel;
@@ -118,7 +123,11 @@ type
     itmFind: TMenuItem;
     itmFindNext: TMenuItem;
     dlgFind: TFindDialog;
+    procedure itmCollapseAllClick(Sender: TObject);
+    procedure itmCollapseChildrenClick(Sender: TObject);
     procedure itmCopyMapToClipboardClick(Sender: TObject);
+    procedure itmExpandAllClick(Sender: TObject);
+    procedure itmExpandChildrenClick(Sender: TObject);
     procedure itmFileSectorClick(Sender: TObject);
     procedure itmOpenClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -527,6 +536,50 @@ begin
   Clipboard.Assign(MapImage);
   MapImage.Free;
 
+end;
+
+procedure TfrmMain.itmExpandAllClick(Sender: TObject);
+var
+  Node: TTreeNode;
+begin
+  tvwMain.Items.BeginUpdate;
+  try
+    Node := tvwMain.Items.GetFirstNode;
+    while Node <> nil do
+    begin
+      Node.Expand(True);  // Recursively expands this node and all children
+      Node := Node.GetNextSibling;  // Move to next sibling, not next in hierarchy
+    end;
+  finally
+    tvwMain.Items.EndUpdate;
+  end;
+end;
+
+procedure TfrmMain.itmExpandChildrenClick(Sender: TObject);
+begin
+  tvwMain.Selected.Expand(True);
+end;
+
+procedure TfrmMain.itmCollapseAllClick(Sender: TObject);
+var
+  Node: TTreeNode;
+begin
+  tvwMain.Items.BeginUpdate;
+  try
+    Node := tvwMain.Items.GetFirstNode;
+    while Node <> nil do
+    begin
+      Node.Collapse(True);
+      Node := Node.GetNextSibling;
+    end;
+  finally
+    tvwMain.Items.EndUpdate;
+  end;
+end;
+
+procedure TfrmMain.itmCollapseChildrenClick(Sender: TObject);
+begin
+  tvwMain.Selected.Collapse(True);
 end;
 
 procedure TfrmMain.itmFileSectorClick(Sender: TObject);

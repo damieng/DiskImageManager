@@ -1519,7 +1519,7 @@ var
 begin
   Result := 1;
   DeclaredSize := FDCSectorSizes[FDCSize];
-  if DataSize mod DeclaredSize <> 0 then exit;
+  if (DeclaredSize = 0) or (DataSize mod DeclaredSize <> 0) then exit;
   Result := DataSize div DeclaredSize;
 end;
 

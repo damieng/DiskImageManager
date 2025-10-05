@@ -162,6 +162,13 @@ begin
   end;
 
   for TIdx := 0 to Side.Tracks - 2 do
+    if (Side.Track[TIdx].Sectors = 18) and (Side.Track[TIdx].Sector[0].DataSize = 256) then
+      begin
+        Result := Format('Alkatraz CPC (18 sector T%d)', [TIdx]);
+        exit;
+      end;
+
+    for TIdx := 0 to Side.Tracks - 2 do
     if (Side.Track[TIdx].Sectors = 18) and (Side.Track[TIdx].SectorSize = 256) then
       if (Side.Track[TIdx + 1].Sectors > 0) and (Side.Track[TIdx + 1].Sector[0].FDCStatus[2] = 64) then
       begin
@@ -376,9 +383,9 @@ begin
 
   // W.R.M. (Martech)
   if (Side.Tracks > 9) and (Side.Track[9].Sectors > 9) and (Side.Track[8].Sector[9].DataSize > 128) then
-    if StrBufPos(Side.Track[0].Sector[9].Data, 'W.R.M Disc') = 0 then
-      if StrBufPos(Side.Track[0].Sector[9].Data, 'Protection') > 0 then
-        if StrBufPos(Side.Track[0].Sector[9].Data, 'System (c) 1987') > 0 then
+    if StrBufPos(Side.Track[8].Sector[9].Data, 'W.R.M Disc') = 0 then
+      if StrBufPos(Side.Track[8].Sector[9].Data, 'Protection') > 0 then
+        if StrBufPos(Side.Track[8].Sector[9].Data, 'System (c) 1987') > 0 then
         begin
           Result := 'W.R.M Disc Protection (signed T0/S9 +0)';
           exit;

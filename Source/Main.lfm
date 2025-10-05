@@ -11,10 +11,10 @@ object frmMain: TfrmMain
   Font.Pitch = fpVariable
   Font.Quality = fqDraft
   Menu = mnuMain
+  Position = poDesktopCenter
+  LCLVersion = '4.2.0.0'
   OnClose = FormClose
   OnCreate = FormCreate
-  Position = poDesktopCenter
-  LCLVersion = '3.2.0.0'
   object splVertical: TSplitter
     Left = 180
     Height = 329
@@ -46,9 +46,9 @@ object frmMain: TfrmMain
       ScrollBars = ssAutoVertical
       ShowLines = False
       TabOrder = 1
+      Options = [tvoAutoItemHeight, tvoKeepCollapsedNodes, tvoReadOnly, tvoRowSelect, tvoShowButtons, tvoShowRoot, tvoToolTips, tvoThemedDraw]
       OnChange = tvwMainChange
       OnDblClick = tvwMainDblClick
-      Options = [tvoAutoItemHeight, tvoKeepCollapsedNodes, tvoReadOnly, tvoRowSelect, tvoShowButtons, tvoShowRoot, tvoToolTips, tvoThemedDraw]
     end
     object pnlTreeLabel: TPanel
       Left = 0
@@ -348,12 +348,35 @@ object frmMain: TfrmMain
       object N5: TMenuItem
         Caption = '-'
       end
+      object itmCollapseAll: TMenuItem
+        Caption = 'Collapse All'
+        ShortCut = 24661
+        OnClick = itmCollapseAllClick
+      end
+      object itmCollapseChildren: TMenuItem
+        Caption = 'Collapse Children'
+        ShortCut = 16469
+        OnClick = itmCollapseChildrenClick
+      end
+      object itmExpandAll: TMenuItem
+        Caption = 'Expand All'
+        ShortCut = 24649
+        OnClick = itmExpandAllClick
+      end
+      object itmExpandChildren: TMenuItem
+        Caption = 'Expand Children'
+        ShortCut = 16457
+        OnClick = itmExpandChildrenClick
+      end
+      object N3: TMenuItem
+        Caption = '-'
+      end
       object itmDarkUnusedSectors: TMenuItem
         Caption = '&Darken Unused Sectors'
         Hint = 'Toggle whether unused sectors are shown darker'
         OnClick = itmDarkUnusedSectorsClick
       end
-      object N3: TMenuItem
+      object Separator3: TMenuItem
         Caption = '-'
       end
       object itmOptions: TMenuItem
