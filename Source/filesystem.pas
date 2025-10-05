@@ -3,7 +3,7 @@ unit FileSystem;
 {$MODE Delphi}
 
 {
-  Disk Image Manager -  Virtual file system
+  Disk Image Manager -  Virtual CP/M (+3/PCW/CPC) file system
 
   Copyright (c) Damien Guard. All rights reserved.
   Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,31 +19,31 @@ uses
 
 type
   TDiskByteArray = array of byte;
-  TDSKFile = class;
+  TCPMFile = class;
 
-  TDSKFileSystem = class(TObject)
+  TCPMFileSystem = class(TObject)
   private
     FParentDisk: TDSKDisk;
     FEntryAllocationSize: TDSKAllocationSize;
 
-    procedure TryPlus3DOSHeader(Data: array of byte; DiskFile: TDSKFile);
-    procedure TryAMSDOSHeader(Data: array of byte; DiskFile: TDSKFile);
+    procedure TryPlus3DOSHeader(Data: array of byte; DiskFile: TCPMFile);
+    procedure TryAMSDOSHeader(Data: array of byte; DiskFile: TCPMFile);
   public
     DiskLabel: string;
 
     property EntryAllocationSize: TDSKAllocationSize read FEntryAllocationSize;
 
     function ReadLabelEntry(Data: array of byte; Offset: integer): string;
-    function ReadFileEntry(Data: array of byte; Offset: integer): TDSKFile;
-    function Directory: TFPGList<TDSKFile>;
+    function ReadFileEntry(Data: array of byte; Offset: integer): TCPMFile;
+    function Directory: TFPGList<TCPMFile>;
 
     constructor Create(ParentDisk: TDSKDisk);
     destructor Destroy; override;
   end;
 
-  TDSKFile = class(TObject)
+  TCPMFile = class(TObject)
   private
-    FParentFileSystem: TDSKFileSystem;
+    FParentFileSystem: TCPMFileSystem;
   public
     Blocks: TFPGList<integer>;
     FileName: string;
@@ -64,7 +64,7 @@ type
 
     function GetData(WithHeader: boolean): TDiskByteArray;
 
-    constructor Create(ParentFileSystem: TDSKFileSystem);
+    constructor Create(ParentFileSystem: TCPMFileSystem);
     destructor Destroy; override;
   end;
 
@@ -73,13 +73,13 @@ implementation
 
 // File system
 
-constructor TDSKFileSystem.Create(ParentDisk: TDSKDisk);
+constructor TCPMFileSystem.Create(ParentDisk: TDSKDisk);
 begin
   inherited Create;
   FParentDisk := ParentDisk;
 end;
 
-destructor TDSKFileSystem.Destroy;
+destructor TCPMFileSystem.Destroy;
 begin
   FParentDisk := nil;
   inherited Destroy;
@@ -96,12 +96,12 @@ const
   RECORD_COUNT_OFFSET: integer = 15;
   ALLOCATION_OFFSET: integer = 16;
 
-function CompareByExtent(const Item1, Item2: TDSKFile): integer;
+function CompareByExtent(const Item1, Item2: TCPMFile): integer;
 begin
   Result := Item1.Extent - Item2.Extent;
 end;
 
-function TDSKFileSystem.Directory: TFPGList<TDSKFile>;
+function TCPMFileSystem.Directory: TFPGList<TCPMFile>;
 const
   DIR_ENTRY_SIZE: integer = 32;
 var
@@ -109,8 +109,8 @@ var
   Sector: TDSKSector;
   Spec: TDSKSpecification;
   Index: integer;
-  Extents: TFPGList<TDSKFile>;
-  PrimaryDiskFile, ExtentEntry, DiskFile: TDSKFile;
+  Extents: TFPGList<TCPMFile>;
+  PrimaryDiskFile, ExtentEntry, DiskFile: TCPMFile;
 begin
   Spec := FParentDisk.Specification;
   case Spec.Format of
@@ -122,8 +122,8 @@ begin
       MaxEntries := Spec.DirectoryBlocks * Spec.GetBlockSize() div DIR_ENTRY_SIZE;
   end;
 
-  Result := TFPGList<TDSKFile>.Create;
-  Extents := TFPGList<TDSKFile>.Create;
+  Result := TFPGList<TCPMFile>.Create;
+  Extents := TFPGList<TCPMFile>.Create;
 
   Sector := FParentDisk.GetLogicalTrack(Spec.ReservedTracks).GetFirstLogicalSector();
   if Sector = nil then exit;
@@ -176,18 +176,18 @@ begin
   Extents.Free;
 end;
 
-function TDSKFileSystem.ReadLabelEntry(Data: array of byte; Offset: integer): string;
+function TCPMFileSystem.ReadLabelEntry(Data: array of byte; Offset: integer): string;
 begin
   Result := StrBlockClean(Data, Offset + FILENAME_OFFSET, 11);
 end;
 
-function TDSKFileSystem.ReadFileEntry(Data: array of byte; Offset: integer): TDSKFile;
+function TCPMFileSystem.ReadFileEntry(Data: array of byte; Offset: integer): TCPMFile;
 var
   Extension: string;
   AllocBlock, AllocOffset: integer;
   Spec: TDSKSpecification;
 begin
-  Result := TDskFile.Create(self);
+  Result := TCPMFile.Create(self);
   Spec := FParentDisk.Specification;
 
   with Result do
@@ -241,7 +241,7 @@ begin
   end;
 end;
 
-procedure TDSKFileSystem.TryAMSDOSHeader(Data: array of byte; DiskFile: TDSKFile);
+procedure TCPMFileSystem.TryAMSDOSHeader(Data: array of byte; DiskFile: TCPMFile);
 var
   CalcCheckSum: word;
   Idx: integer;
@@ -275,7 +275,7 @@ begin
 
 end;
 
-procedure TDSKFileSystem.TryPlus3DOSHeader(Data: array of byte; DiskFile: TDSKFile);
+procedure TCPMFileSystem.TryPlus3DOSHeader(Data: array of byte; DiskFile: TCPMFile);
 var
   Sig: string;
   CalcChecksum: byte;
@@ -313,21 +313,21 @@ end;
 
 // File
 
-constructor TDSKFile.Create(ParentFileSystem: TDSKFileSystem);
+constructor TCPMFile.Create(ParentFileSystem: TCPMFileSystem);
 begin
   inherited Create;
   FParentFileSystem := ParentFileSystem;
   Blocks := TFPGList<integer>.Create;
 end;
 
-destructor TDSKFile.Destroy;
+destructor TCPMFile.Destroy;
 begin
   FParentFileSystem := nil;
   Blocks.Free;
   inherited Destroy;
 end;
 
-function TDSKFile.GetData(WithHeader: boolean): TDiskByteArray;
+function TCPMFile.GetData(WithHeader: boolean): TDiskByteArray;
 var
   Block, BytesLeft, TargetIdx, BlockSize, SectorsLeft, SectorsPerBlock: integer;
   Disk: TDSKDisk;
