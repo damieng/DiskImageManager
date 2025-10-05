@@ -4,8 +4,8 @@ object frmMain: TfrmMain
   Top = 699
   Width = 556
   AllowDropFiles = True
-  ClientHeight = 0
-  ClientWidth = 0
+  ClientHeight = 378
+  ClientWidth = 556
   Color = clBtnFace
   Font.CharSet = ANSI_CHARSET
   Font.Pitch = fpVariable
@@ -291,15 +291,38 @@ object frmMain: TfrmMain
         Caption = 'Close All Except'
         object itmCloseAllExceptModified: TMenuItem
           Caption = 'Modified Images'
-          OnClick = itmCloseAllExceptModifiedClick
         end
         object itmCloseAllExceptV5: TMenuItem
           Caption = 'Extended DSK (v5) Images'
-          OnClick = itmCloseAllExceptModifiedClick
+        end
+        object itmCloseAllExceptFDCError: TMenuItem
+          Caption = 'Images with Sector Errors'
+          OnClick = itmCloseAllExceptClick
+        end
+        object Separator5: TMenuItem
+          Caption = '-'
         end
         object itmCloseAllExceptCopyProtected: TMenuItem
           Caption = 'Copy Protected Disks'
-          OnClick = itmCloseAllExceptModifiedClick
+        end
+        object itmCloseAllExceptBootSectors: TMenuItem
+          Caption = 'Boot Sectored Disks'
+          OnClick = itmCloseAllExceptClick
+        end
+        object itmCloseAllExceptDoubleSided: TMenuItem
+          Caption = 'Double Sided Disks'
+          OnClick = itmCloseAllExceptClick
+        end
+        object Separator4: TMenuItem
+          Caption = '-'
+        end
+        object itmCloseAllExceptCPC: TMenuItem
+          Caption = 'Amstrad CPC Formats'
+          OnClick = itmCloseAllExceptClick
+        end
+        object itmCloseAllExceptZXPlus3: TMenuItem
+          Caption = 'Spectrum +3 Formats'
+          OnClick = itmCloseAllExceptClick
         end
       end
       object N4: TMenuItem

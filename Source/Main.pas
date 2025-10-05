@@ -57,6 +57,11 @@ type
     itmCloseAllExceptModified: TMenuItem;
     itmCloseAllExceptCopyProtected: TMenuItem;
     itmCloseAllExceptV5: TMenuItem;
+    itmCloseAllExceptCPC: TMenuItem;
+    itmCloseAllExceptZXPlus3: TMenuItem;
+    itmCloseAllExceptBootSectors: TMenuItem;
+    itmCloseAllExceptDoubleSided: TMenuItem;
+    itmCloseAllExceptFDCError: TMenuItem;
     mnuMain: TMainMenu;
     itmDisk: TMenuItem;
     itmOpen: TMenuItem;
@@ -80,6 +85,8 @@ type
     itmCopySep: TMenuItem;
     Separator2: TMenuItem;
     Separator3: TMenuItem;
+    Separator4: TMenuItem;
+    Separator5: TMenuItem;
     splVertical: TSplitter;
     statusBar: TStatusBar;
     pnlRight: TPanel;
@@ -127,7 +134,7 @@ type
     itmFind: TMenuItem;
     itmFindNext: TMenuItem;
     dlgFind: TFindDialog;
-    procedure itmCloseAllExceptModifiedClick(Sender: TObject);
+    procedure itmCloseAllExceptClick(Sender: TObject);
     procedure itmCollapseAllClick(Sender: TObject);
     procedure itmCollapseChildrenClick(Sender: TObject);
     procedure itmCopyMapToClipboardClick(Sender: TObject);
@@ -582,12 +589,12 @@ begin
   end;
 end;
 
-procedure TfrmMain.itmCloseAllExceptModifiedClick(Sender: TObject);
+procedure TfrmMain.itmCloseAllExceptClick(Sender: TObject);
 var
   Current: TTreeNode;
   CurrentImage: TDSKImage;
   ShouldClose: boolean;
-  Protection: string;
+  Format: string;
   i: integer;
   NodesToDelete: TList;
 begin
@@ -611,9 +618,19 @@ begin
         if Sender = itmCloseAllExceptV5 then
           ShouldClose := not CurrentImage.HasV5Extensions;
         if Sender = itmCloseAllExceptCopyProtected then
+          ShouldClose := CurrentImage.Disk.DetectCopyProtection() = '';
+        if Sender = itmCloseAllExceptBootSectors then
+           ShouldClose := CurrentImage.Disk.BootableOn = '';
+        if Sender = itmCloseAllExceptDoubleSided then
+           ShouldClose := CurrentImage.Disk.Sides <> 2;
+        if Sender = itmCloseAllExceptFDCError then
+           ShouldClose := not CurrentImage.Disk.HasFDCErrors;
+
+        if (Sender = itmCloseAllExceptCPC) or (Sender = itmCloseAllExceptZXPlus3) then
         begin
-          Protection := CurrentImage.Disk.DetectCopyProtection();
-          ShouldClose := Protection = '';
+          Format := CurrentImage.Disk.DetectFormat();
+          ShouldClose := ((Sender = itmCloseAllExceptCPC) and (not Format.Contains('CPC'))
+                      or (Sender = itmCloseAllExceptZXPlus3) and (not Format.Contains('+3')));
         end;
 
         if ShouldClose then
