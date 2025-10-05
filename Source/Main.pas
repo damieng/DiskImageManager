@@ -53,6 +53,15 @@ type
     itmExpandAll: TMenuItem;
     itmCollapseChildren: TMenuItem;
     itmExpandChildren: TMenuItem;
+    itmCloseAllExcept: TMenuItem;
+    itmCloseAllExceptModified: TMenuItem;
+    itmCloseAllExceptCopyProtected: TMenuItem;
+    itmCloseAllExceptV5: TMenuItem;
+    itmCloseAllExceptCPC: TMenuItem;
+    itmCloseAllExceptZXPlus3: TMenuItem;
+    itmCloseAllExceptBootSectors: TMenuItem;
+    itmCloseAllExceptDoubleSided: TMenuItem;
+    itmCloseAllExceptFDCError: TMenuItem;
     mnuMain: TMainMenu;
     itmDisk: TMenuItem;
     itmOpen: TMenuItem;
@@ -76,6 +85,8 @@ type
     itmCopySep: TMenuItem;
     Separator2: TMenuItem;
     Separator3: TMenuItem;
+    Separator4: TMenuItem;
+    Separator5: TMenuItem;
     splVertical: TSplitter;
     statusBar: TStatusBar;
     pnlRight: TPanel;
@@ -123,6 +134,7 @@ type
     itmFind: TMenuItem;
     itmFindNext: TMenuItem;
     dlgFind: TFindDialog;
+    procedure itmCloseAllExceptClick(Sender: TObject);
     procedure itmCollapseAllClick(Sender: TObject);
     procedure itmCollapseChildrenClick(Sender: TObject);
     procedure itmCopyMapToClipboardClick(Sender: TObject);
@@ -574,6 +586,75 @@ begin
     end;
   finally
     tvwMain.Items.EndUpdate;
+  end;
+end;
+
+procedure TfrmMain.itmCloseAllExceptClick(Sender: TObject);
+var
+  Current: TTreeNode;
+  CurrentImage: TDSKImage;
+  ShouldClose: boolean;
+  Format: string;
+  i: integer;
+  NodesToDelete: TList;
+begin
+  Cursor := crHourGlass;
+  Application.ProcessMessages;  // Allow cursor to update
+
+  NodesToDelete := TList.Create;
+  try
+    // First pass: identify nodes to delete and free images
+    for i := 0 to tvwMain.Items.Count - 1 do
+    begin
+      Current := tvwMain.Items[i];
+
+      if IsDiskNode(Current) then
+      begin
+        CurrentImage := TDSKImage(Current.Data);
+        ShouldClose := true;
+
+        if Sender = itmCloseAllExceptModified then
+          ShouldClose := not CurrentImage.IsChanged;
+        if Sender = itmCloseAllExceptV5 then
+          ShouldClose := not CurrentImage.HasV5Extensions;
+        if Sender = itmCloseAllExceptCopyProtected then
+          ShouldClose := CurrentImage.Disk.DetectCopyProtection() = '';
+        if Sender = itmCloseAllExceptBootSectors then
+           ShouldClose := CurrentImage.Disk.BootableOn = '';
+        if Sender = itmCloseAllExceptDoubleSided then
+           ShouldClose := CurrentImage.Disk.Sides <> 2;
+        if Sender = itmCloseAllExceptFDCError then
+           ShouldClose := not CurrentImage.Disk.HasFDCErrors;
+
+        if (Sender = itmCloseAllExceptCPC) or (Sender = itmCloseAllExceptZXPlus3) then
+        begin
+          Format := CurrentImage.Disk.DetectFormat();
+          ShouldClose := ((Sender = itmCloseAllExceptCPC) and (not Format.Contains('CPC'))
+                      or (Sender = itmCloseAllExceptZXPlus3) and (not Format.Contains('+3')));
+        end;
+
+        if ShouldClose then
+        begin
+          CurrentImage.Free;
+          NodesToDelete.Add(Current);
+        end;
+      end;
+    end;
+
+    // Second pass: delete nodes only
+    if NodesToDelete.Count > 0 then
+    begin
+      tvwMain.BeginUpdate;
+      try
+        for i := 0 to NodesToDelete.Count - 1 do
+          TTreeNode(NodesToDelete[i]).Delete;
+      finally
+        tvwMain.EndUpdate;
+      end;
+    end;
+  finally
+    NodesToDelete.Free;
+    Cursor := crDefault;
   end;
 end;
 

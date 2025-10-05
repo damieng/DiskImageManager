@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 1471
+  Left = 2284
   Height = 378
-  Top = 378
+  Top = 699
   Width = 556
   AllowDropFiles = True
   ClientHeight = 378
@@ -286,6 +286,44 @@ object frmMain: TfrmMain
         Hint = 'Close all disk images'
         ImageIndex = 17
         OnClick = itmCloseAllClick
+      end
+      object itmCloseAllExcept: TMenuItem
+        Caption = 'Close All Except'
+        object itmCloseAllExceptModified: TMenuItem
+          Caption = 'Modified Images'
+        end
+        object itmCloseAllExceptV5: TMenuItem
+          Caption = 'Extended DSK (v5) Images'
+        end
+        object itmCloseAllExceptFDCError: TMenuItem
+          Caption = 'Images with Sector Errors'
+          OnClick = itmCloseAllExceptClick
+        end
+        object Separator5: TMenuItem
+          Caption = '-'
+        end
+        object itmCloseAllExceptCopyProtected: TMenuItem
+          Caption = 'Copy Protected Disks'
+        end
+        object itmCloseAllExceptBootSectors: TMenuItem
+          Caption = 'Boot Sectored Disks'
+          OnClick = itmCloseAllExceptClick
+        end
+        object itmCloseAllExceptDoubleSided: TMenuItem
+          Caption = 'Double Sided Disks'
+          OnClick = itmCloseAllExceptClick
+        end
+        object Separator4: TMenuItem
+          Caption = '-'
+        end
+        object itmCloseAllExceptCPC: TMenuItem
+          Caption = 'Amstrad CPC Formats'
+          OnClick = itmCloseAllExceptClick
+        end
+        object itmCloseAllExceptZXPlus3: TMenuItem
+          Caption = 'Spectrum +3 Formats'
+          OnClick = itmCloseAllExceptClick
+        end
       end
       object N4: TMenuItem
         Caption = '-'
