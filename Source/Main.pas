@@ -14,8 +14,8 @@ unit Main;
 interface
 
 uses
-  DiskMap, DskImage, Utils, About, Options, SectorProperties, TrackProperties, Settings, FileSystem, Comparers,
-  Classes, Graphics, SysUtils, Forms, Dialogs, Menus, ComCtrls, ExtCtrls, Controls,
+  DiskMap, DskImage, Utils, About, Options, SectorProperties, TrackProperties, Settings, FileSystem, MGTFileSystem,
+  Comparers, Classes, Graphics, SysUtils, Forms, Dialogs, Menus, ComCtrls, ExtCtrls, Controls,
   Clipbrd, StdCtrls, FileUtil, StrUtils, LazFileUtils, LConvEncoding;
 
 type
@@ -196,7 +196,8 @@ type
     procedure AnalyseMap(Side: TDSKSide);
     procedure RefreshList;
     procedure RefreshStrings(Disk: TDSKDisk);
-    procedure RefreshListFiles(FileSystem: TDSKFileSystem);
+    procedure RefreshListFiles(FileSystem: TCPMFileSystem);
+    procedure RefreshListFilesMGT(FileSystem: TMGTFileSystem);
     procedure RefreshListImage(Image: TDSKImage);
     procedure RefreshListMessages(Messages: TStringList);
     procedure RefreshListTrack(Side: TDSKSide);
@@ -234,7 +235,7 @@ var
   Idx: integer;
 begin
   Settings := TSettings.Create(self);
-  Settings.Load;
+  Settings.Load(Application.HasOption('c', 'clear'));
 
   NextNewFile := 0;
   Caption := Application.Title;
@@ -244,7 +245,8 @@ begin
 
   FileNames := TStringList.Create();
   for Idx := 1 to ParamCount do
-    FileNames.Add(ParamStr(Idx));
+      if (not ParamStr(Idx).StartsWith('--')) then
+         FileNames.Add(ParamStr(Idx));
   LoadFiles(FileNames.ToStringArray());
 
   FileNames.Free;
@@ -351,7 +353,7 @@ var
 begin
   AllHeaderlessFilesSelected := True;
   for ListItem in lvwMain.Items do
-    if (TObject(ListItem.Data).ClassType = TDSKFile) and (TDSKFile(ListItem.Data).HeaderType <> 'None') then
+    if (TObject(ListItem.Data).ClassType = TCPMFile) and (TCPMFile(ListItem.Data).HeaderType <> 'None') then
     begin
       AllHeaderlessFilesSelected := False;
       Break;
@@ -372,7 +374,7 @@ var
   ListItem: TListItem;
   Folder: string;
   Stream: TStream;
-  DiskFile: TDSKFile;
+  DiskFile: TCPMFile;
   Data: TDiskByteArray;
 begin
   if not dlgSelectDirectory.Execute then exit;
@@ -380,9 +382,9 @@ begin
   SaveCount := 0;
   Folder := dlgSelectDirectory.FileName + PathDelim;
   for ListItem in lvwMain.Items do
-    if (AllFiles or ListItem.Selected) and (TObject(ListItem.Data).ClassType = TDSKFile) then
+    if (AllFiles or ListItem.Selected) and (TObject(ListItem.Data).ClassType = TCPMFile) then
     begin
-      DiskFile := TDSKFile(ListItem.Data);
+      DiskFile := TCPMFile(ListItem.Data);
       Stream := TFileStream.Create(Folder + DiskFile.FileName, fmCreate);
       Data := DiskFile.GetData(WithHeader);
       try
@@ -408,14 +410,14 @@ end;
 
 procedure TfrmMain.SaveExtractedFile(WithHeader: boolean);
 var
-  DiskFile: TDSKFile;
+  DiskFile: TCPMFile;
   Data: TDiskByteArray;
   Stream: TStream;
 begin
-  if (lvwMain.Selected = nil) or (lvwMain.Selected.Data = nil) or (TObject(lvwMain.Selected.Data).ClassType <> TDSKFile) then
+  if (lvwMain.Selected = nil) or (lvwMain.Selected.Data = nil) or (TObject(lvwMain.Selected.Data).ClassType <> TCPMFile) then
     exit;
 
-  DiskFile := TDSKFile(lvwMain.Selected.Data);
+  DiskFile := TCPMFile(lvwMain.Selected.Data);
 
   dlgSaveBinary.FileName := DiskFile.FileName;
   if not dlgSaveBinary.Execute then exit;
@@ -433,7 +435,7 @@ end;
 
 procedure TfrmMain.popListItemPopup(Sender: TObject);
 var
-  DiskFile: TDSKFile;
+  DiskFile: TCPMFile;
   AllHeaderlessFilesSelected: boolean;
   ListItem: TListItem;
   DataSelect: TObject;
@@ -441,9 +443,9 @@ begin
   itmSaveFile.Visible := False;
   itmSaveHeaderlessFile.Visible := False;
 
-  if (lvwMain.SelCount = 1) and (lvwMain.Selected.Data <> nil) and (TObject(lvwMain.Selected.Data).ClassType = TDSKFile) then
+  if (lvwMain.SelCount = 1) and (lvwMain.Selected.Data <> nil) and (TObject(lvwMain.Selected.Data).ClassType = TCPMFile) then
   begin
-    DiskFile := TDSKFile((lvwMain.Selected).Data);
+    DiskFile := TCPMFile((lvwMain.Selected).Data);
     itmSaveFile.Visible := DiskFile.HeaderType <> 'None';
     itmSaveFile.Caption := Format('Save %s', [DiskFile.FileName]);
 
@@ -457,7 +459,7 @@ begin
     if (ListItem.Selected) and (ListItem.Data <> nil) then
     begin
       DataSelect := TObject(ListItem.Data);
-      if (DataSelect.ClassType = TDSKFile) and (TDSKFile(ListItem.Data).HeaderType <> 'None') then
+      if (DataSelect.ClassType = TCPMFile) and (TCPMFile(ListItem.Data).HeaderType <> 'None') then
       begin
         AllHeaderlessFilesSelected := False;
         Break;
@@ -529,12 +531,21 @@ end;
 
 procedure TfrmMain.itmFileSectorClick(Sender: TObject);
 var
-  DiskFile: TDSKFile;
   FoundNode: TTreeNode;
+  FirstSector: TDSKSector;
 begin
   // Jump to the first sector for this file
-  DiskFile := TDSKFile((lvwMain.Selected).Data);
-  FoundNode := FindTreeNodeFromData(tvwMain.Selected.Parent, DiskFile.FirstSector);
+  if TObject(lvwMain.Selected.Data).ClassType = TCPMFile then
+  begin
+     FirstSector := TCPMFile((lvwMain.Selected).Data).FirstSector;
+  end;
+
+  if TObject(lvwMain.Selected.Data).ClassType = TMGTFile then
+  begin
+    FirstSector := TMGTFile((lvwMain.Selected).Data).FirstSector;
+  end;
+
+  FoundNode := FindTreeNodeFromData(tvwMain.Selected.Parent, FirstSector);
   if FoundNode <> nil then
     tvwMain.Selected := FoundNode;
 end;
@@ -613,7 +624,10 @@ begin
         end;
     end;
 
-    AddTree(ImageNode, 'Files', Ord(itFiles), TDSKFileSystem.Create(Image.Disk));
+    if (Image.Disk.DetectFormat().StartsWith('MGT')) then
+       AddTree(ImageNode, 'Files', Ord(itFiles), TMGTFileSystem.Create(Image.Disk))
+    else
+        AddTree(ImageNode, 'Files', Ord(itFiles), TCPMFileSystem.Create(Image.Disk));
     AddTree(ImageNode, 'Strings', Ord(itStrings), Image.Disk);
 
     if Image.Messages.Count > 0 then
@@ -662,7 +676,7 @@ begin
       tvwMain.PopupMenu := popSector;
     if ObjectData.ClassType = TDSKTrack then
       tvwMain.PopupMenu := popTrack;
-    if ObjectData.ClassType = TDSKFileSystem then
+    if ObjectData.ClassType = TCPMFileSystem then
       tvwMain.PopupMenu := popFileSystem;
     if ItemType(tvwMain.Selected.ImageIndex) = itAnalyse then
       tvwMain.PopupMenu := popDiskMap;
@@ -734,7 +748,6 @@ begin
             itTracksAll: RefreshListTrack(Data);
             itTrack: RefreshListSector(Data);
             itAnalyse: AnalyseMap(Data);
-            itFiles: RefreshListFiles(Data);
             itStrings: RefreshStrings(Data);
             itMessages: RefreshListMessages(Data);
             else
@@ -742,6 +755,10 @@ begin
                 RefreshListTrack(TDSKSide(Data));
               if TObject(Data).ClassType = TDSKSector then
                 RefreshListSectorData(TDSKSector(Data));
+              if (TObject(Data).ClassType = TCPMFileSystem) then
+                RefreshListFiles(TCPMFileSystem(Data));
+              if (TObject(Data).ClassType = TMGTFileSystem) then
+                RefreshListFilesMGT(TMGTFileSystem(Data));
           end;
         end;
       end
@@ -1200,9 +1217,9 @@ begin
 end;
 
 // Load list with filenames
-procedure TfrmMain.RefreshListFiles(FileSystem: TDSKFileSystem);
+procedure TfrmMain.RefreshListFiles(FileSystem: TCPMFileSystem);
 var
-  DiskFile: TDSKFile;
+  DiskFile: TCPMFile;
   Attributes: string;
   HasHeaders, HasUserAreas: boolean;
 begin
@@ -1304,6 +1321,54 @@ begin
           SubItems.Add(StrYesNo(DiskFile.Checksum));
           SubItems.Add(DiskFile.Meta);
         end;
+      end;
+    EndUpdate;
+  end;
+end;
+
+// Load list with filenames
+procedure TfrmMain.RefreshListFilesMGT(FileSystem: TMGTFileSystem);
+var
+  DiskFile: TMGTFile;
+begin
+  with lvwMain.Columns do
+  begin
+    with Add do
+    begin
+      Caption := 'File name';
+      AutoSize := True;
+    end;
+    with Add do
+    begin
+      Caption := 'Sectors';
+      Alignment := taRightJustify;
+      AutoSize := True;
+    end;
+    with Add do
+    begin
+      Caption := 'Allocated';
+      Alignment := taRightJustify;
+      AutoSize := True;
+    end;
+    with Add do
+    begin
+      Caption := 'Meta';
+      AutoSize := True;
+    end;
+  end;
+
+  with lvwMain do
+  begin
+    BeginUpdate;
+    Items.Clear;
+    for DiskFile in FileSystem.Directory do
+      with Items.Add do
+      begin
+        Data := DiskFile;
+        Caption := DiskFile.FileName;
+        SubItems.Add(StrInt(DiskFile.SectorsAllocated));
+        SubItems.Add(StrFileSize(DiskFile.AllocatedSize));
+        SubItems.Add(DiskFile.Meta);
       end;
     EndUpdate;
   end;

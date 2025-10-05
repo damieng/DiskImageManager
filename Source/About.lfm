@@ -1,7 +1,7 @@
 object frmAbout: TfrmAbout
-  Left = 601
+  Left = 1509
   Height = 95
-  Top = 545
+  Top = 440
   Width = 367
   AlphaBlend = True
   AlphaBlendValue = 50
@@ -16,7 +16,7 @@ object frmAbout: TfrmAbout
   OnCreate = FormCreate
   OnShow = FormShow
   Position = poOwnerFormCenter
-  LCLVersion = '2.2.4.0'
+  LCLVersion = '3.2.0.0'
   object imgAppIcon: TImage
     Left = 4
     Height = 48
@@ -199,8 +199,8 @@ object frmAbout: TfrmAbout
     Width = 75
     Caption = 'OK'
     Default = True
-    OnClick = btnOKClick
     TabOrder = 0
+    OnClick = btnOKClick
   end
   object timFade: TTimer
     Tag = 4

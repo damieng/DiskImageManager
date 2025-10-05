@@ -161,6 +161,7 @@ type
     procedure Unformat;
     function GetTrackSizeFromSectors: word;
     function GetFirstLogicalSector: TDSKSector;
+    function GetLogicalSectorByID(SectorID: byte): TDSKSector;
     function HasMultiSectoredSector: boolean;
     function HasIndexPointOffsets: boolean;
 
@@ -214,7 +215,7 @@ type
 
   // Specification (Optional PCW/CPC+3 disk specification)
   TDSKSpecFormat = (dsFormatPCW_SS, dsFormatCPC_System, dsFormatCPC_Data, dsFormatPCW_DS,
-    dsFormatAssumedPCW_SS, dsFormatEinstein, dsFormatInvalid);
+    dsFormatAssumedPCW_SS, dsFormatEinstein, dsFormatMGT, dsFormatInvalid);
   TDSKSpecSide = (dsSideSingle, dsSideDoubleAlternate, dsSideDoubleSuccessive, dsSideDoubleReverse, dsSideInvalid);
   TDSKSpecTrack = (dsTrackSingle, dsTrackDouble, dsTrackInvalid);
   TDSKAllocationSize = (asByte, asWord);
@@ -332,6 +333,7 @@ const
     'Amstrad PCW DD/DS/DT',
     'Amstrad PCW/+3 DD/SS/ST (Assumed)',
     'Einstein',
+    'MGT',
     'Invalid'
     );
 
@@ -581,6 +583,8 @@ begin
         end;
 
         TOff := DiskFile.Position;
+
+        // Bad place to set this, we don't know disk format yet...
         Logical := (TIdx * DSKInfoBlock.Disk_NumSides) + SIdx;
 
         if SizeT > 0 then // Don't load if track is unformatted
@@ -1364,6 +1368,19 @@ begin
       Result := Sector;
 end;
 
+function TDSKTrack.GetLogicalSectorByID(SectorID: byte): TDSKSector;
+var
+  Sector: TDSKSector;
+begin
+  Result := nil;
+  if not IsFormatted then exit;
+
+  for Sector in self.Sector do
+    if Sector.ID = SectorID then
+      Result := Sector;
+end;
+
+
 function TDSKTrack.HasMultiSectoredSector: boolean;
 var
   CheckSector: TDSKSector;
@@ -1798,6 +1815,18 @@ begin
     FDirectoryBlocks := 1;
     FAllocationSize := asWord;
     exit;
+  end;
+
+  if FParentDisk.DetectFormat.StartsWith('MGT ') then
+  begin;
+    FFormat := dsFormatMGT;
+    Source := 'Double sided 80 track 10 sectors of 512 bytes';
+    SectorSize := 512;
+    SectorsPerTrack := 10;
+    TracksPerSide := 40;
+    FSide := dsSideDoubleSuccessive;
+    ReservedTracks := 0;
+    FDirectoryBlocks := 4;
   end;
 
   FirstSector := FParentDisk.GetLogicalTrack(0).GetFirstLogicalSector();

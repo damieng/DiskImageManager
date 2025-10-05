@@ -50,7 +50,7 @@ type
     SaveDiskMapHeight, SaveDiskMapWidth: integer;
 
     constructor Create(Owner: TForm);
-    procedure Load;
+    procedure Load(ClearFiles: boolean);
     procedure Apply;
     procedure Save;
     procedure Reset;
@@ -84,7 +84,7 @@ begin
 end;
 
 // Load system settings
-procedure TSettings.Load;
+procedure TSettings.Load(ClearFiles: boolean);
 var
   Reg: TIniFile;
   Idx: integer;
@@ -127,7 +127,7 @@ begin
 
   S := 'Workspace';
   RestoreWorkspace := Reg.ReadBool(S, 'Restore', False);
-  if RestoreWorkspace then
+  if RestoreWorkspace and not ClearFiles then
   begin
     Idx := 1;
     repeat
@@ -230,7 +230,7 @@ end;
 procedure TSettings.Reset;
 begin
   DeleteFile(ChangeFileExt(Application.ExeName, '.ini'));
-  Load;
+  Load(true);
 end;
 
 procedure TSettings.AddRecentFile(FileName: string);
