@@ -13,10 +13,10 @@ object frmAbout: TfrmAbout
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
+  Position = poOwnerFormCenter
+  LCLVersion = '4.2.0.0'
   OnCreate = FormCreate
   OnShow = FormShow
-  Position = poOwnerFormCenter
-  LCLVersion = '3.2.0.0'
   object imgAppIcon: TImage
     Left = 4
     Height = 48
@@ -159,7 +159,12 @@ object frmAbout: TfrmAbout
     Anchors = [akTop, akRight]
     AutoSize = False
     Caption = '0.0.0'
+    Font.CharSet = ANSI_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
     ParentColor = False
+    ParentFont = False
   end
   object lblTitle: TLabel
     Left = 64
