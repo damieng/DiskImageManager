@@ -451,9 +451,9 @@ object frmOptions: TfrmOptions
           Top = 44
           Width = 15
           Associate = edtMinString
-          Max = 255
-          Min = 1
-          Position = 1
+          Max = 16384
+          Min = 3
+          Position = 3
           TabOrder = 3
         end
         object lblStringSorting: TLabel
