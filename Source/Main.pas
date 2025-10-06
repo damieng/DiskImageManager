@@ -1513,12 +1513,19 @@ var
   Idx: integer;
   Strings: TStringList;
 begin
-  Strings := Disk.GetAllStrings(4, 4);
+  Strings := Disk.GetAllStrings(Settings.StringMinLength, 4);
   memo.Clear;
   lvwMain.Hide;
+
+  if Settings.StringSort = 'Alpha' then
+     Strings.Sort;
+  if Settings.StringSort = 'Size' then
+     Strings.CustomSort(CompareByLength);
+
   for Idx := 0 to Strings.Count - 1 do
     memo.Lines.Append(Strings[Idx]);
   memo.Lines.Delete(memo.Lines.Count - 1);
+
   pnlMemo.Show;
 end;
 

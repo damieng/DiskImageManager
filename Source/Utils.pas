@@ -41,6 +41,7 @@ function FontHumanReadable(ThisFont: TFont): string;
 function FontCopy(ThisFont: TFont): TFont;
 
 function StrFileSize(Size: integer): string;
+function CompareByLength(List: TStringList; Index1, Index2: Integer): Integer;
 
 procedure DrawBorder(Canvas: TCanvas; var Rect: TRect; BorderStyle: TSpinBorderStyle);
 
@@ -284,6 +285,13 @@ begin
          Result := Format('%d KB', [Size div 1024])
       else
           Result := Format('%d MB', [Size div Megabyte]);
+end;
+
+function CompareByLength(List: TStringList; Index1, Index2: Integer): Integer;
+begin
+  Result := Length(List[Index2]) - Length(List[Index1]);  // Longest first
+  if Result = 0 then
+    Result := CompareText(List[Index1], List[Index2]);  // Alphabetical if same length
 end;
 
 end.

@@ -1108,7 +1108,6 @@ var
 begin
   Result := TStringList.Create;
   Result.Duplicates := DupIgnore;
-  Result.Sorted := True;
   CurrentText := '';
   Sector := Side[0].Track[0].Sector[0];
   Index := Sides;

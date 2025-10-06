@@ -15,17 +15,25 @@ interface
 
 uses
   DiskMap, Utils, Settings,
-  Graphics, Forms, ComCtrls, StdCtrls, Controls, ExtCtrls, Dialogs, StrUtils;
+  Graphics, Forms, ComCtrls, StdCtrls, Controls, ExtCtrls, Dialogs, StrUtils, Classes;
 
 type
 
   { TfrmOptions }
 
   TfrmOptions = class(TForm)
+    btnFontStrings: TButton;
+    cboStringSorting: TComboBox;
     cboOpenView: TComboBox;
     cboHighASCII: TComboBox;
+    chkExpandRestoredFiles: TCheckBox;
+    edtFontStrings: TEdit;
+    edtMinString: TEdit;
     lblDefaultView: TLabel;
+    lblFontStringsLabel: TLabel;
     lblMapping: TLabel;
+    lblStringSorting: TLabel;
+    lblMinStringLabel: TLabel;
     pnlButtons: TPanel;
     pagOptions: TPageControl;
     tabMain: TTabSheet;
@@ -45,6 +53,7 @@ type
     edtFontSector: TEdit;
     btnFontSector: TButton;
     lblTrackMarksLabel: TLabel;
+    tabStrings: TTabSheet;
     udTrackMarks: TUpDown;
     edtTrackMarks: TEdit;
     lblBytesLabel: TLabel;
@@ -69,6 +78,8 @@ type
     udMapY: TUpDown;
     chkWarnSectorChange: TCheckBox;
     pnlTabs: TPanel;
+    udMinString: TUpDown;
+    procedure btnFontStringsClick(Sender: TObject);
     procedure cbxBackColorChanged(Sender: TObject);
     procedure btnFontMainClick(Sender: TObject);
     procedure btnFontMapClick(Sender: TObject);
@@ -78,7 +89,7 @@ type
     procedure btnResetClick(Sender: TObject);
     procedure chkDarkBlankSectorsClick(Sender: TObject);
   private
-    FontMain, FontSector: TFont;
+    FontMain, FontSector, FontStrings: TFont;
     Settings: TSettings;
     procedure Read;
     procedure Write;
@@ -89,6 +100,7 @@ type
 
 const
   HighASCIIOptions: array[0..3] of string = ('None', '437', '850', '1252');
+  StringSortOptions: array[0..2] of string = ('None', 'Alpha', 'Size');
 
 var
   frmOptions: TfrmOptions;
@@ -106,6 +118,19 @@ end;
 procedure TfrmOptions.cbxBackColorChanged(Sender: TObject);
 begin
   DiskMap.Color := cbxBack.ButtonColor;
+end;
+
+procedure TfrmOptions.btnFontStringsClick(Sender: TObject);
+begin
+  with dlgFont do
+  begin
+    Font := FontStrings;
+    if Execute then
+    begin
+      edtFontStrings.Text := FontHumanReadable(Font);
+      FontStrings := Font;
+    end;
+  end;
 end;
 
 procedure TfrmOptions.btnFontMainClick(Sender: TObject);
@@ -161,7 +186,10 @@ begin
   Read;
   Result := ShowModal = mrOk;
   if Result then
+  begin
     Write;
+    Settings.Apply;
+  end;
 end;
 
 procedure TfrmOptions.Read;
@@ -176,6 +204,9 @@ begin
 
     DiskMap.Font := DiskMapFont;
     edtFontMap.Text := FontHumanReadable(DiskMapFont);
+
+    FontStrings := StringsFont;
+    edtFontStrings.Text := FontHumanReadable(StringsFont);
 
     chkRestoreWindow.Checked := RestoreWindow;
     chkRestoreWorkspace.Checked := RestoreWorkspace;
@@ -193,6 +224,8 @@ begin
     udMapX.Position := SaveDiskMapWidth;
     udMapY.Position := SaveDiskMapHeight;
     cboOpenView.Text := OpenView;
+    udMinString.Position := StringMinLength;
+    cboStringSorting.ItemIndex := IndexStr(StringSort, StringSortOptions);
   end;
 end;
 
@@ -203,6 +236,7 @@ begin
     WindowFont := FontMain;
     SectorFont := FontSector;
     DiskMapFont := DiskMap.Font;
+    StringsFont := FontStrings;
 
     DiskMapBackgroundColor := cbxBack.ButtonColor;
     DarkBlankSectors := chkDarkBlankSectors.Checked;

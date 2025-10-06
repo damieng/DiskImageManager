@@ -1,10 +1,10 @@
 object frmMain: TfrmMain
-  Left = 2284
-  Height = 378
-  Top = 699
+  Left = 1736
+  Height = 372
+  Top = 593
   Width = 556
   AllowDropFiles = True
-  ClientHeight = 378
+  ClientHeight = 372
   ClientWidth = 556
   Color = clBtnFace
   Font.CharSet = ANSI_CHARSET
@@ -17,24 +17,24 @@ object frmMain: TfrmMain
   OnCreate = FormCreate
   object splVertical: TSplitter
     Left = 180
-    Height = 329
+    Height = 323
     Top = 26
     Width = 4
   end
   object pnlLeft: TPanel
     Left = 0
-    Height = 329
+    Height = 323
     Top = 26
     Width = 180
     Align = alLeft
     BevelOuter = bvNone
-    ClientHeight = 329
+    ClientHeight = 323
     ClientWidth = 180
     ParentBackground = False
     TabOrder = 0
     object tvwMain: TTreeView
       Left = 0
-      Height = 310
+      Height = 304
       Top = 19
       Width = 180
       Align = alClient
@@ -67,25 +67,25 @@ object frmMain: TfrmMain
   object statusBar: TStatusBar
     Left = 0
     Height = 23
-    Top = 355
+    Top = 349
     Width = 556
     AutoHint = True
     Panels = <>
   end
   object pnlRight: TPanel
     Left = 184
-    Height = 329
+    Height = 323
     Top = 26
     Width = 372
     Align = alClient
     BevelOuter = bvNone
-    ClientHeight = 329
+    ClientHeight = 323
     ClientWidth = 372
     ParentBackground = False
     TabOrder = 1
     object DiskMap: TSpinDiskMap
       Left = 0
-      Height = 310
+      Height = 304
       Top = 19
       Width = 372
       Align = alClient
@@ -99,7 +99,7 @@ object frmMain: TfrmMain
     end
     object lvwMain: TListView
       Left = 0
-      Height = 310
+      Height = 304
       Top = 19
       Width = 372
       Align = alClient
@@ -135,21 +135,25 @@ object frmMain: TfrmMain
     end
     object pnlMemo: TPanel
       Left = 0
-      Height = 310
+      Height = 304
       Top = 19
       Width = 372
       Align = alClient
       BevelOuter = bvLowered
-      ClientHeight = 310
+      ClientHeight = 304
       ClientWidth = 372
       ParentBackground = False
       TabOrder = 2
       object memo: TMemo
         Left = 1
-        Height = 308
+        Height = 302
         Top = 1
         Width = 370
         Align = alClient
+        Font.CharSet = ANSI_CHARSET
+        Font.Pitch = fpVariable
+        Font.Quality = fqDraft
+        ParentFont = False
         ReadOnly = True
         ScrollBars = ssAutoBoth
         TabOrder = 0
