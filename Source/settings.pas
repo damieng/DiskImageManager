@@ -44,6 +44,11 @@ type
     OpenView: string;
     RecentFiles: TStringList;
 
+    // Strings
+    StringsFont: TFont;
+    StringMinLength: integer;
+    StringSort: string;
+
     // Saving
     WarnConversionProblems: boolean;
     RemoveEmptyTracks: boolean;
@@ -80,6 +85,7 @@ begin
     DiskMap.GridColor := DiskMapGridColor;
     DiskMap.Color := DiskMapBackgroundColor;
     DiskMap.TrackMark := DiskMapTrackMark;
+    memo.Font := StringsFont;
   end;
 end;
 
@@ -124,6 +130,11 @@ begin
   SectorFont := FontFromDescription(Reg.ReadString(S, 'Font', 'Consolas,8pt,,'));
   WarnSectorChange := Reg.ReadBool(S, 'WarnSectorChange', True);
   Mapping := Reg.ReadString(S, 'Mapping', '1252');
+
+  S := 'StringsView';
+  StringsFont := FontFromDescription(Reg.ReadString(S, 'Font', 'Tahoma,8pt,,'));
+  StringMinLength := Reg.ReadInteger(S, 'MinLength', 5);
+  StringSort := Reg.ReadString(S, 'Sort', 'Alpha');
 
   S := 'Workspace';
   RestoreWorkspace := Reg.ReadBool(S, 'Restore', False);
@@ -197,6 +208,11 @@ begin
   Reg.WriteString(S, 'Font', FontToDescription(SectorFont));
   Reg.WriteBool(S, 'WarnSectorChange', WarnSectorChange);
   Reg.WriteString(S, 'Mapping', Mapping);
+
+  S := 'StringsView';
+  Reg.WriteString(S, 'Font', FontToDescription(StringsFont));
+  Reg.WriteInteger(S, 'MinLength', StringMinLength);
+  Reg.WriteString(S, 'Sort', StringSort);
 
   S := 'Workspace';
   Reg.EraseSection(S);
