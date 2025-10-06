@@ -14,9 +14,11 @@ unit Main;
 interface
 
 uses
-  DiskMap, DskImage, Utils, About, Options, SectorProperties, TrackProperties, Settings, FileSystem, MGTFileSystem,
-  Comparers, Classes, Graphics, SysUtils, Forms, Dialogs, Menus, ComCtrls, ExtCtrls, Controls,
-  Clipbrd, StdCtrls, FileUtil, StrUtils, LazFileUtils, LConvEncoding;
+  DiskMap, DskImage, Utils, About, Options, SectorProperties,
+  TrackProperties, Settings, FileSystem, MGTFileSystem,
+  Comparers, Classes, Graphics, SysUtils, Forms, Dialogs, Menus,
+  ComCtrls, ExtCtrls, Controls,
+  Clipbrd, StdCtrls, FileUtil, StrUtils, LazFileUtils, LConvEncoding, CommCtrl;
 
 type
   // Must match the imagelist, put sides last
@@ -155,7 +157,8 @@ type
     procedure itmToolbarClick(Sender: TObject);
     procedure itmTrackPropertiesClick(Sender: TObject);
     procedure itmTrackUnformatClick(Sender: TObject);
-    procedure lvwMainCompare(Sender: TObject; Item1, Item2: TListItem; Data: integer; var Compare: integer);
+    procedure lvwMainCompare(Sender: TObject; Item1, Item2: TListItem;
+      Data: integer; var Compare: integer);
     procedure popFileSystemPopup(Sender: TObject);
     procedure popListItemPopup(Sender: TObject);
     procedure tvwMainChange(Sender: TObject; Node: TTreeNode);
@@ -185,10 +188,13 @@ type
     procedure tvwMainDblClick(Sender: TObject);
   private
     NextNewFile: integer;
-    function AddTree(Parent: TTreeNode; Text: string; ImageIdx: integer; NodeObject: TObject): TTreeNode;
+    function AddTree(Parent: TTreeNode; Text: string; ImageIdx: integer;
+      NodeObject: TObject): TTreeNode;
     function AddListInfo(Key: string; Value: string): TListItem;
-    function AddListTrack(Track: TDSKTrack; ShowModulation: boolean; ShowDataRate: boolean; ShowBitLength: boolean): TListItem;
-    function AddListSector(Sector: TDSKSector; ShowCopies: boolean; ShowIndexPointOffsets: boolean): TListItem;
+    function AddListTrack(Track: TDSKTrack; ShowModulation: boolean;
+      ShowDataRate: boolean; ShowBitLength: boolean): TListItem;
+    function AddListSector(Sector: TDSKSector; ShowCopies: boolean;
+      ShowIndexPointOffsets: boolean): TListItem;
     function AddListSides(Side: TDSKSide): TListItem;
     function GetSelectedSector(Sender: TObject): TDSKSector;
     function GetSelectedTrack(Sender: TObject): TDSKTrack;
@@ -266,8 +272,8 @@ begin
 
   FileNames := TStringList.Create();
   for Idx := 1 to ParamCount do
-      if (not ParamStr(Idx).StartsWith('--')) then
-         FileNames.Add(ParamStr(Idx));
+    if (not ParamStr(Idx).StartsWith('--')) then
+      FileNames.Add(ParamStr(Idx));
   LoadFiles(FileNames.ToStringArray());
 
   FileNames.Free;
@@ -297,7 +303,8 @@ begin
     if FileExists(FileName) then
       LoadFiles([FileName])
     else
-    if MessageDlg('File does not exist', SysUtils.Format('Can not find file %s. Remove from recent list?', [FileName]),
+    if MessageDlg('File does not exist',
+      SysUtils.Format('Can not find file %s. Remove from recent list?', [FileName]),
       mtConfirmation, mbYesNo, 0) = mrYes then
       Settings.RecentFiles.Delete(Settings.RecentFiles.IndexOf(FileName));
   end;
@@ -362,7 +369,8 @@ begin
   UpdateMenus;
 end;
 
-procedure TfrmMain.lvwMainCompare(Sender: TObject; Item1, Item2: TListItem; Data: integer; var Compare: integer);
+procedure TfrmMain.lvwMainCompare(Sender: TObject; Item1, Item2: TListItem;
+  Data: integer; var Compare: integer);
 begin
   Compare := CompareItems(Item1, Item2, lvwMain);
 end;
@@ -374,7 +382,8 @@ var
 begin
   AllHeaderlessFilesSelected := True;
   for ListItem in lvwMain.Items do
-    if (TObject(ListItem.Data).ClassType = TCPMFile) and (TCPMFile(ListItem.Data).HeaderType <> 'None') then
+    if (TObject(ListItem.Data).ClassType = TCPMFile) and
+      (TCPMFile(ListItem.Data).HeaderType <> 'None') then
     begin
       AllHeaderlessFilesSelected := False;
       Break;
@@ -403,7 +412,8 @@ begin
   SaveCount := 0;
   Folder := dlgSelectDirectory.FileName + PathDelim;
   for ListItem in lvwMain.Items do
-    if (AllFiles or ListItem.Selected) and (TObject(ListItem.Data).ClassType = TCPMFile) then
+    if (AllFiles or ListItem.Selected) and (TObject(ListItem.Data).ClassType =
+      TCPMFile) then
     begin
       DiskFile := TCPMFile(ListItem.Data);
       Stream := TFileStream.Create(Folder + DiskFile.FileName, fmCreate);
@@ -416,7 +426,8 @@ begin
       Inc(SaveCount);
     end;
 
-  statusBar.SimpleText := Format('%d files saved to %s', [SaveCount, dlgSelectDirectory.FileName]);
+  statusBar.SimpleText := Format('%d files saved to %s',
+    [SaveCount, dlgSelectDirectory.FileName]);
 end;
 
 procedure TfrmMain.itmSaveFileWithHeaderAsClick(Sender: TObject);
@@ -435,7 +446,8 @@ var
   Data: TDiskByteArray;
   Stream: TStream;
 begin
-  if (lvwMain.Selected = nil) or (lvwMain.Selected.Data = nil) or (TObject(lvwMain.Selected.Data).ClassType <> TCPMFile) then
+  if (lvwMain.Selected = nil) or (lvwMain.Selected.Data = nil) or
+    (TObject(lvwMain.Selected.Data).ClassType <> TCPMFile) then
     exit;
 
   DiskFile := TCPMFile(lvwMain.Selected.Data);
@@ -451,7 +463,8 @@ begin
     Stream.Free;
   end;
 
-  statusBar.SimpleText := Format('File %s saved as %s', [DiskFile.FileName, dlgSaveBinary.FileName]);
+  statusBar.SimpleText := Format('File %s saved as %s',
+    [DiskFile.FileName, dlgSaveBinary.FileName]);
 end;
 
 procedure TfrmMain.popListItemPopup(Sender: TObject);
@@ -464,7 +477,8 @@ begin
   itmSaveFile.Visible := False;
   itmSaveHeaderlessFile.Visible := False;
 
-  if (lvwMain.SelCount = 1) and (lvwMain.Selected.Data <> nil) and (TObject(lvwMain.Selected.Data).ClassType = TCPMFile) then
+  if (lvwMain.SelCount = 1) and (lvwMain.Selected.Data <> nil) and
+    (TObject(lvwMain.Selected.Data).ClassType = TCPMFile) then
   begin
     DiskFile := TCPMFile((lvwMain.Selected).Data);
     itmSaveFile.Visible := DiskFile.HeaderType <> 'None';
@@ -480,7 +494,8 @@ begin
     if (ListItem.Selected) and (ListItem.Data <> nil) then
     begin
       DataSelect := TObject(ListItem.Data);
-      if (DataSelect.ClassType = TCPMFile) and (TCPMFile(ListItem.Data).HeaderType <> 'None') then
+      if (DataSelect.ClassType = TCPMFile) and
+        (TCPMFile(ListItem.Data).HeaderType <> 'None') then
       begin
         AllHeaderlessFilesSelected := False;
         Break;
@@ -491,7 +506,8 @@ begin
   itmSaveSelectedFiles.Caption := Format('Save %d selected files', [lvwMain.SelCount]);
 
   itmSaveSelectedHeaderlessFiles.Visible := AllHeaderlessFilesSelected;
-  itmSaveSelectedHeaderlessFiles.Caption := Format('Save %d selected files to...', [lvwMain.SelCount]);
+  itmSaveSelectedHeaderlessFiles.Caption :=
+    Format('Save %d selected files to...', [lvwMain.SelCount]);
 end;
 
 function TfrmMain.FindTreeNodeFromData(Node: TTreeNode; Data: TObject): TTreeNode;
@@ -611,7 +627,7 @@ begin
       if IsDiskNode(Current) then
       begin
         CurrentImage := TDSKImage(Current.Data);
-        ShouldClose := true;
+        ShouldClose := True;
 
         if Sender = itmCloseAllExceptModified then
           ShouldClose := not CurrentImage.IsChanged;
@@ -620,17 +636,18 @@ begin
         if Sender = itmCloseAllExceptCopyProtected then
           ShouldClose := CurrentImage.Disk.DetectCopyProtection() = '';
         if Sender = itmCloseAllExceptBootSectors then
-           ShouldClose := CurrentImage.Disk.BootableOn = '';
+          ShouldClose := CurrentImage.Disk.BootableOn = '';
         if Sender = itmCloseAllExceptDoubleSided then
-           ShouldClose := CurrentImage.Disk.Sides <> 2;
+          ShouldClose := CurrentImage.Disk.Sides <> 2;
         if Sender = itmCloseAllExceptFDCError then
-           ShouldClose := not CurrentImage.Disk.HasFDCErrors;
+          ShouldClose := not CurrentImage.Disk.HasFDCErrors;
 
         if (Sender = itmCloseAllExceptCPC) or (Sender = itmCloseAllExceptZXPlus3) then
         begin
           Format := CurrentImage.Disk.DetectFormat();
-          ShouldClose := ((Sender = itmCloseAllExceptCPC) and (not Format.Contains('CPC'))
-                      or (Sender = itmCloseAllExceptZXPlus3) and (not Format.Contains('+3')));
+          ShouldClose := ((Sender = itmCloseAllExceptCPC) and
+            (not Format.Contains('CPC')) or
+            (Sender = itmCloseAllExceptZXPlus3) and (not Format.Contains('+3')));
         end;
 
         if ShouldClose then
@@ -671,7 +688,7 @@ begin
   // Jump to the first sector for this file
   if TObject(lvwMain.Selected.Data).ClassType = TCPMFile then
   begin
-     FirstSector := TCPMFile((lvwMain.Selected).Data).FirstSector;
+    FirstSector := TCPMFile((lvwMain.Selected).Data).FirstSector;
   end;
 
   if TObject(lvwMain.Selected.Data).ClassType = TMGTFile then
@@ -722,7 +739,8 @@ begin
     Image.Disk.Specification.Identify;
     if Image.Disk.Specification.Format <> dsFormatInvalid then
     begin
-      SpecsNode := AddTree(ImageNode, 'Specification', Ord(itSpecification), Image.Disk.Specification);
+      SpecsNode := AddTree(ImageNode, 'Specification', Ord(itSpecification),
+        Image.Disk.Specification);
       if Settings.OpenView = 'Specification' then
         tvwMain.Selected := SpecsNode;
     end;
@@ -730,7 +748,8 @@ begin
     // Add the sides
     for SIdx := 0 to Image.Disk.Sides - 1 do
     begin
-      SideNode := AddTree(ImageNode, Format('Side %d', [SIdx + 1]), Ord(itSide0) + SIdx, Image.Disk.Side[SIdx]);
+      SideNode := AddTree(ImageNode, Format('Side %d', [SIdx + 1]),
+        Ord(itSide0) + SIdx, Image.Disk.Side[SIdx]);
       if (SIdx = 0) and (Settings.OpenView = 'Track list') then
         tvwMain.Selected := SideNode;
 
@@ -743,7 +762,8 @@ begin
       with Image.Disk.Side[SIdx] do
         for TIdx := 0 to Tracks - 1 do
         begin
-          TrackNode := AddTree(TracksNode, Format('Track %d', [TIdx]), Ord(itTrack), Track[TIdx]);
+          TrackNode := AddTree(TracksNode, Format('Track %d', [TIdx]),
+            Ord(itTrack), Track[TIdx]);
           if (SIdx = 0) and (TIdx = 0) and (Settings.OpenView = 'First track') then
             tvwMain.Selected := TrackNode;
 
@@ -751,17 +771,19 @@ begin
           with Image.Disk.Side[SIdx].Track[TIdx] do
             for EIdx := 0 to Sectors - 1 do
             begin
-              SectorNode := AddTree(TrackNode, SysUtils.Format('Sector %d', [EIdx]), Ord(itSector), Sector[EIdx]);
-              if (SIdx = 0) and (TIdx = 0) and (EIdx = 0) and (Settings.OpenView = 'First sector') then
+              SectorNode := AddTree(TrackNode, SysUtils.Format('Sector %d', [EIdx]),
+                Ord(itSector), Sector[EIdx]);
+              if (SIdx = 0) and (TIdx = 0) and (EIdx = 0) and
+                (Settings.OpenView = 'First sector') then
                 tvwMain.Selected := SectorNode;
             end;
         end;
     end;
 
     if (Image.Disk.DetectFormat().StartsWith('MGT')) then
-       AddTree(ImageNode, 'Files', Ord(itFiles), TMGTFileSystem.Create(Image.Disk))
+      AddTree(ImageNode, 'Files', Ord(itFiles), TMGTFileSystem.Create(Image.Disk))
     else
-        AddTree(ImageNode, 'Files', Ord(itFiles), TCPMFileSystem.Create(Image.Disk));
+      AddTree(ImageNode, 'Files', Ord(itFiles), TCPMFileSystem.Create(Image.Disk));
     AddTree(ImageNode, 'Strings', Ord(itStrings), Image.Disk);
 
     if Image.Messages.Count > 0 then
@@ -774,7 +796,8 @@ begin
     SideNode.Expanded := True;
 end;
 
-function TfrmMain.AddTree(Parent: TTreeNode; Text: string; ImageIdx: integer; NodeObject: TObject): TTreeNode;
+function TfrmMain.AddTree(Parent: TTreeNode; Text: string; ImageIdx: integer;
+  NodeObject: TObject): TTreeNode;
 var
   NewTreeNode: TTreeNode;
 begin
@@ -867,8 +890,10 @@ begin
     if tvwMain.Selected <> nil then
       with tvwMain.Selected do
       begin
-        pnlListLabel.Caption := ' ' + AnsiReplaceStr(GetTitle(tvwMain.Selected), '&', '&&');
-        lvwMain.Visible := (ItemType(ImageIndex) <> itAnalyse) and (Caption <> 'Strings');
+        pnlListLabel.Caption :=
+          ' ' + AnsiReplaceStr(GetTitle(tvwMain.Selected), '&', '&&');
+        lvwMain.Visible := (ItemType(ImageIndex) <> itAnalyse) and
+          (Caption <> 'Strings');
         lvwMain.ReadOnly := True;
         DiskMap.Visible := ItemType(ImageIndex) = itAnalyse;
         pnlMemo.Visible := Caption = 'Strings';
@@ -901,6 +926,7 @@ begin
 
     ViewStyle := OldViewStyle;
     Columns.EndUpdate;
+    AutoResizeListView(lvwMain);
     Items.EndUpdate;
   end;
 end;
@@ -958,11 +984,14 @@ begin
               StrInt(Disk.Side[SIdx].Tracks));
         end;
         AddListInfo('Tracks total', StrInt(Disk.TrackTotal));
-        AddListInfo('Formatted capacity', SysUtils.Format('%d KB', [Disk.FormattedCapacity div BytesPerKB]));
+        AddListInfo('Formatted capacity', SysUtils.Format('%d KB',
+          [Disk.FormattedCapacity div BytesPerKB]));
         if Disk.IsTrackSizeUniform then
-          AddListInfo('Track size', SysUtils.Format('%d bytes', [Disk.Side[0].Track[0].Size]))
+          AddListInfo('Track size', SysUtils.Format('%d bytes',
+            [Disk.Side[0].Track[0].Size]))
         else
-          AddListInfo('Largest track size', SysUtils.Format('%d bytes', [Disk.Side[0].GetLargestTrackSize()]));
+          AddListInfo('Largest track size', SysUtils.Format('%d bytes',
+            [Disk.Side[0].GetLargestTrackSize()]));
         if Disk.IsUniform(False) then
           AddListInfo('Uniform layout', 'Yes')
         else
@@ -998,15 +1027,9 @@ begin
   begin
     Clear;
     with Add do
-    begin
       Caption := 'Key';
-      AutoSize := True;
-    end;
     with Add do
-    begin
       Caption := 'Value';
-      AutoSize := True;
-    end;
   end;
 end;
 
@@ -1076,8 +1099,8 @@ begin
     AddListTrack(Track, ShowModulation, ShowDataRate, ShowBitLength);
 end;
 
-function TfrmMain.AddListTrack(Track: TDSKTrack; ShowModulation: boolean; ShowDataRate: boolean;
-  ShowBitLength: boolean): TListItem;
+function TfrmMain.AddListTrack(Track: TDSKTrack; ShowModulation: boolean;
+  ShowDataRate: boolean; ShowBitLength: boolean): TListItem;
 var
   NewListItem: TListItem;
 begin
@@ -1133,16 +1156,14 @@ begin
     AddColumn('Index Point');
 
   with lvwMain.Columns.Add do
-  begin
     Caption := 'Status';
-    AutoSize := True;
-  end;
 
   for Sector in Track.Sector do
     AddListSector(Sector, Track.HasMultiSectoredSector, Track.HasIndexPointOffsets);
 end;
 
-function TfrmMain.AddListSector(Sector: TDSKSector; ShowCopies: boolean; ShowIndexPointOffsets: boolean): TListItem;
+function TfrmMain.AddListSector(Sector: TDSKSector; ShowCopies: boolean;
+  ShowIndexPointOffsets: boolean): TListItem;
 var
   NewListItem: TListItem;
 begin
@@ -1189,18 +1210,11 @@ begin
     begin
       Caption := 'Off';
       Alignment := taRightJustify;
-      AutoSize := True;
     end;
     with Add do
-    begin
       Caption := 'Hex';
-      AutoSize := True;
-    end;
     with Add do
-    begin
       Caption := 'ASCII';
-      AutoSize := True;
-    end;
   end;
 
   RowOffset := 0;
@@ -1368,65 +1382,45 @@ begin
   with lvwMain.Columns do
   begin
     with Add do
-    begin
       Caption := 'File name';
-      AutoSize := True;
-    end;
     if HasUserAreas then
       with Add do
       begin
         Caption := 'User Area';
         Alignment := taRightJustify;
-        AutoSize := True;
       end;
 
     with Add do
     begin
       Caption := 'Index';
       Alignment := taRightJustify;
-      AutoSize := True;
     end;
     with Add do
     begin
       Caption := 'Blocks';
       Alignment := taRightJustify;
-      AutoSize := True;
     end;
     with Add do
     begin
       Caption := 'Allocated';
       Alignment := taRightJustify;
-      AutoSize := True;
     end;
     with Add do
     begin
       Caption := 'Actual';
       Alignment := taRightJustify;
-      AutoSize := True;
     end;
     with Add do
-    begin
       Caption := 'Attributes';
-      AutoSize := True;
-    end;
 
     if HasHeaders then
     begin
       with Add do
-      begin
         Caption := 'Header';
-        AutoSize := True;
-      end;
       with Add do
-      begin
         Caption := 'Checksum';
-        AutoSize := True;
-      end;
       with Add do
-      begin
         Caption := 'Meta';
-        AutoSize := True;
-      end;
     end;
   end;
 
@@ -1468,27 +1462,19 @@ begin
   with lvwMain.Columns do
   begin
     with Add do
-    begin
       Caption := 'File name';
-      AutoSize := True;
-    end;
     with Add do
     begin
       Caption := 'Sectors';
       Alignment := taRightJustify;
-      AutoSize := True;
     end;
     with Add do
     begin
       Caption := 'Allocated';
       Alignment := taRightJustify;
-      AutoSize := True;
     end;
     with Add do
-    begin
       Caption := 'Meta';
-      AutoSize := True;
-    end;
   end;
 
   with lvwMain do
@@ -1518,9 +1504,9 @@ begin
   lvwMain.Hide;
 
   if Settings.StringSort = 'Alpha' then
-     Strings.Sort;
+    Strings.Sort;
   if Settings.StringSort = 'Size' then
-     Strings.CustomSort(CompareByLength);
+    Strings.CustomSort(CompareByLength);
 
   for Idx := 0 to Strings.Count - 1 do
     memo.Lines.Append(Strings[Idx]);
@@ -1573,7 +1559,8 @@ begin
     begin
       Image := TDSKImage(tvwMain.Items.GetFirstNode.Data);
       if Image.IsChanged and not Image.Corrupt then
-        case MessageDlg(Format('Save unsaved image "%s" ?', [Image.FileName]), mtWarning, Buttons, 0) of
+        case MessageDlg(Format('Save unsaved image "%s" ?', [Image.FileName]),
+            mtWarning, Buttons, 0) of
           mrYes: SaveImage(Image);
           mrCancel:
           begin
@@ -1613,22 +1600,27 @@ begin
 
   if dlgSave.Execute then
     case dlgSave.FilterIndex of
-      2: Image.SaveFile(dlgSave.FileName, diExtendedDSK, Copy, Settings.RemoveEmptyTracks);
+      2: Image.SaveFile(dlgSave.FileName, diExtendedDSK, Copy,
+          Settings.RemoveEmptyTracks);
       1:
       begin
         AbandonSave := False;
-        if Image.HasV5Extensions and (MessageDlg(
+        if Image.HasV5Extensions and
+          (MessageDlg(
           'This image has modulation, data rate that "Standard DSK format" does not support. ' +
+
           'Save anyway and lose this information?', mtWarning, [mbYes, mbNo], 0) <> mrYes) then
           AbandonSave := True;
 
-        if Image.HasOffsetInfo and (MessageDlg(
+        if Image.HasOffsetInfo and
+          (MessageDlg(
           'This image has SAMdisk OffsetInfo which "Standard DSK format" does not support. ' +
           'Save anyway and lose this information?', mtWarning, [mbYes, mbNo], 0) <> mrYes) then
           AbandonSave := True;
 
         if (not Image.Disk.IsTrackSizeUniform) and Settings.WarnConversionProblems and
-          (MessageDlg('This image has variable track sizes that "Standard DSK format" does not support. ' +
+          (MessageDlg(
+          'This image has variable track sizes that "Standard DSK format" does not support. ' +
           'Save anyway using largest track size?', mtWarning, [mbYes, mbNo], 0) <> mrYes) then
           AbandonSave := True;
 
@@ -1647,7 +1639,8 @@ begin
     DefaultFileName := DefaultFileName + ' Side ' + StrInt(DiskMap.Side.Side);
   dlgSaveMap.FileName := ExtractFileNameOnly(DefaultFileName);
   if dlgSaveMap.Execute then
-    DiskMap.SaveMap(dlgSaveMap.FileName, Settings.SaveDiskMapWidth, Settings.SaveDiskMapHeight);
+    DiskMap.SaveMap(dlgSaveMap.FileName, Settings.SaveDiskMapWidth,
+      Settings.SaveDiskMapHeight);
 end;
 
 procedure TfrmMain.itmDarkBlankSectorsPopClick(Sender: TObject);
@@ -1708,7 +1701,8 @@ begin
   if ExtractFileExt(Image.FileName) = '.gz' then
     SaveImageAs(Image, False, ExtractFileNameWithoutExt(Image.FileName))
   else
-    Image.SaveFile(Image.FileName, Image.FileFormat, False, (Settings.RemoveEmptyTracks and (Image.FileFormat = diExtendedDSK)));
+    Image.SaveFile(Image.FileName, Image.FileFormat, False,
+      (Settings.RemoveEmptyTracks and (Image.FileFormat = diExtendedDSK)));
 
   RefreshList();
 end;
@@ -1723,7 +1717,8 @@ begin
     TDSKSector(tvwMain.Selected.Data).ResetFDC;
 
   if (popSector.PopupComponent = tvwMain) and (tvwMain.Selected <> nil) then
-    if (TObject(tvwMain.Selected.Data).ClassType = TDSKTrack) and (ConfirmChange('reset FDC flags for', 'track')) then
+    if (TObject(tvwMain.Selected.Data).ClassType = TDSKTrack) and
+      (ConfirmChange('reset FDC flags for', 'track')) then
       for Sector in TDSKTrack(tvwMain.Selected.Data).Sector do
         Sector.ResetFDC;
 
@@ -1809,8 +1804,9 @@ begin
     Result := True;
     exit;
   end;
-  Result := MessageDlg('You are about to ' + Action + ' this ' + Upon + '. ' + CR + CR +
-    'Do you know what you are doing?', mtWarning, [mbYes, mbNo], 0) = mrYes;
+  Result := MessageDlg('You are about to ' + Action + ' this ' +
+    Upon + '. ' + CR + CR + 'Do you know what you are doing?', mtWarning,
+    [mbYes, mbNo], 0) = mrYes;
 end;
 
 function GetListViewAsText(ForListView: TListView): string;
@@ -1907,7 +1903,6 @@ begin
   Result := lvwMain.Columns.Add;
   Result.Caption := Caption;
   Result.Alignment := taRightJustify;
-  Result.AutoSize := True;
 end;
 
 function TfrmMain.AddColumns(Captions: array of string): TListColumnArray;
@@ -1920,7 +1915,8 @@ begin
     Result[CIdx] := AddColumn(Captions[CIdx]);
 end;
 
-procedure TfrmMain.OnApplicationDropFiles(Sender: TObject; const FileNames: array of string);
+procedure TfrmMain.OnApplicationDropFiles(Sender: TObject;
+  const FileNames: array of string);
 begin
   LoadFiles(FileNames);
 end;
