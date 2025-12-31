@@ -701,20 +701,30 @@ begin
     tvwMain.Selected := FoundNode;
 end;
 
-function TfrmMain.LoadImage(FileName: TFileName): boolean;
+function TfrmMain.LoadImage(FileName: TFileName): Boolean;
 var
   NewImage: TDSKImage;
 begin
-  NewImage := TDSKImage.CreateFromFile(FileName);
-  if NewImage <> nil then
-  begin
-    AddWorkspaceImage(NewImage);
-    Result := True;
-  end
-  else
-  begin
-    NewImage.Free;
-    Result := False;
+  Result := False;
+  NewImage := nil;
+
+  try
+    NewImage := TDSKImage.CreateFromFile(FileName);
+
+    if NewImage <> nil then
+    begin
+      AddWorkspaceImage(NewImage);
+      Result := True;
+    end;
+  except
+    on E: Exception do
+    begin
+      // Clean up if creation partially succeeded
+      if NewImage <> nil then
+        NewImage.Free;
+
+      MessageDlg('Error loading ' + FileName, e.Message, mtError, [mbOK], 0);
+    end;
   end;
 end;
 

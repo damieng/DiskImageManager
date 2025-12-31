@@ -399,6 +399,8 @@ constructor TDSKImage.CreateFromFile(FileName: TFileName);
 var
   FileStream: TFileStream;
   GZStream: TGZFileStream;
+const
+  fmShareDenyNoneWrite = $0070; // Enables READ + WRITE + DELETE sharing
 begin
   Create;
 
@@ -414,7 +416,7 @@ begin
   else
   begin
     self.FileName := FileName;
-    FileStream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyNone);
+    FileStream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyNoneWrite);
     FileSize := FileStream.Size;
     CreateFromStream(FileStream);
     FileStream.Free;
