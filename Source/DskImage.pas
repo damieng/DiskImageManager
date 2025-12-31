@@ -1165,7 +1165,7 @@ begin
   for Side in self.Side do
     for Track in Side.Track do
       for Sector in Track.Sector do
-        if (Sector.FDCStatus[1] <> 0) or (Sector.FDCStatus[2] <> 0) then
+        if ((Sector.FDCStatus[1] <> 0) and (Sector.FDCStatus[1] <> 128)) or (Sector.FDCStatus[2] <> 0) then
         begin
           Result := True;
           exit;
