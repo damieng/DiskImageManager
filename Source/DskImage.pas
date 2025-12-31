@@ -215,7 +215,7 @@ type
 
   // Specification (Optional PCW/CPC+3 disk specification)
   TDSKSpecFormat = (dsFormatPCW_SS, dsFormatCPC_System, dsFormatCPC_Data, dsFormatPCW_DS,
-    dsFormatAssumedPCW_SS, dsFormatEinstein, dsFormatMGT, dsFormatInvalid);
+    dsFormatAssumedPCW_SS, dsFormatEinstein, dsFormatMGT, dsFormatTS2068, dsFormatInvalid);
   TDSKSpecSide = (dsSideSingle, dsSideDoubleAlternate, dsSideDoubleSuccessive, dsSideDoubleReverse, dsSideInvalid);
   TDSKSpecTrack = (dsTrackSingle, dsTrackDouble, dsTrackInvalid);
   TDSKAllocationSize = (asByte, asWord);
@@ -332,8 +332,9 @@ const
     'Amstrad CPC DD/SS/ST data',
     'Amstrad PCW DD/DS/DT',
     'Amstrad PCW/+3 DD/SS/ST (Assumed)',
-    'Einstein',
+    'Tatung Einstein',
     'MGT',
+    'Timex/Sinclair TS2068',
     'Invalid'
     );
 
@@ -1818,6 +1819,20 @@ begin
     FReservedTracks := 2;
     FDirectoryBlocks := 1;
     FAllocationSize := asWord;
+    exit;
+  end;
+
+  if FParentDisk.DetectFormat = 'TS2068' then
+  begin
+    FFormat := dsFormatTS2068;
+    Source := '16x 256 byte sectors per track, starting ID 0';
+    SectorSize := 256;
+    SectorsPerTrack := 16;
+    TracksPerSide := 40;
+    GapReadWrite := 12;
+    GapFormat := 23;
+    FReservedTracks := 2;
+    FDirectoryBlocks := 1;
     exit;
   end;
 

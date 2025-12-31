@@ -140,6 +140,10 @@ begin
   if FirstSector.DataSize > 10 then
     if CompareMem(@FirstSector.Data, @EINSTEIN_SIGNATURE, Length(EINSTEIN_SIGNATURE)) then
       Result := 'Einstein';
+
+  // Timex/Sinclair TS2068
+  if ((FirstTrack.Sectors = 16) and (FirstSector.DataSize = 256) and (FirstSector.ID = 0)) then
+     Result := 'TS2068';
 end;
 
 // We have two techniques for copy-protection detection - ASCII signatures
@@ -152,6 +156,7 @@ var
 begin
   Result := '';
   if (Side.Tracks < 2) or (Side.Track[0].Sectors < 1) or (Side.Track[0].Sector[0].DataSize < 128) then exit;
+  if (Side.ParentDisk.IsUniform(true) and not Side.ParentDisk.HasFDCErrors) then exit;
 
   // Alkatraz copy-protection
   Offset := StrBufPos(Side.Track[0].Sector[0].Data, ' THE ALKATRAZ PROTECTION SYSTEM   (C) 1987  Appleby Associates');
