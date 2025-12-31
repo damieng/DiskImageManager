@@ -137,6 +137,7 @@ type
     itmFindNext: TMenuItem;
     dlgFind: TFindDialog;
     procedure itmCloseAllExceptClick(Sender: TObject);
+    procedure itmCloseAllExceptCopyProtectedClick(Sender: TObject);
     procedure itmCollapseAllClick(Sender: TObject);
     procedure itmCollapseChildrenClick(Sender: TObject);
     procedure itmCopyMapToClipboardClick(Sender: TObject);
@@ -673,6 +674,11 @@ begin
     NodesToDelete.Free;
     Cursor := crDefault;
   end;
+end;
+
+procedure TfrmMain.itmCloseAllExceptCopyProtectedClick(Sender: TObject);
+begin
+
 end;
 
 procedure TfrmMain.itmCollapseChildrenClick(Sender: TObject);

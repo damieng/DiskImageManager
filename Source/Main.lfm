@@ -308,6 +308,7 @@ object frmMain: TfrmMain
         end
         object itmCloseAllExceptCopyProtected: TMenuItem
           Caption = 'Copy Protected Disks'
+          OnClick = itmCloseAllExceptClick
         end
         object itmCloseAllExceptBootSectors: TMenuItem
           Caption = 'Boot Sectored Disks'

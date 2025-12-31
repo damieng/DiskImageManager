@@ -142,8 +142,9 @@
         <ResourceBaseClass Value="Form"/>
       </Unit7>
       <Unit8>
-        <Filename Value="Settings.pas"/>
+        <Filename Value="settings.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Settings"/>
       </Unit8>
       <Unit9>
         <Filename Value="FileSystem.pas"/>

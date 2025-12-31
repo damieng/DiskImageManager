@@ -53,7 +53,7 @@ type
 
     constructor Create;
     constructor CreateFromFile(FileName: TFileName);
-    constructor CreateFromStream(Stream: TStream);
+    constructor CreateFromStream(Stream: TStream; FileName: TFileName);
     destructor Destroy; override;
 
     function SaveFile(SaveFileName: TFileName; SaveFileFormat: TDSKImageFormat; Copy: boolean; Compress: boolean): boolean;
@@ -408,7 +408,7 @@ begin
   begin
     GZStream := TGZFileStream.Create(FileName, gzopenread);
     self.FileName := FileName;
-    CreateFromStream(GZStream);
+    CreateFromStream(GZStream, FileName);
     // FileSize is unavailable from either the internal stream or the external stream
     // Ditto reading the current position!
     GZStream.Free;
@@ -418,12 +418,12 @@ begin
     self.FileName := FileName;
     FileStream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyNoneWrite);
     FileSize := FileStream.Size;
-    CreateFromStream(FileStream);
+    CreateFromStream(FileStream, FileName);
     FileStream.Free;
   end;
 end;
 
-constructor TDSKImage.CreateFromStream(Stream: TStream);
+constructor TDSKImage.CreateFromStream(Stream: TStream; FileName: TFileName);
 var
   DSKInfoBlock: TDSKInfoBlock;
 begin
@@ -451,7 +451,7 @@ begin
   end
   else
   begin
-    MessageDlg('Unknown file type. Load aborted.', mtWarning, [mbOK], 0);
+    MessageDlg('Load failure', FileName + ' is unknown file type. Load aborted.', mtWarning, [mbOK], 0);
     Corrupt := True;
   end;
 end;
@@ -1063,7 +1063,10 @@ end;
 
 function TDSKDisk.DetectCopyProtection: string;
 begin
-  Result := DetectProtection(self.Side[0]);
+  if (self.Sides < 1) then
+     Result := ''
+  else
+      Result := DetectProtection(self.Side[0]);
 end;
 
 function TDSKDisk.BootableOn: string;
