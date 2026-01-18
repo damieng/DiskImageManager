@@ -1921,6 +1921,11 @@ begin
     FGapReadWrite := Data[8];
     FGapFormat := Data[9];
     FChecksum := Data[15];
+
+    if GetBlockCount > 255 then
+        FAllocationSize := asWord
+    else
+        FAllocationSize := asByte;
   end;
 end;
 
