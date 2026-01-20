@@ -16,7 +16,8 @@ interface
 uses
   DiskMap, DskImage, Utils, About, Options, SectorProperties,
   TrackProperties, Settings, FileSystem, MGTFileSystem,
-  Comparers, Classes, Graphics, SysUtils, Forms, Dialogs, Menus,
+  Comparers, FileViewer, SinclairBasic,
+  Classes, Graphics, SysUtils, Forms, Dialogs, Menus,
   ComCtrls, ExtCtrls, Controls,
   Clipbrd, StdCtrls, FileUtil, StrUtils, LazFileUtils, LConvEncoding, CommCtrl;
 
@@ -64,6 +65,7 @@ type
     itmCloseAllExceptBootSectors: TMenuItem;
     itmCloseAllExceptDoubleSided: TMenuItem;
     itmCloseAllExceptFDCError: TMenuItem;
+    itmViewFile: TMenuItem;
     mnuMain: TMainMenu;
     itmDisk: TMenuItem;
     itmOpen: TMenuItem;
@@ -158,8 +160,10 @@ type
     procedure itmToolbarClick(Sender: TObject);
     procedure itmTrackPropertiesClick(Sender: TObject);
     procedure itmTrackUnformatClick(Sender: TObject);
+    procedure ShowFile(Sender: TObject);
     procedure lvwMainCompare(Sender: TObject; Item1, Item2: TListItem;
       Data: integer; var Compare: integer);
+    procedure MenuItem1Click(Sender: TObject);
     procedure popFileSystemPopup(Sender: TObject);
     procedure popListItemPopup(Sender: TObject);
     procedure tvwMainChange(Sender: TObject; Node: TTreeNode);
@@ -374,6 +378,11 @@ procedure TfrmMain.lvwMainCompare(Sender: TObject; Item1, Item2: TListItem;
   Data: integer; var Compare: integer);
 begin
   Compare := CompareItems(Item1, Item2, lvwMain);
+end;
+
+procedure TfrmMain.MenuItem1Click(Sender: TObject);
+begin
+
 end;
 
 procedure TfrmMain.popFileSystemPopup(Sender: TObject);
@@ -913,7 +922,6 @@ begin
         lvwMain.ReadOnly := True;
         DiskMap.Visible := ItemType(ImageIndex) = itAnalyse;
         pnlMemo.Visible := Caption = 'Strings';
-        OnDblClick := nil;
         if Data <> nil then
         begin
           case ItemType(ImageIndex) of
@@ -1912,6 +1920,37 @@ end;
 procedure TfrmMain.tvwMainDblClick(Sender: TObject);
 begin
   itmSectorPropertiesClick(Sender);
+end;
+
+procedure TfrmMain.ShowFile(Sender: TObject);
+var
+  DiskFile: TCPMFile;
+  DiskImage: TDSKImage;
+  DiskName: string;
+begin
+  // Check if a file is selected and it's a TCPMFile
+  if (lvwMain.Selected = nil) or (lvwMain.Selected.Data = nil) then
+    Exit;
+
+  if TObject(lvwMain.Selected.Data).ClassType <> TCPMFile then
+    Exit;
+
+  DiskFile := TCPMFile(lvwMain.Selected.Data);
+
+  // Check if this is a PLUS3DOS BASIC file
+  if (DiskFile.HeaderType <> 'PLUS3DOS') or
+     (not DiskFile.Meta.StartsWith('BASIC')) then
+    Exit;
+
+  // Get the disk image for the title
+  DiskImage := GetCurrentImage;
+  if DiskImage <> nil then
+    DiskName := ExtractFileName(DiskImage.FileName)
+  else
+    DiskName := '';
+
+  // Open the BASIC viewer
+  ShowBasicViewer(DiskImage.Disk, DiskFile, DiskName);
 end;
 
 function TfrmMain.AddColumn(Caption: string): TListColumn;

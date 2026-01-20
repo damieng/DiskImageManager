@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "WebFetch(domain:worldofspectrum.org)",
+      "WebFetch(domain:fileformats.archiveteam.org)",
+      "WebFetch(domain:documentation.help)",
+      "WebFetch(domain:en.wikipedia.org)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(curl:*)",
+      "Bash(lazbuild:*)"
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+object frmFileViewer: TfrmFileViewer
+  Left = 603
+  Height = 500
+  Top = 287
+  Width = 600
+  Caption = 'File Viewer'
+  ClientHeight = 500
+  ClientWidth = 600
+  Color = clBtnFace
+  Font.CharSet = ANSI_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Position = poScreenCenter
+  LCLVersion = '4.2.0.0'
+  OnCreate = FormCreate
+  object memoContent: TMemo
+    Left = 0
+    Height = 500
+    Top = 0
+    Width = 600
+    Align = alClient
+    Font.CharSet = ANSI_CHARSET
+    Font.Height = -13
+    Font.Name = 'Consolas'
+    Font.Pitch = fpFixed
+    ParentFont = False
+    ReadOnly = True
+    ScrollBars = ssBoth
+    TabOrder = 0
+  end
+end

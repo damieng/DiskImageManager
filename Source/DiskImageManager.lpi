@@ -93,7 +93,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="14">
+    <Units Count="16">
       <Unit0>
         <Filename Value="DiskImageManager.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -170,6 +170,17 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="MGTFileSystem"/>
       </Unit13>
+      <Unit14>
+        <Filename Value="SinclairBasic.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit14>
+      <Unit15>
+        <Filename Value="FileViewer.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmFileViewer"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit15>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

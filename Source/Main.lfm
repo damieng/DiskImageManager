@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
-  Left = 1736
+  Left = 1624
   Height = 372
-  Top = 593
+  Top = 517
   Width = 556
   AllowDropFiles = True
   ClientHeight = 372
@@ -120,6 +120,7 @@ object frmMain: TfrmMain
       TabOrder = 1
       ViewStyle = vsReport
       OnCompare = lvwMainCompare
+      OnDblClick = ShowFile
     end
     object pnlListLabel: TPanel
       Left = 0
@@ -790,6 +791,11 @@ object frmMain: TfrmMain
     OnPopup = popListItemPopup
     Left = 328
     Top = 176
+    object itmViewFile: TMenuItem
+      Caption = 'View File'
+      Default = True
+      OnClick = ShowFile
+    end
     object itmCopyDetailsClipboard: TMenuItem
       Caption = 'Copy Details to Clipboard'
       Hint = 'Copy details about this file to the clipboard as text'
