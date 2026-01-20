@@ -1,0 +1,53 @@
+object frmGraphicsFileViewer: TfrmGraphicsFileViewer
+  Left = 603
+  Height = 434
+  Top = 287
+  Width = 512
+  Caption = 'Screen Viewer'
+  ClientHeight = 434
+  ClientWidth = 512
+  Color = clBtnFace
+  Font.CharSet = ANSI_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Position = poScreenCenter
+  LCLVersion = '4.2.0.0'
+  OnCreate = FormCreate
+  object toolbar: TToolBar
+    Left = 0
+    Height = 24
+    Top = 0
+    Width = 512
+    AutoSize = True
+    Caption = 'toolbar'
+    ParentShowHint = False
+    TabOrder = 0
+    object tckZoom: TTrackBar
+      Left = 27
+      Height = 22
+      Top = 2
+      Width = 100
+      Max = 5
+      Min = 1
+      Position = 1
+      TickStyle = tsNone
+      OnChange = tckZoomChange
+      TabOrder = 0
+    end
+    object lblZoom: TLabel
+      Left = 1
+      Height = 13
+      Top = 2
+      Width = 26
+      Caption = 'Zoom'
+    end
+  end
+  object imgScreen: TImage
+    Left = 0
+    Height = 410
+    Top = 24
+    Width = 512
+    Align = alClient
+  end
+end

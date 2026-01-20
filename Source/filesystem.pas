@@ -371,7 +371,7 @@ begin
 
   // Strip any headers
   if (not WithHeader) and ((HeaderType = 'PLUS3DOS') or (HeaderType = 'AMSDOS')) then
-    Result := Copy(FileData, HeaderSize, Size)
+    Result := Copy(FileData, HeaderSize, Size - HeaderSize)
   else
     Result := Copy(FileData, 0, Size + HeaderSize);
 end;

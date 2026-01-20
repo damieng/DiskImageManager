@@ -16,7 +16,7 @@ interface
 uses
   DiskMap, DskImage, Utils, About, Options, SectorProperties,
   TrackProperties, Settings, FileSystem, MGTFileSystem,
-  Comparers, FileViewer, SinclairBasic,
+  Comparers, FileViewer, SinclairBasic, GraphicsFileViewer, SpectrumScreen,
   Classes, Graphics, SysUtils, Forms, Dialogs, Menus,
   ComCtrls, ExtCtrls, Controls,
   Clipbrd, StdCtrls, FileUtil, StrUtils, LazFileUtils, LConvEncoding, CommCtrl;
@@ -1937,11 +1937,6 @@ begin
 
   DiskFile := TCPMFile(lvwMain.Selected.Data);
 
-  // Check if this is a PLUS3DOS BASIC file
-  if (DiskFile.HeaderType <> 'PLUS3DOS') or
-     (not DiskFile.Meta.StartsWith('BASIC')) then
-    Exit;
-
   // Get the disk image for the title
   DiskImage := GetCurrentImage;
   if DiskImage <> nil then
@@ -1949,8 +1944,23 @@ begin
   else
     DiskName := '';
 
-  // Open the BASIC viewer
-  ShowBasicViewer(DiskImage.Disk, DiskFile, DiskName);
+  // Check for PLUS3DOS files
+  if DiskFile.HeaderType <> 'PLUS3DOS' then
+    Exit;
+
+  // Check if this is a SCREEN$ file (6912 bytes with color, 6144 bytes without)
+  if TSpectrumScreen.IsValidScreenSize(DiskFile.Size - DiskFile.HeaderSize) then
+  begin
+    ShowScreenViewer(DiskImage.Disk, DiskFile, DiskName);
+    Exit;
+  end;
+
+  // Check if this is a BASIC file
+  if DiskFile.Meta.StartsWith('BASIC') then
+  begin
+    ShowBasicViewer(DiskImage.Disk, DiskFile, DiskName);
+    Exit;
+  end;
 end;
 
 function TfrmMain.AddColumn(Caption: string): TListColumn;
