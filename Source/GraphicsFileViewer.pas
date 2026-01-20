@@ -26,17 +26,25 @@ type
     toolbar: TToolBar;
     imgScreen: TImage;
     tckZoom: TTrackBar;
+    tmrFlash: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure tckZoomChange(Sender: TObject);
+    procedure tmrFlashTimer(Sender: TObject);
   private
     FDiskName: string;
     FFileName: string;
     FScreenData: array of byte;
     FZoom: integer;
+    FHasFlash: boolean;
+    FFlashPhase: boolean;
+    FBitmapNormal: TBitmap;
+    FBitmapFlash: TBitmap;
     procedure UpdateCaption;
     procedure RenderScreen;
+    procedure RenderBothPhases;
     procedure SetZoom(NewZoom: integer);
   public
+    destructor Destroy; override;
     procedure LoadScreenFile(DiskImage: TDSKDisk; DiskFile: TCPMFile; const DiskName: string);
     property DiskName: string read FDiskName write FDiskName;
     property FileName: string read FFileName write FFileName;
@@ -62,7 +70,21 @@ procedure TfrmGraphicsFileViewer.FormCreate(Sender: TObject);
 begin
   FDiskName := '';
   FFileName := '';
+  FHasFlash := False;
+  FFlashPhase := False;
   SetLength(FScreenData, 0);
+
+  // Create bitmaps for flash animation
+  FBitmapNormal := TBitmap.Create;
+  FBitmapFlash := TBitmap.Create;
+end;
+
+destructor TfrmGraphicsFileViewer.Destroy;
+begin
+  tmrFlash.Enabled := False;
+  FBitmapNormal.Free;
+  FBitmapFlash.Free;
+  inherited Destroy;
 end;
 
 procedure TfrmGraphicsFileViewer.UpdateCaption;
@@ -77,9 +99,48 @@ begin
   FZoom := NewZoom;
 
   UpdateCaption;
-  RenderScreen;
+
+  // Re-render both phases at new zoom level
+  if FHasFlash then
+    RenderBothPhases
+  else
+    RenderScreen;
 
   tckZoom.Position := FZoom;
+end;
+
+procedure TfrmGraphicsFileViewer.RenderBothPhases;
+var
+  NewWidth, NewHeight: integer;
+begin
+  if Length(FScreenData) = 0 then Exit;
+
+  NewWidth := ScreenWidth * FZoom;
+  NewHeight := ScreenHeight * FZoom;
+
+  // Render normal phase
+  FBitmapNormal.Width := NewWidth;
+  FBitmapNormal.Height := NewHeight;
+  FBitmapNormal.PixelFormat := pf24bit;
+  TSpectrumScreen.RenderToBitmap(FScreenData, FBitmapNormal, FZoom, False);
+
+  // Render flash phase (with ink/paper swapped on flash attributes)
+  FBitmapFlash.Width := NewWidth;
+  FBitmapFlash.Height := NewHeight;
+  FBitmapFlash.PixelFormat := pf24bit;
+  TSpectrumScreen.RenderToBitmap(FScreenData, FBitmapFlash, FZoom, True);
+
+  // Show the current phase
+  if FFlashPhase then
+    imgScreen.Picture.Assign(FBitmapFlash)
+  else
+    imgScreen.Picture.Assign(FBitmapNormal);
+
+  // Update image and form size
+  imgScreen.Width := NewWidth;
+  imgScreen.Height := NewHeight;
+  ClientWidth := NewWidth;
+  ClientHeight := NewHeight + toolbar.Height;
 end;
 
 procedure TfrmGraphicsFileViewer.RenderScreen;
@@ -96,8 +157,8 @@ begin
   imgScreen.Picture.Bitmap.Height := NewHeight;
   imgScreen.Picture.Bitmap.PixelFormat := pf24bit;
 
-  // Render the screen
-  TSpectrumScreen.RenderToBitmap(FScreenData, imgScreen.Picture.Bitmap, FZoom);
+  // Render the screen (no flash phase for non-flashing screens)
+  TSpectrumScreen.RenderToBitmap(FScreenData, imgScreen.Picture.Bitmap, FZoom, False);
 
   // Update image size
   imgScreen.Width := NewWidth;
@@ -132,12 +193,31 @@ begin
   SetLength(FScreenData, DataSize);
   Move(FileData[0], FScreenData[0], DataSize);
 
+  // Check for flash attributes
+  FHasFlash := TSpectrumScreen.HasFlashAttribute(FScreenData);
+  FFlashPhase := False;
+
+  // Enable timer only if flash attributes are present
+  tmrFlash.Enabled := FHasFlash;
+
   SetZoom(2);
 end;
 
 procedure TfrmGraphicsFileViewer.tckZoomChange(Sender: TObject);
 begin
   SetZoom(tckZoom.Position);
+end;
+
+procedure TfrmGraphicsFileViewer.tmrFlashTimer(Sender: TObject);
+begin
+  // Toggle flash phase
+  FFlashPhase := not FFlashPhase;
+
+  // Swap displayed bitmap
+  if FFlashPhase then
+    imgScreen.Picture.Assign(FBitmapFlash)
+  else
+    imgScreen.Picture.Assign(FBitmapNormal);
 end;
 
 end.

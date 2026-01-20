@@ -50,4 +50,11 @@ object frmGraphicsFileViewer: TfrmGraphicsFileViewer
     Width = 512
     Align = alClient
   end
+  object tmrFlash: TTimer
+    Enabled = False
+    Interval = 640
+    OnTimer = tmrFlashTimer
+    Left = 464
+    Top = 376
+  end
 end

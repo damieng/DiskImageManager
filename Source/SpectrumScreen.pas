@@ -39,14 +39,16 @@ type
     class var FLookupY: array[0..191] of integer;
     class var FInitialized: boolean;
     class procedure Initialize;
-    class function GetAttributeColors(Attribute: byte): TSpectrumColorPair;
+    class function GetAttributeColors(Attribute: byte; FlashPhase: boolean): TSpectrumColorPair;
   public
     class function IsValidScreenSize(Size: integer): boolean;
     class function HasColor(Size: integer): boolean;
+    class function HasFlashAttribute(const Data: array of byte): boolean;
     class procedure RenderToCanvas(const Data: array of byte; Canvas: TCanvas;
-      OffsetX: integer = 0; OffsetY: integer = 0; Scale: integer = 1);
+      OffsetX: integer = 0; OffsetY: integer = 0; Scale: integer = 1;
+      FlashPhase: boolean = False);
     class procedure RenderToBitmap(const Data: array of byte; Bitmap: TBitmap;
-      Scale: integer = 1);
+      Scale: integer = 1; FlashPhase: boolean = False);
   end;
 
 implementation
@@ -109,14 +111,45 @@ begin
   Result := Size = ScreenSizeWithColor;
 end;
 
-class function TSpectrumScreen.GetAttributeColors(Attribute: byte): TSpectrumColorPair;
+class function TSpectrumScreen.HasFlashAttribute(const Data: array of byte): boolean;
+var
+  I: integer;
+begin
+  Result := False;
+
+  // Only check if we have color attributes
+  if Length(Data) <> ScreenSizeWithColor then
+    Exit;
+
+  // Check each attribute byte for FLASH bit (bit 7)
+  for I := 0 to (AttributeWidth * AttributeHeight) - 1 do
+  begin
+    if (Data[AttributeOffset + I] and $80) <> 0 then
+    begin
+      Result := True;
+      Exit;
+    end;
+  end;
+end;
+
+class function TSpectrumScreen.GetAttributeColors(Attribute: byte; FlashPhase: boolean): TSpectrumColorPair;
 var
   Ink, Paper: byte;
-  Bright: boolean;
+  Bright, Flash: boolean;
 begin
   Ink := Attribute and $07;
   Paper := (Attribute shr 3) and $07;
   Bright := (Attribute and $40) <> 0;
+  Flash := (Attribute and $80) <> 0;
+
+  // When flash is active and we're in the alternate phase, swap ink and paper
+  if Flash and FlashPhase then
+  begin
+    // Swap ink and paper
+    Ink := Ink xor Paper;
+    Paper := Ink xor Paper;
+    Ink := Ink xor Paper;
+  end;
 
   if Bright then
   begin
@@ -131,7 +164,8 @@ begin
 end;
 
 class procedure TSpectrumScreen.RenderToCanvas(const Data: array of byte;
-  Canvas: TCanvas; OffsetX: integer; OffsetY: integer; Scale: integer);
+  Canvas: TCanvas; OffsetX: integer; OffsetY: integer; Scale: integer;
+  FlashPhase: boolean);
 var
   CellX, CellY, PixelX, PixelY: integer;
   X, Y: integer;
@@ -157,7 +191,7 @@ begin
       if HasAttr then
       begin
         Attribute := Data[CellY * AttributeWidth + AttributeOffset + CellX];
-        Colors := GetAttributeColors(Attribute);
+        Colors := GetAttributeColors(Attribute, FlashPhase);
       end;
 
       // Process each pixel row in the 8x8 cell
@@ -196,7 +230,7 @@ begin
 end;
 
 class procedure TSpectrumScreen.RenderToBitmap(const Data: array of byte;
-  Bitmap: TBitmap; Scale: integer);
+  Bitmap: TBitmap; Scale: integer; FlashPhase: boolean);
 begin
   Initialize;
 
@@ -204,7 +238,7 @@ begin
   Bitmap.Height := ScreenHeight * Scale;
   Bitmap.PixelFormat := pf24bit;
 
-  RenderToCanvas(Data, Bitmap.Canvas, 0, 0, Scale);
+  RenderToCanvas(Data, Bitmap.Canvas, 0, 0, Scale, FlashPhase);
 end;
 
 end.
