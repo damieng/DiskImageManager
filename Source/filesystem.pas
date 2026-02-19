@@ -18,7 +18,6 @@ uses
   Classes, SysUtils, FGL;
 
 type
-  TDiskByteArray = array of byte;
   TCPMFile = class;
 
   TCPMFileSystem = class(TObject)
@@ -107,6 +106,7 @@ const
 var
   MaxEntries, SectorOffset: integer;
   Sector: TDSKSector;
+  Track: TDSKTrack;
   Spec: TDSKSpecification;
   Index: integer;
   Extents: TFPGList<TCPMFile>;
@@ -125,7 +125,9 @@ begin
   Result := TFPGList<TCPMFile>.Create;
   Extents := TFPGList<TCPMFile>.Create;
 
-  Sector := FParentDisk.GetLogicalTrack(Spec.ReservedTracks).GetFirstLogicalSector();
+  Track := FParentDisk.GetLogicalTrack(Spec.ReservedTracks);
+  if Track = nil then exit;
+  Sector := Track.GetFirstLogicalSector();
   if Sector = nil then exit;
 
   SectorOffset := 0;
@@ -135,6 +137,7 @@ begin
     if (SectorOffset + DIR_ENTRY_SIZE > Sector.DataSize) then
     begin
       Sector := FParentDisk.GetNextLogicalSector(Sector);
+      if Sector = nil then break;
       SectorOffset := 0;
     end;
 
@@ -143,10 +146,14 @@ begin
       DiskFile := ReadFileEntry(Sector.Data, SectorOffset);
       DiskFile.EntryIndex := Index;
       if (DiskFile.FileName <> '') and (DiskFile.Blocks.Count > 0) then
+      begin
         if DiskFile.Extent = 0 then
           Result.Add(DiskFile)
         else
           Extents.Add(DiskFile);
+      end
+      else
+        DiskFile.Free;
     end;
 
     if Sector.Data[SectorOffset] = 32 then
@@ -171,6 +178,7 @@ begin
         break;
       end;
     end;
+    ExtentEntry.Free;
   end;
 
   Extents.Free;
@@ -347,6 +355,7 @@ begin
   for Block in Blocks do
   begin
     Sector := Disk.GetSectorByBlock(Block);
+    if Sector = nil then break;
     SectorsLeft := SectorsPerBlock;
     repeat
       begin

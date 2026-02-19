@@ -106,12 +106,15 @@ type
   end;
 
 
+  TDSKTrackProperty = (tpDataRate, tpRecordingMode, tpBitLength);
+
   // Side
   TDSKSide = class(TObject)
   private
     FParentDisk: TDSKDisk;
     function GetTracks: byte;
     function GetHighTrackCount: byte;
+    function HasTrackProperty(Prop: TDSKTrackProperty): boolean;
     procedure SetTracks(NewTracks: byte);
   public
     Side: byte;
@@ -1283,34 +1286,33 @@ begin
   end;
 end;
 
-function TDSKSide.HasDataRate: boolean;
+function TDSKSide.HasTrackProperty(Prop: TDSKTrackProperty): boolean;
 var
   Track: TDSKTrack;
 begin
   Result := True;
   for Track in self.Track do
-    if Track.DataRate <> drUnknown then exit;
+    case Prop of
+      tpDataRate: if Track.DataRate <> drUnknown then exit;
+      tpRecordingMode: if Track.RecordingMode <> rmUnknown then exit;
+      tpBitLength: if Track.BitLength > 0 then exit;
+    end;
   Result := False;
+end;
+
+function TDSKSide.HasDataRate: boolean;
+begin
+  Result := HasTrackProperty(tpDataRate);
 end;
 
 function TDSKSide.HasRecordingMode: boolean;
-var
-  Track: TDSKTrack;
 begin
-  Result := True;
-  for Track in self.Track do
-    if Track.RecordingMode <> rmUnknown then exit;
-  Result := False;
+  Result := HasTrackProperty(tpRecordingMode);
 end;
 
 function TDSKSide.HasBitLength: boolean;
-var
-  Track: TDSKTrack;
 begin
-  Result := True;
-  for Track in self.Track do
-    if Track.BitLength > 0 then exit;
-  Result := False;
+  Result := HasTrackProperty(tpBitLength);
 end;
 
 function TDSKSide.HasVariantSectors: boolean;
@@ -1668,7 +1670,7 @@ end;
 
 function TDSKSpecification.GetBlockSize: integer;
 begin
-  Result := 2 << (BlockShift + 6);
+  Result := BlockShiftToBlockSize(BlockShift);
 end;
 
 function TDSKSpecification.GetBlockCount: word;
@@ -1996,7 +1998,7 @@ end;
 
 function TDSKFormatSpecification.GetBlockSize: integer;
 begin
-  Result := 2 << (BlockShift + 6);
+  Result := BlockShiftToBlockSize(BlockShift);
 end;
 
 function TDSKFormatSpecification.GetDirectoryEntries: integer;

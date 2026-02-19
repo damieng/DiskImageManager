@@ -146,11 +146,31 @@ begin
      Result := 'TS2068';
 end;
 
+type
+  TSpeedlockSig = record
+    Signature: string;
+    Label_: string;
+  end;
+
+const
+  SpeedlockSignatures: array[0..9] of TSpeedlockSig = (
+    (Signature: 'SPEEDLOCK PROTECTION SYSTEM (C) 1987 D.LOOKER & D.AUBREY JONES : VERSION D/2.1'; Label_: 'Speedlock 1987 v2.1'),
+    (Signature: 'SPEEDLOCK DISC PROTECTION SYSTEMS COPYRIGHT 1987 '; Label_: 'Speedlock disc 1987'),
+    (Signature: 'SPEEDLOCK +3 DISC PROTECTION SYSTEM COPYRIGHT 1987 SPEEDLOCK ASSOCIATES'; Label_: 'Speedlock +3 1987'),
+    (Signature: 'SPEEDLOCK +3 DISC PROTECTION SYSTEM COPYRIGHT 1988 SPEEDLOCK ASSOCIATES'; Label_: 'Speedlock +3 1988'),
+    (Signature: 'SPEEDLOCK DISC PROTECTION SYSTEMS (C) 1988 SPEEDLOCK ASSOCIATES'; Label_: 'Speedlock 1988'),
+    (Signature: 'SPEEDLOCK DISC PROTECTION SYSTEMS (C) 1989 SPEEDLOCK ASSOCIATES'; Label_: 'Speedlock 1989'),
+    (Signature: 'SPEEDLOCK DISC PROTECTION SYSTEMS (C) 1990 SPEEDLOCK ASSOCIATES'; Label_: 'Speedlock 1990'),
+    (Signature: 'SPEEDLOCK PROTECTION SYSTEM (C) 1985 '; Label_: 'Speedlock 1985'),
+    (Signature: 'SPEEDLOCK PROTECTION SYSTEM (C) 1986 '; Label_: 'Speedlock 1986'),
+    (Signature: 'SPEEDLOCK PROTECTION SYSTEM (C) 1987 '; Label_: 'Speedlock 1987')
+  );
+
 // We have two techniques for copy-protection detection - ASCII signatures
 // and structural characteristics.
 function DetectProtection(Side: TDSKSide): string;
 var
-  TIdx, SIdx, Offset, LastTIdx: integer;
+  TIdx, SIdx, SigIdx, Offset, LastTIdx: integer;
   Temp: string;
   Sector: TDSKSector;
 begin
@@ -242,85 +262,14 @@ begin
     for SIdx := 0 to Side.Track[TIdx].Sectors - 1 do
     begin
       Sector := Side.Track[TIdx].Sector[SIdx];
-
-      // Speedlock 1985 (CPC)
-      Offset := StrBufPos(Sector.Data, 'SPEEDLOCK PROTECTION SYSTEM (C) 1985 ');
-      if Offset > -1 then
+      for SigIdx := 0 to High(SpeedlockSignatures) do
       begin
-        Result := Format('Speedlock 1985 (signed T%d/S%d +%d)', [TIdx, SIdx, Offset]);
-        exit;
-      end;
-
-      // Speedlock 1986 (CPC)
-      Offset := StrBufPos(Sector.Data, 'SPEEDLOCK PROTECTION SYSTEM (C) 1986 ');
-      if Offset > -1 then
-      begin
-        Result := Format('Speedlock 1986 (signed T%d/S%d +%d)', [TIdx, SIdx, Offset]);
-        exit;
-      end;
-
-      // Speedlock 1987 (CPC)
-      Offset := StrBufPos(Sector.Data, 'SPEEDLOCK DISC PROTECTION SYSTEMS COPYRIGHT 1987 ');
-      if Offset > -1 then
-      begin
-        Result := Format('Speedlock disc 1987 (signed T%d/S%d +%d)', [TIdx, SIdx, Offset]);
-        exit;
-      end;
-
-      // Speedlock 1987 vD/2.1 (CPC)
-      Offset := StrBufPos(Sector.Data, 'SPEEDLOCK PROTECTION SYSTEM (C) 1987 D.LOOKER & D.AUBREY JONES : VERSION D/2.1');
-      if Offset > -1 then
-      begin
-        Result := Format('Speedlock 1987 v2.1 (signed T%d/S%d +%d)', [TIdx, SIdx, Offset]);
-        exit;
-      end;
-
-      // Speedlock 1987 (CPC)
-      Offset := StrBufPos(Sector.Data, 'SPEEDLOCK PROTECTION SYSTEM (C) 1987 ');
-      if Offset > -1 then
-      begin
-        Result := Format('Speedlock 1987 (signed T%d/S%d +%d)', [TIdx, SIdx, Offset]);
-        exit;
-      end;
-
-      // Speedlock +3 1987
-      Offset := StrBufPos(Sector.Data, 'SPEEDLOCK +3 DISC PROTECTION SYSTEM COPYRIGHT 1987 SPEEDLOCK ASSOCIATES');
-      if Offset > -1 then
-      begin
-        Result := Format('Speedlock +3 1987 (signed T%d/S%d +%d)', [TIdx, SIdx, Offset]);
-        exit;
-      end;
-
-      // Speedlock +3 1988
-      Offset := StrBufPos(Sector.Data, 'SPEEDLOCK +3 DISC PROTECTION SYSTEM COPYRIGHT 1988 SPEEDLOCK ASSOCIATES');
-      if Offset > -1 then
-      begin
-        Result := Format('Speedlock +3 1988 (signed T%d/S%d +%d)', [TIdx, SIdx, Offset]);
-        exit;
-      end;
-
-      // Speedlock 1988
-      Offset := StrBufPos(Sector.Data, 'SPEEDLOCK DISC PROTECTION SYSTEMS (C) 1988 SPEEDLOCK ASSOCIATES');
-      if Offset > -1 then
-      begin
-        Result := Format('Speedlock 1988 (signed T%d/S%d +%d)', [TIdx, SIdx, Offset]);
-        exit;
-      end;
-
-      // Speedlock 1989
-      Offset := StrBufPos(Sector.Data, 'SPEEDLOCK DISC PROTECTION SYSTEMS (C) 1989 SPEEDLOCK ASSOCIATES');
-      if Offset > -1 then
-      begin
-        Result := Format('Speedlock 1989 (signed T%d/S%d +%d)', [TIdx, SIdx, Offset]);
-        exit;
-      end;
-
-      // Speedlock 1990
-      Offset := StrBufPos(Sector.Data, 'SPEEDLOCK DISC PROTECTION SYSTEMS (C) 1990 SPEEDLOCK ASSOCIATES');
-      if Offset > -1 then
-      begin
-        Result := Format('Speedlock 1990 (signed T%d/S%d +%d)', [TIdx, SIdx, Offset]);
-        exit;
+        Offset := StrBufPos(Sector.Data, SpeedlockSignatures[SigIdx].Signature);
+        if Offset > -1 then
+        begin
+          Result := Format('%s (signed T%d/S%d +%d)', [SpeedlockSignatures[SigIdx].Label_, TIdx, SIdx, Offset]);
+          exit;
+        end;
       end;
     end;
 

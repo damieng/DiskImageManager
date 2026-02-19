@@ -18,7 +18,6 @@ uses
   Classes, SysUtils, FGL;
 
 type
-  TDiskByteArray = array of byte;
   TMGTFile = class;
 
   TMGTFileSystem = class(TObject)

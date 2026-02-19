@@ -24,6 +24,7 @@ const
 
 type
   TSpinBorderStyle = (bsRaised, bsLowered, bsNone);
+  TDiskByteArray = array of byte;
 
 function StrInt(I: integer): string;
 function StrHex(I: integer): string;
@@ -43,6 +44,7 @@ function FontFromDescription(Description: string): TFont;
 function FontHumanReadable(ThisFont: TFont): string;
 function FontCopy(ThisFont: TFont): TFont;
 
+function BlockShiftToBlockSize(BlockShift: byte): integer;
 function StrFileSize(Size: integer): string;
 function CompareByLength(List: TStringList; Index1, Index2: integer): integer;
 
@@ -282,6 +284,11 @@ begin
       Result := False;
     Inc(Idx);
   end;
+end;
+
+function BlockShiftToBlockSize(BlockShift: byte): integer;
+begin
+  Result := 2 << (BlockShift + 6);
 end;
 
 function StrFileSize(Size: integer): string;

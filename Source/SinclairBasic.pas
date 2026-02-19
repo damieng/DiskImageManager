@@ -14,7 +14,7 @@ unit SinclairBasic;
 interface
 
 uses
-  DskImage, FileSystem, SysUtils, Math;
+  DskImage, FileSystem, Utils, SysUtils, Math;
 
 type
   TSinclairBasicMode = (sbMode48K, sbMode128K);

@@ -15,7 +15,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, ExtCtrls, ComCtrls, StdCtrls,
-  DskImage, FileSystem, SpectrumScreen;
+  DskImage, FileSystem, Utils, SpectrumScreen;
 
 type
 
