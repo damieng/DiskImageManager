@@ -15,19 +15,13 @@ interface
 
 uses
   DiskMap, DskImage, Utils, About, Options, SectorProperties,
-  TrackProperties, Settings, FileSystem, MGTFileSystem,
+  TrackProperties, Settings, FileSystem, MGTFileSystem, ListViewPresenter,
   Comparers, FileViewer, SinclairBasic, GraphicsFileViewer, SpectrumScreen,
   Classes, Graphics, SysUtils, Forms, Dialogs, Menus,
   ComCtrls, ExtCtrls, Controls,
-  Clipbrd, StdCtrls, FileUtil, StrUtils, LazFileUtils, LConvEncoding, CommCtrl, FGL;
+  Clipbrd, StdCtrls, FileUtil, StrUtils, LazFileUtils, LConvEncoding, CommCtrl;
 
 type
-  // Must match the imagelist, put sides last
-  ItemType = (itDisk, itSpecification, itTracksAll, itTrack, itFiles, itSector,
-    itAnalyse, itSides, itSide0, itSide1, itDiskCorrupt, itMessages, itStrings);
-
-  TListColumnArray = array of TListColumn;
-
   { TfrmMain }
 
   TfrmMain = class(TForm)
@@ -193,28 +187,18 @@ type
     procedure tvwMainDblClick(Sender: TObject);
   private
     NextNewFile: integer;
+    FPresenter: TListViewPresenter;
     function AddTree(Parent: TTreeNode; Text: string; ImageIdx: integer;
       NodeObject: TObject): TTreeNode;
-    function AddListInfo(Key: string; Value: string): TListItem;
-    function AddListTrack(Track: TDSKTrack; ShowModulation: boolean;
-      ShowDataRate: boolean; ShowBitLength: boolean): TListItem;
-    function AddListSector(Sector: TDSKSector; ShowCopies: boolean;
-      ShowIndexPointOffsets: boolean): TListItem;
-    function AddListSides(Side: TDSKSide): TListItem;
     function GetSelectedSector(Sender: TObject): TDSKSector;
     function GetSelectedTrack(Sender: TObject): TDSKTrack;
     function GetTitle(Data: TTreeNode): string;
     function GetCurrentImage: TDSKImage;
     function IsDiskNode(Node: TTreeNode): boolean;
-    function AddColumn(Caption: string): TListColumn;
-    function AddColumns(Captions: array of string): TListColumnArray;
     function FindTreeNodeFromData(Node: TTreeNode; Data: TObject): TTreeNode;
-    function MapByte(Raw: byte): string;
 
     procedure SaveExtractedFile(WithHeader: boolean);
     procedure SaveExtractedFilesToFolder(WithHeader: boolean; AllFiles: boolean);
-    procedure WriteSectorLine(Offset: integer; SecHex: string; SecData: string);
-    procedure SetListSimple;
     procedure OnApplicationDropFiles(Sender: TObject; const FileNames: array of string);
     procedure UpdateRecentFilesMenu;
   public
@@ -228,14 +212,6 @@ type
     procedure AnalyseMap(Side: TDSKSide);
     procedure RefreshList;
     procedure RefreshStrings(Disk: TDSKDisk);
-    procedure RefreshListFiles(FileSystem: TCPMFileSystem);
-    procedure RefreshListFilesMGT(FileSystem: TMGTFileSystem);
-    procedure RefreshListImage(Image: TDSKImage);
-    procedure RefreshListMessages(Messages: TStringList);
-    procedure RefreshListTrack(Side: TDSKSide);
-    procedure RefreshListSector(Track: TDSKTrack);
-    procedure RefreshListSectorData(Sector: TDSKSector);
-    procedure RefreshListSpecification(Specification: TDSKSpecification);
     procedure UpdateMenus;
 
     function CloseAll(AllowCancel: boolean): boolean;
@@ -268,6 +244,7 @@ var
 begin
   Settings := TSettings.Create(self);
   Settings.Load(Application.HasOption('c', 'clear'));
+  FPresenter := TListViewPresenter.Create(lvwMain, Settings);
 
   NextNewFile := 0;
   Caption := Application.Title;
@@ -924,23 +901,33 @@ begin
         if Data <> nil then
         begin
           case ItemType(ImageIndex) of
-            itDisk: RefreshListImage(Data);
-            itDiskCorrupt: RefreshListImage(Data);
-            itSpecification: RefreshListSpecification(Data);
-            itTracksAll: RefreshListTrack(Data);
-            itTrack: RefreshListSector(Data);
+            itDisk, itDiskCorrupt: FPresenter.RefreshImage(Data);
+            itSpecification: FPresenter.RefreshSpecification(Data);
+            itTracksAll:
+              begin
+                lvwMain.PopupMenu := popTrack;
+                FPresenter.RefreshTrack(Data);
+              end;
+            itTrack:
+              begin
+                lvwMain.PopupMenu := popSector;
+                FPresenter.RefreshSector(Data);
+              end;
             itAnalyse: AnalyseMap(Data);
             itStrings: RefreshStrings(Data);
-            itMessages: RefreshListMessages(Data);
+            itMessages: FPresenter.RefreshMessages(Data);
             else
               if TObject(Data).ClassType = TDSKSide then
-                RefreshListTrack(TDSKSide(Data));
+              begin
+                lvwMain.PopupMenu := popTrack;
+                FPresenter.RefreshTrack(TDSKSide(Data));
+              end;
               if TObject(Data).ClassType = TDSKSector then
-                RefreshListSectorData(TDSKSector(Data));
+                FPresenter.RefreshSectorData(TDSKSector(Data));
               if (TObject(Data).ClassType = TCPMFileSystem) then
-                RefreshListFiles(TCPMFileSystem(Data));
+                FPresenter.RefreshFiles(TCPMFileSystem(Data));
               if (TObject(Data).ClassType = TMGTFileSystem) then
-                RefreshListFilesMGT(TMGTFileSystem(Data));
+                FPresenter.RefreshFilesMGT(TMGTFileSystem(Data));
           end;
         end;
       end
@@ -952,368 +939,6 @@ begin
     AutoResizeListView(lvwMain);
     Items.EndUpdate;
   end;
-end;
-
-procedure TfrmMain.RefreshListMessages(Messages: TStringList);
-var
-  Message: string;
-begin
-  SetListSimple;
-  if Messages <> nil then
-    for Message in Messages do
-      AddListInfo('', Message);
-end;
-
-procedure TfrmMain.RefreshListImage(Image: TDSKImage);
-var
-  SIdx: integer;
-  Side: TDSKSide;
-  ImageFormat, Protection, Features: string;
-begin
-  SetListSimple;
-  if Image <> nil then
-    with Image do
-    begin
-      AddListInfo('Creator', Creator);
-
-      ImageFormat := DSKImageFormats[FileFormat];
-      if Image.HasV5Extensions then
-        if Image.HasOffsetInfo then
-          ImageFormat := ImageFormat + ' (SAMdisk)'
-        else
-          ImageFormat := ImageFormat + ' (v5)';
-
-      if Corrupt then ImageFormat := ImageFormat + ' (Corrupt)';
-      AddListInfo('Image Format', ImageFormat);
-
-      Features := '';
-      for Side in Image.Disk.Side do
-      begin
-        if Side.HasDataRate then Features := Features + 'Data Rate, ';
-        if Side.HasRecordingMode then Features := Features + 'Recording Mode, ';
-        if Side.HasVariantSectors then Features := Features + 'Variant Sectors, ';
-        if HasOffsetInfo then Features := Features + 'Offset-Info, ';
-      end;
-      if not Features.IsEmpty then
-        AddListInfo('Features', Features.Substring(0, Features.Length - 2));
-
-      AddListInfo('Sides', StrInt(Disk.Sides));
-      if Disk.Sides > 0 then
-      begin
-        if Disk.Sides > 1 then
-        begin
-          for SIdx := 0 to Disk.Sides - 1 do
-            AddListInfo(SysUtils.Format('Tracks on side %d', [SIdx]),
-              StrInt(Disk.Side[SIdx].Tracks));
-        end;
-        AddListInfo('Tracks total', StrInt(Disk.TrackTotal));
-        AddListInfo('Formatted capacity', SysUtils.Format('%d KB',
-          [Disk.FormattedCapacity div BytesPerKB]));
-        if Disk.IsTrackSizeUniform then
-          AddListInfo('Track size', SysUtils.Format('%d bytes',
-            [Disk.Side[0].Track[0].Size]))
-        else
-          AddListInfo('Largest track size', SysUtils.Format('%d bytes',
-            [Disk.Side[0].GetLargestTrackSize()]));
-        if Disk.IsUniform(False) then
-          AddListInfo('Uniform layout', 'Yes')
-        else
-        if Disk.IsUniform(True) then
-          AddListInfo('Uniform layout', 'Yes (except empty tracks)')
-        else
-          AddListInfo('Uniform layout', 'No');
-        AddListInfo('Format analysis', Disk.DetectFormat);
-        Protection := Disk.DetectCopyProtection();
-        if Protection <> '' then
-          AddListInfo('Copy protection', Protection);
-        if Disk.BootableOn <> '' then
-          AddListInfo('Boot sector', Disk.BootableOn);
-        if disk.HasFDCErrors then
-          AddListInfo('FDC errors', 'Yes')
-        else
-          AddListInfo('FDC errors', 'No');
-        if IsChanged then
-          AddListInfo('Is changed', 'Yes')
-        else
-        begin
-          AddListInfo('Is changed', 'No');
-          AddListInfo('File size', StrFileSize(FileSize));
-        end;
-      end;
-    end;
-end;
-
-procedure TfrmMain.SetListSimple;
-begin
-  lvwMain.ShowColumnHeaders := False;
-  with lvwMain.Columns do
-  begin
-    Clear;
-    with Add do
-      Caption := 'Key';
-    with Add do
-      Caption := 'Value';
-  end;
-end;
-
-procedure TfrmMain.RefreshListSpecification(Specification: TDSKSpecification);
-begin
-  SetListSimple;
-  Specification.Identify;
-  AddListInfo('Format', DSKSpecFormats[Specification.Format]);
-  if Specification.Format <> dsFormatInvalid then
-  begin
-    AddListInfo('Source', Specification.Source);
-    AddListInfo('Sided', DSKSpecSides[Specification.Side]);
-    AddListInfo('Track mode', DSKSpecTracks[Specification.Track]);
-    AddListInfo('Tracks/side', StrInt(Specification.TracksPerSide));
-    AddListInfo('Sectors/track', StrInt(Specification.SectorsPerTrack));
-    AddListInfo('Directory blocks', StrInt(Specification.DirectoryBlocks));
-    AddListInfo('Allocation size', DSKSpecAllocations[Specification.AllocationSize]);
-    AddListInfo('Reserved tracks', StrInt(Specification.ReservedTracks));
-    AddListInfo('Gap (format)', StrInt(Specification.GapFormat));
-    AddListInfo('Gap (read/write)', StrInt(Specification.GapReadWrite));
-    AddListInfo('Sector size', StrInt(Specification.SectorSize));
-    AddListInfo('Block shift', StrInt(Specification.BlockShift));
-    AddListInfo('Block size', StrInt(Specification.GetBlockSize));
-    AddListInfo('Block count', StrInt(Specification.GetBlockCount));
-    AddListInfo('Records per track', StrInt(Specification.GetRecordsPerTrack));
-    AddListInfo('Usable capacity', StrFileSize(Specification.GetUsableCapacity));
-  end;
-end;
-
-function TfrmMain.AddListInfo(Key: string; Value: string): TListItem;
-var
-  NewListItem: TListItem;
-begin
-  NewListItem := lvwMain.Items.Add;
-  with NewListItem do
-  begin
-    Caption := Key;
-    SubItems.Add(Value);
-  end;
-  Result := NewListItem;
-end;
-
-procedure TfrmMain.RefreshListTrack(Side: TDSKSide);
-var
-  Track: TDSKTrack;
-  ShowModulation, ShowDataRate, ShowBitLength: boolean;
-begin
-  lvwMain.PopupMenu := popTrack;
-  ShowModulation := Side.HasRecordingMode;
-  ShowDataRate := Side.HasDataRate;
-  ShowBitLength := Side.HasBitLength;
-
-  AddColumn('Logical');
-  AddColumn('Physical');
-  AddColumn('Track size');
-  AddColumn('Sectors');
-  if (Side.ParentDisk.ParentImage.FileFormat = diStandardDSK) then
-    AddColumn('Sector size');
-  AddColumn('Gap');
-  AddColumn('Filler');
-  if ShowModulation then AddColumn('Modulation');
-  if ShowDataRate then AddColumn('Data rate');
-  if ShowBitLength then AddColumn('Bit length');
-  AddColumn('');
-
-  for Track in Side.Track do
-    AddListTrack(Track, ShowModulation, ShowDataRate, ShowBitLength);
-end;
-
-function TfrmMain.AddListTrack(Track: TDSKTrack; ShowModulation: boolean;
-  ShowDataRate: boolean; ShowBitLength: boolean): TListItem;
-var
-  NewListItem: TListItem;
-begin
-  NewListItem := lvwMain.Items.Add;
-  with NewListItem do
-  begin
-    Caption := StrInt(Track.Logical);
-    Data := Track;
-    with SubItems do
-    begin
-      Add(StrInt(Track.Track));
-      Add(StrInt(Track.Size));
-      Add(StrInt(Track.Sectors));
-      if (Track.ParentSide.ParentDisk.ParentImage.FileFormat = diStandardDSK) then
-        Add(StrInt(Track.SectorSize));
-      Add(StrInt(Track.GapLength));
-      Add(StrHex(Track.Filler));
-      if ShowModulation then Add(DSKRecordingMode[Track.RecordingMode]);
-      if ShowDataRate then Add(DSKDataRate[Track.DataRate]);
-      if ShowBitLength then Add(StrInt(Track.BitLength div 8));
-      Add('');
-    end;
-  end;
-  Result := NewListItem;
-end;
-
-function TfrmMain.AddListSides(Side: TDSKSide): TListItem;
-var
-  NewListItem: TListItem;
-begin
-  NewListItem := lvwMain.Items.Add;
-  with NewListItem do
-  begin
-    Caption := StrInt(Side.Side + 1);
-    SubItems.Add(StrInt(Side.Tracks));
-    Data := Side;
-  end;
-  Result := NewListItem;
-end;
-
-procedure TfrmMain.RefreshListSector(Track: TDSKTrack);
-var
-  Sector: TDSKSector;
-begin
-  lvwMain.PopupMenu := popSector;
-
-  AddColumns(['Sector', 'Track', 'Side', 'ID', 'FDC size', 'FDC flags', 'Data size']);
-
-  if Track.HasMultiSectoredSector then
-    AddColumn('Copies');
-
-  if Track.HasIndexPointOffsets then
-    AddColumn('Index Point');
-
-  with lvwMain.Columns.Add do
-    Caption := 'Status';
-
-  for Sector in Track.Sector do
-    AddListSector(Sector, Track.HasMultiSectoredSector, Track.HasIndexPointOffsets);
-end;
-
-function TfrmMain.AddListSector(Sector: TDSKSector; ShowCopies: boolean;
-  ShowIndexPointOffsets: boolean): TListItem;
-var
-  NewListItem: TListItem;
-begin
-  NewListItem := lvwMain.Items.Add;
-  with NewListItem do
-  begin
-    Caption := StrInt(Sector.Sector);
-    Data := Sector;
-    with SubItems do
-    begin
-      Add(StrInt(Sector.Track));
-      Add(StrInt(Sector.Side));
-      Add(StrInt(Sector.ID));
-      Add(Format('%d (%d)', [Sector.FDCSize, FDCSectorSizes[Sector.FDCSize]]));
-      Add(Format('%d, %d', [Sector.FDCStatus[1], Sector.FDCStatus[2]]));
-      if (Sector.DataSize <> Sector.AdvertisedSize) then
-        Add(Format('%d (%d)', [Sector.DataSize, Sector.AdvertisedSize]))
-      else
-        Add(StrInt(Sector.DataSize));
-      if ShowCopies then
-        Add(StrInt(Sector.GetCopyCount));
-      if ShowIndexPointOffsets then
-        Add('+' + StrInt(Sector.IndexPointOffset));
-      Add(DSKSectorStatus[Sector.Status]);
-    end;
-  end;
-  Result := NewListItem;
-end;
-
-procedure TfrmMain.RefreshListSectorData(Sector: TDSKSector);
-var
-  Idx, RowOffset, Offset, TrueSectorSize, VariantNumber: integer;
-  Raw: byte;
-  HasVariants: boolean;
-  RowData, RowHex: string;
-begin
-  lvwMain.Font := Settings.SectorFont;
-
-  with lvwMain.Columns do
-  begin
-    BeginUpdate;
-    Clear;
-    with Add do
-    begin
-      Caption := 'Off';
-      Alignment := taRightJustify;
-    end;
-    with Add do
-      Caption := 'Hex';
-    with Add do
-      Caption := 'ASCII';
-  end;
-
-  RowOffset := 0;
-  RowData := '';
-  RowHex := '';
-
-  HasVariants := Sector.GetCopyCount > 1;
-  TrueSectorSize := FDCSectorSizes[Sector.FDCSize];
-  VariantNumber := 0;
-
-  Offset := 0;
-
-  for Idx := 0 to Sector.DataSize - 1 do
-  begin
-    // If we're starting a new sector variant label it
-    if HasVariants and (Idx mod TrueSectorSize = 0) then
-      with lvwMain.Items.Add do
-      begin
-        Inc(VariantNumber);
-        Subitems.Add('Sector variant #' + IntToStr(VariantNumber));
-      end;
-
-    // Emit a new line every X bytes depending on setting
-    if (Offset mod Settings.BytesPerLine = 0) and (Offset > 0) then
-    begin
-      WriteSectorLine(RowOffset, RowHex, RowData);
-      RowOffset := Offset;
-      RowData := '';
-      RowHex := '';
-    end;
-
-    // Gather up the data for the next line we'll write
-    Raw := Sector.Data[Idx];
-    RowData := RowData + MapByte(Raw);
-    RowHex := RowHex + StrHex(Raw) + ' ';
-    Inc(Offset);
-
-    // Flush and reset the offset for every variant sector
-    if HasVariants and (Offset = TrueSectorSize) then
-    begin
-      WriteSectorLine(RowOffset, RowHex, RowData);
-      RowOffset := 0;
-      RowData := '';
-      RowHex := '';
-      Offset := 0;
-    end;
-  end;
-
-  // Flush any leftover gathered data
-  if RowData <> '' then
-    WriteSectorLine(RowOffset, RowHex, RowData);
-end;
-
-procedure TfrmMain.WriteSectorLine(Offset: integer; SecHex: string; SecData: string);
-begin
-  with lvwMain.Items.Add do
-  begin
-    Caption := StrInt(Offset);
-    Subitems.Add(SecHex);
-    Subitems.Add(SecData);
-  end;
-end;
-
-function TfrmMain.MapByte(Raw: byte): string;
-begin
-  if Raw <= 31 then
-  begin
-    Result := Settings.UnknownASCII;
-    exit;
-  end;
-
-  Result := Chr(Raw);
-  if (Settings.Mapping = 'None') and (Raw > 127) then Result := Settings.UnknownASCII;
-  if (Settings.Mapping = '437') then Result := CP437ToUTF8(Result);
-  if (Settings.Mapping = '850') then Result := CP850ToUTF8(Result);
-  if (Settings.Mapping = '1252') then Result := CP1252ToUTF8(Result);
 end;
 
 // Menu: Help > About
@@ -1387,146 +1012,6 @@ begin
   DiskMap.Visible := True;
 end;
 
-// Load list with filenames
-procedure TfrmMain.RefreshListFiles(FileSystem: TCPMFileSystem);
-var
-  DiskFile: TCPMFile;
-  Files: TFPGList<TCPMFile>;
-  Attributes: string;
-  HasHeaders, HasUserAreas: boolean;
-begin
-  HasHeaders := False;
-  HasUserAreas := False;
-  Files := FileSystem.Directory;
-
-  for DiskFile in Files do
-  begin
-    if DiskFile.User > 0 then HasUserAreas := True;
-    if DiskFile.HeaderType <> 'None' then HasHeaders := True;
-  end;
-
-  with lvwMain.Columns do
-  begin
-    with Add do
-      Caption := 'File name';
-    if HasUserAreas then
-      with Add do
-      begin
-        Caption := 'User Area';
-        Alignment := taRightJustify;
-      end;
-
-    with Add do
-    begin
-      Caption := 'Index';
-      Alignment := taRightJustify;
-    end;
-    with Add do
-    begin
-      Caption := 'Blocks';
-      Alignment := taRightJustify;
-    end;
-    with Add do
-    begin
-      Caption := 'Allocated';
-      Alignment := taRightJustify;
-    end;
-    with Add do
-    begin
-      Caption := 'Actual';
-      Alignment := taRightJustify;
-    end;
-    with Add do
-      Caption := 'Attributes';
-
-    if HasHeaders then
-    begin
-      with Add do
-        Caption := 'Header';
-      with Add do
-        Caption := 'Checksum';
-      with Add do
-        Caption := 'Meta';
-    end;
-  end;
-
-  with lvwMain do
-  begin
-    BeginUpdate;
-    Items.Clear;
-    for DiskFile in Files do
-      with Items.Add do
-      begin
-        Data := DiskFile;
-        Caption := DiskFile.FileName;
-        if HasUserAreas then SubItems.Add(StrInt(DiskFile.User));
-        SubItems.Add(StrInt(DiskFile.EntryIndex));
-        SubItems.Add(StrInt(DiskFile.Blocks.Count));
-        SubItems.Add(StrFileSize(DiskFile.SizeOnDisk));
-        SubItems.Add(StrFileSize(DiskFile.Size));
-        Attributes := '';
-        if (DiskFile.ReadOnly) then Attributes := Attributes + 'R';
-        if (DiskFile.System) then Attributes := Attributes + 'S';
-        if (DiskFile.Archived) then Attributes := Attributes + 'A';
-        SubItems.Add(Attributes);
-        if HasHeaders then
-        begin
-          SubItems.Add(DiskFile.HeaderType);
-          SubItems.Add(StrYesNo(DiskFile.Checksum));
-          SubItems.Add(DiskFile.Meta);
-        end;
-      end;
-    EndUpdate;
-  end;
-
-  Files.Free;
-end;
-
-// Load list with filenames
-procedure TfrmMain.RefreshListFilesMGT(FileSystem: TMGTFileSystem);
-var
-  DiskFile: TMGTFile;
-  Files: TFPGList<TMGTFile>;
-begin
-  Files := FileSystem.Directory;
-
-  with lvwMain.Columns do
-  begin
-    with Add do
-      Caption := 'File name';
-    with Add do
-    begin
-      Caption := 'Sectors';
-      Alignment := taRightJustify;
-    end;
-    with Add do
-    begin
-      Caption := 'Allocated';
-      Alignment := taRightJustify;
-    end;
-    with Add do
-      Caption := 'Meta';
-  end;
-
-  with lvwMain do
-  begin
-    BeginUpdate;
-    Items.Clear;
-    for DiskFile in Files do
-      with Items.Add do
-      begin
-        Data := DiskFile;
-        Caption := DiskFile.FileName;
-        SubItems.Add(StrInt(DiskFile.SectorsAllocated));
-        SubItems.Add(StrFileSize(DiskFile.AllocatedSize));
-        SubItems.Add(DiskFile.Meta);
-      end;
-    EndUpdate;
-  end;
-
-  Files.Free;
-end;
-
 procedure TfrmMain.RefreshStrings(Disk: TDSKDisk);
 var
   Idx: integer;
@@ -1560,7 +1045,10 @@ procedure TfrmMain.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Settings.Save;
   if CloseAll(True) then
-    Action := caFree
+  begin
+    FPresenter.Free;
+    Action := caFree;
+  end
   else
     Action := caNone;
 end;
@@ -1971,23 +1459,6 @@ begin
     ShowBasicViewer(DiskImage.Disk, DiskFile, DiskName);
     Exit;
   end;
-end;
-
-function TfrmMain.AddColumn(Caption: string): TListColumn;
-begin
-  Result := lvwMain.Columns.Add;
-  Result.Caption := Caption;
-  Result.Alignment := taRightJustify;
-end;
-
-function TfrmMain.AddColumns(Captions: array of string): TListColumnArray;
-var
-  CIdx: integer;
-begin
-  Result := TListColumnArray.Create;
-  SetLength(Result, Length(Captions));
-  for CIdx := 0 to Length(Captions) - 1 do
-    Result[CIdx] := AddColumn(Captions[CIdx]);
 end;
 
 procedure TfrmMain.OnApplicationDropFiles(Sender: TObject;
