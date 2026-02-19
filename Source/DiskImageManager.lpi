@@ -30,7 +30,7 @@
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="2"/>
       <MinorVersionNr Value="9"/>
-      <BuildNr Value="116"/>
+      <BuildNr Value="117"/>
       <StringTable CompanyName="Envy Technologies" InternalName="Disk Image Manager" LegalCopyright="Copyright 2002-2025 Damien Guard." OriginalFilename="DiskImageManager.exe" ProductName="Disk Image Manager"/>
     </VersionInfo>
     <BuildModes Count="2">
@@ -93,7 +93,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="18">
+    <Units Count="19">
       <Unit0>
         <Filename Value="DiskImageManager.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -147,8 +147,9 @@
         <UnitName Value="Settings"/>
       </Unit8>
       <Unit9>
-        <Filename Value="FileSystem.pas"/>
+        <Filename Value="filesystem.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="FileSystem"/>
       </Unit9>
       <Unit10>
         <Filename Value="FormatAnalysis.pas"/>
@@ -192,6 +193,10 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit17>
+      <Unit18>
+        <Filename Value="RTFView.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit18>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

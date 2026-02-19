@@ -14,16 +14,19 @@ unit FileViewer;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, StdCtrls,
-  DskImage, FileSystem, SinclairBasic;
+  Classes, SysUtils, Forms, Controls,
+  DskImage, FileSystem, SinclairBasic, RTFView;
 
 type
   TfrmFileViewer = class(TForm)
-    memoContent: TMemo;
     procedure FormCreate(Sender: TObject);
+    procedure FormResize(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     FDiskName: string;
     FFileName: string;
+    FViewer: TRTFViewer;
+    procedure EnsureViewer;
     procedure UpdateCaption;
   public
     procedure LoadBasicFile(DiskImage: TDSKDisk; DiskFile: TCPMFile; const DiskName: string);
@@ -34,6 +37,9 @@ type
 procedure ShowBasicViewer(DiskImage: TDSKDisk; DiskFile: TCPMFile; const DiskName: string);
 
 implementation
+
+uses
+  Windows;
 
 {$R *.lfm}
 
@@ -50,6 +56,36 @@ procedure TfrmFileViewer.FormCreate(Sender: TObject);
 begin
   FDiskName := '';
   FFileName := '';
+  FViewer := nil;
+end;
+
+procedure TfrmFileViewer.EnsureViewer;
+var
+  ParentWnd: HWND;
+begin
+  if FViewer <> nil then
+    Exit;
+
+  // Get the native Win32 handle of this form
+  if not HandleAllocated then
+    HandleNeeded;
+  ParentWnd := HWND(Handle);
+  if ParentWnd = 0 then
+    Exit;
+
+  FViewer := TRTFViewer.Create(ParentWnd);
+  FViewer.SetBounds(0, 0, ClientWidth, ClientHeight);
+end;
+
+procedure TfrmFileViewer.FormResize(Sender: TObject);
+begin
+  if FViewer <> nil then
+    FViewer.SetBounds(0, 0, ClientWidth, ClientHeight);
+end;
+
+procedure TfrmFileViewer.FormDestroy(Sender: TObject);
+begin
+  FreeAndNil(FViewer);
 end;
 
 procedure TfrmFileViewer.UpdateCaption;
@@ -65,18 +101,20 @@ end;
 procedure TfrmFileViewer.LoadBasicFile(DiskImage: TDSKDisk; DiskFile: TCPMFile; const DiskName: string);
 var
   Parser: TSinclairBasicParser;
-  BasicText: string;
+  RTFText: string;
 begin
   FDiskName := DiskName;
   FFileName := DiskFile.FileName;
   UpdateCaption;
 
+  EnsureViewer;
+
   Parser := TSinclairBasicParser.Create(sbMode128K);
   try
-    BasicText := Parser.DecodeFile(DiskImage, DiskFile);
-    if BasicText = '' then
-      BasicText := '(Unable to decode BASIC program)';
-    memoContent.Text := BasicText;
+    RTFText := Parser.DecodeFileRTF(DiskImage, DiskFile);
+    if RTFText = '' then
+      RTFText := '{\rtf1\ansi (Unable to decode BASIC program)}';
+    FViewer.LoadRTF(RTFText);
   finally
     Parser.Free;
   end;

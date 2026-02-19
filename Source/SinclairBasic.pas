@@ -26,11 +26,15 @@ type
     function DecodeSpectrumIntegral(const Bytes: array of byte): string;
     function DecodeSpectrumFloat(const Bytes: array of byte): string;
     function DecodeLine(const Data: array of byte; StartPos, Length: integer): string;
+    function DecodeLineRTF(const Data: array of byte; StartPos, Length: integer): string;
     function GetSpecialChar(B: byte): string;
+    function EscapeRTF(const S: string): string;
   public
     constructor Create(Mode: TSinclairBasicMode = sbMode128K);
     function Decode(const Data: array of byte): string;
     function DecodeFile(DiskImage: TDSKDisk; DiskFile: TCPMFile): string;
+    function DecodeRTF(const Data: array of byte): string;
+    function DecodeFileRTF(DiskImage: TDSKDisk; DiskFile: TCPMFile): string;
     property Mode: TSinclairBasicMode read FMode write FMode;
   end;
 
@@ -270,8 +274,8 @@ begin
     LineNum := (word(Data[Pos]) shl 8) or word(Data[Pos + 1]);
     Inc(Pos, 2);
 
-    // Check for end marker
-    if LineNum = $8080 then
+    // Valid Spectrum BASIC line numbers are 0-9999
+    if LineNum > 9999 then
       Break;
 
     // Read line length (2 bytes, little-endian)
@@ -295,6 +299,7 @@ function TSinclairBasicParser.DecodeFile(DiskImage: TDSKDisk; DiskFile: TCPMFile
 var
   FileData: TDiskByteArray;
   BasicData: TDiskByteArray;
+  ProgLength: word;
 begin
   Result := '';
 
@@ -303,14 +308,249 @@ begin
      (not DiskFile.Meta.StartsWith('BASIC')) then
     Exit;
 
-  // Get file data without header
-  FileData := DiskFile.GetData(False);
-  if System.Length(FileData) = 0 then
+  // Get file data with header so we can read the variable area offset
+  FileData := DiskFile.GetData(True);
+  if System.Length(FileData) < 128 then
     Exit;
 
-  // Decode the BASIC program
-  BasicData := FileData;
+  // PLUS3DOS header bytes 20-21 contain the offset to the variable area
+  // which is the length of just the BASIC program (excluding variables)
+  ProgLength := word(FileData[20]) or (word(FileData[21]) shl 8);
+  if ProgLength = 0 then
+    Exit;
+  if ProgLength > System.Length(FileData) - 128 then
+    ProgLength := System.Length(FileData) - 128;
+
+  BasicData := Copy(FileData, 128, ProgLength);
   Result := Decode(BasicData);
+end;
+
+function TSinclairBasicParser.EscapeRTF(const S: string): string;
+var
+  I: integer;
+begin
+  Result := '';
+  for I := 1 to Length(S) do
+    case S[I] of
+      '\': Result := Result + '\\';
+      '{': Result := Result + '\{';
+      '}': Result := Result + '\}';
+    else
+      Result := Result + S[I];
+    end;
+end;
+
+function TSinclairBasicParser.DecodeLineRTF(const Data: array of byte; StartPos, Length: integer): string;
+var
+  Pos, EndPos: integer;
+  B: byte;
+  InString, InREM, LastWasSpace: boolean;
+  TokenText: string;
+begin
+  Result := '';
+  Pos := StartPos;
+  EndPos := StartPos + Length;
+  InString := False;
+  InREM := False;
+  LastWasSpace := True;
+
+  while Pos < EndPos do
+  begin
+    if Pos >= System.Length(Data) then
+      Break;
+
+    B := Data[Pos];
+    Inc(Pos);
+
+    if B = $0D then
+      Break;
+
+    // Inside a REM comment - everything is green, no token parsing
+    if InREM then
+    begin
+      case B of
+        $0E, $7E:
+          begin
+            if Pos + 5 <= EndPos then
+              Inc(Pos, 5)
+            else
+              Pos := EndPos;
+          end;
+        $20..$7D:
+          Result := Result + EscapeRTF(Chr(B));
+        $7F..$A2:
+          Result := Result + EscapeRTF(GetSpecialChar(B));
+        $A3..$FF:
+          Result := Result + EscapeRTF(GetTokenText(B));
+      end;
+      Continue;
+    end;
+
+    // Number markers - skip 5 bytes
+    if (B = $0E) or (B = $7E) then
+    begin
+      if Pos + 5 <= EndPos then
+        Inc(Pos, 5)
+      else
+        Pos := EndPos;
+      Continue;
+    end;
+
+    // String toggle on quote character
+    if B = $22 then
+    begin
+      if not InString then
+      begin
+        InString := True;
+        Result := Result + '{\cf3 "';
+      end
+      else
+      begin
+        InString := False;
+        Result := Result + '"}';
+      end;
+      LastWasSpace := False;
+      Continue;
+    end;
+
+    // Inside a string - everything is red
+    if InString then
+    begin
+      case B of
+        $20..$7D, $7F:
+          if B = $7F then
+            Result := Result + EscapeRTF(GetSpecialChar(B))
+          else
+            Result := Result + EscapeRTF(Chr(B));
+        $80..$A2:
+          Result := Result + EscapeRTF(GetSpecialChar(B));
+      end;
+      Continue;
+    end;
+
+    // Keywords
+    if B in [$A3..$FF] then
+    begin
+      TokenText := GetTokenText(B);
+      if not LastWasSpace then
+        Result := Result + ' ';
+
+      // REM keyword - emit keyword then switch to comment mode
+      if B = $EA then
+      begin
+        Result := Result + '{\cf2\b ' + EscapeRTF(TokenText) + ' }{\cf4 ';
+        InREM := True;
+      end
+      else
+        Result := Result + '{\cf2\b ' + EscapeRTF(TokenText) + ' }';
+
+      LastWasSpace := True;
+      Continue;
+    end;
+
+    // Regular printable ASCII
+    if (B >= $20) and (B <= $7D) then
+    begin
+      Result := Result + EscapeRTF(Chr(B));
+      LastWasSpace := (B = $20);
+      Continue;
+    end;
+
+    if B = $7F then
+    begin
+      Result := Result + EscapeRTF(GetSpecialChar(B));
+      LastWasSpace := False;
+      Continue;
+    end;
+
+    // Extended characters
+    if (B >= $80) and (B <= $A2) then
+    begin
+      Result := Result + EscapeRTF(GetSpecialChar(B));
+      LastWasSpace := False;
+      Continue;
+    end;
+  end;
+
+  // Close any open groups
+  if InString then
+    Result := Result + '}';
+  if InREM then
+    Result := Result + '}';
+end;
+
+function TSinclairBasicParser.DecodeRTF(const Data: array of byte): string;
+const
+  RTFHeader = '{\rtf1\ansi\deff0' +
+    '{\fonttbl{\f0\fmodern Consolas;}}' +
+    '{\colortbl;\red128\green128\blue128;\red0\green0\blue170;\red170\green0\blue0;\red0\green128\blue0;\red0\green0\blue0;}' +
+    '\f0\fs26 ';
+var
+  Pos, DataLen: integer;
+  LineNum: word;
+  LineLen: word;
+  LineRTF: string;
+  FirstLine: boolean;
+begin
+  Result := RTFHeader;
+  Pos := 0;
+  DataLen := System.Length(Data);
+  FirstLine := True;
+
+  while Pos < DataLen do
+  begin
+    if Pos + 4 > DataLen then
+      Break;
+
+    LineNum := (word(Data[Pos]) shl 8) or word(Data[Pos + 1]);
+    Inc(Pos, 2);
+
+    if LineNum > 9999 then
+      Break;
+
+    LineLen := word(Data[Pos]) or (word(Data[Pos + 1]) shl 8);
+    Inc(Pos, 2);
+
+    if LineLen < 1 then
+      Break;
+
+    if not FirstLine then
+      Result := Result + '\par ';
+    FirstLine := False;
+
+    LineRTF := DecodeLineRTF(Data, Pos, LineLen);
+    Result := Result + '{\cf1 ' + IntToStr(LineNum) + '} ' + LineRTF;
+
+    Inc(Pos, LineLen);
+  end;
+
+  Result := Result + '}';
+end;
+
+function TSinclairBasicParser.DecodeFileRTF(DiskImage: TDSKDisk; DiskFile: TCPMFile): string;
+var
+  FileData: TDiskByteArray;
+  BasicData: TDiskByteArray;
+  ProgLength: word;
+begin
+  Result := '';
+
+  if (DiskFile.HeaderType <> 'PLUS3DOS') or
+     (not DiskFile.Meta.StartsWith('BASIC')) then
+    Exit;
+
+  FileData := DiskFile.GetData(True);
+  if System.Length(FileData) < 128 then
+    Exit;
+
+  ProgLength := word(FileData[20]) or (word(FileData[21]) shl 8);
+  if ProgLength = 0 then
+    Exit;
+  if ProgLength > System.Length(FileData) - 128 then
+    ProgLength := System.Length(FileData) - 128;
+
+  BasicData := Copy(FileData, 128, ProgLength);
+  Result := DecodeRTF(BasicData);
 end;
 
 end.

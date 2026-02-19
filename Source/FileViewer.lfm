@@ -14,19 +14,6 @@ object frmFileViewer: TfrmFileViewer
   Position = poScreenCenter
   LCLVersion = '4.2.0.0'
   OnCreate = FormCreate
-  object memoContent: TMemo
-    Left = 0
-    Height = 500
-    Top = 0
-    Width = 600
-    Align = alClient
-    Font.CharSet = ANSI_CHARSET
-    Font.Height = -13
-    Font.Name = 'Consolas'
-    Font.Pitch = fpFixed
-    ParentFont = False
-    ReadOnly = True
-    ScrollBars = ssBoth
-    TabOrder = 0
-  end
+  OnDestroy = FormDestroy
+  OnResize = FormResize
 end
