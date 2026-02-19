@@ -408,19 +408,23 @@ begin
   if ExtractFileExt(FileName) = '.gz' then
   begin
     GZStream := TGZFileStream.Create(FileName, gzopenread);
-    self.FileName := FileName;
-    CreateFromStream(GZStream, FileName);
-    // FileSize is unavailable from either the internal stream or the external stream
-    // Ditto reading the current position!
-    GZStream.Free;
+    try
+      self.FileName := FileName;
+      CreateFromStream(GZStream, FileName);
+    finally
+      GZStream.Free;
+    end;
   end
   else
   begin
     self.FileName := FileName;
     FileStream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyNoneWrite);
-    FileSize := FileStream.Size;
-    CreateFromStream(FileStream, FileName);
-    FileStream.Free;
+    try
+      FileSize := FileStream.Size;
+      CreateFromStream(FileStream, FileName);
+    finally
+      FileStream.Free;
+    end;
   end;
 end;
 
@@ -504,7 +508,12 @@ var
 begin
   Result := nil;
   if From = nil then
-    NextSector := Disk.Side[0].Track[0].Sector[0]
+  begin
+    if (Length(Disk.Side) = 0) or (Length(Disk.Side[0].Track) = 0) or
+       (Length(Disk.Side[0].Track[0].Sector) = 0) then
+      exit;
+    NextSector := Disk.Side[0].Track[0].Sector[0];
+  end
   else
     NextSector := Disk.GetNextLogicalSector(From);
 
@@ -730,16 +739,18 @@ begin
   end;
 
   DiskFile := TFileStream.Create(SaveFileName, fmCreate or fmOpenWrite);
+  try
+    case SaveFileFormat of
+      diStandardDSK: Result := SaveFileDSK(DiskFile, diStandardDSK, False);
+      diExtendedDSK: Result := SaveFileDSK(DiskFile, diExtendedDSK, Compress);
+      else
+        MessageDlg(SysUtils.Format('Unknown file format %i', [SaveFileFormat]), mtError, [mbOK], 0);
+    end;
 
-  case SaveFileFormat of
-    diStandardDSK: Result := SaveFileDSK(DiskFile, diStandardDSK, False);
-    diExtendedDSK: Result := SaveFileDSK(DiskFile, diExtendedDSK, Compress);
-    else
-      MessageDlg(SysUtils.Format('Unknown file format %i', [SaveFileFormat]), mtError, [mbOK], 0);
+    FileSize := DiskFile.Size;
+  finally
+    DiskFile.Free;
   end;
-
-  FileSize := DiskFile.Size;
-  DiskFile.Free;
 
   if not Result then
     MessageDlg('Could not save file. Save aborted.', mtError, [mbOK], 0)
@@ -911,12 +922,17 @@ function TDSKDisk.GetSectorByBlock(Block: integer): TDSKSector;
 var
   TargetOffset, Offset: integer;
   Sector: TDSKSector;
+  Track: TDSKTrack;
 begin
+  Result := nil;
+
   // In theory blocks should be a multiple of sectors
   TargetOffset := Block * Specification.GetBlockSize();
 
   Offset := 0;
-  Sector := GetLogicalTrack(Specification.ReservedTracks).GetFirstLogicalSector();
+  Track := GetLogicalTrack(Specification.ReservedTracks);
+  if Track = nil then exit;
+  Sector := Track.GetFirstLogicalSector();
 
   while (Sector <> nil) and (Offset + Sector.DataSize <= TargetOffset) do
   begin

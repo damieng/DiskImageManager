@@ -427,8 +427,8 @@ begin
     begin
       DiskFile := TCPMFile(ListItem.Data);
       Stream := TFileStream.Create(Folder + DiskFile.FileName, fmCreate);
-      Data := DiskFile.GetData(WithHeader);
       try
+        Data := DiskFile.GetData(WithHeader);
         Stream.WriteBuffer(Pointer(Data)^, Length(Data));
       finally
         Stream.Free;
@@ -466,8 +466,8 @@ begin
   if not dlgSaveBinary.Execute then exit;
 
   Stream := TFileStream.Create(dlgSaveBinary.FileName, fmCreate);
-  Data := DiskFile.GetData(WithHeader);
   try
+    Data := DiskFile.GetData(WithHeader);
     Stream.WriteBuffer(Pointer(Data)^, Length(Data));
   finally
     Stream.Free;

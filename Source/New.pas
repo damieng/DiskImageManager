@@ -166,8 +166,11 @@ begin
 end;
 
 procedure TfrmNew.edtFillerChange(Sender: TObject);
+var
+  Value: integer;
 begin
-  udFiller.Position := StrToInt('$' + edtFiller.Text);
+  if TryStrToInt('$' + edtFiller.Text, Value) then
+    udFiller.Position := Value;
 end;
 
 procedure TfrmNew.btnCloseClick(Sender: TObject);
@@ -597,8 +600,11 @@ begin
     lblBinFile.Caption := dlgOpenBoot.FileName;
 
     BootFile := TFileStream.Create(dlgOpenBoot.FileName, fmOpenRead or fmShareDenyNone);
-    BootSectorSize := BootFile.Read(BootSectorBin, Length(BootSectorBin));
-    BootFile.Free;
+    try
+      BootSectorSize := BootFile.Read(BootSectorBin, Length(BootSectorBin));
+    finally
+      BootFile.Free;
+    end;
   end;
   UpdateFileDetails;
 end;
