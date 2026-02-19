@@ -19,7 +19,7 @@ uses
   Comparers, FileViewer, SinclairBasic, GraphicsFileViewer, SpectrumScreen,
   Classes, Graphics, SysUtils, Forms, Dialogs, Menus,
   ComCtrls, ExtCtrls, Controls,
-  Clipbrd, StdCtrls, FileUtil, StrUtils, LazFileUtils, LConvEncoding, CommCtrl;
+  Clipbrd, StdCtrls, FileUtil, StrUtils, LazFileUtils, LConvEncoding, CommCtrl, FGL;
 
 type
   // Must match the imagelist, put sides last
@@ -1391,12 +1391,15 @@ end;
 procedure TfrmMain.RefreshListFiles(FileSystem: TCPMFileSystem);
 var
   DiskFile: TCPMFile;
+  Files: TFPGList<TCPMFile>;
   Attributes: string;
   HasHeaders, HasUserAreas: boolean;
 begin
   HasHeaders := False;
   HasUserAreas := False;
-  for DiskFile in FileSystem.Directory do
+  Files := FileSystem.Directory;
+
+  for DiskFile in Files do
   begin
     if DiskFile.User > 0 then HasUserAreas := True;
     if DiskFile.HeaderType <> 'None' then HasHeaders := True;
@@ -1451,7 +1454,7 @@ begin
   begin
     BeginUpdate;
     Items.Clear;
-    for DiskFile in FileSystem.Directory do
+    for DiskFile in Files do
       with Items.Add do
       begin
         Data := DiskFile;
@@ -1475,13 +1478,18 @@ begin
       end;
     EndUpdate;
   end;
+
+  Files.Free;
 end;
 
 // Load list with filenames
 procedure TfrmMain.RefreshListFilesMGT(FileSystem: TMGTFileSystem);
 var
   DiskFile: TMGTFile;
+  Files: TFPGList<TMGTFile>;
 begin
+  Files := FileSystem.Directory;
+
   with lvwMain.Columns do
   begin
     with Add do
@@ -1504,7 +1512,7 @@ begin
   begin
     BeginUpdate;
     Items.Clear;
-    for DiskFile in FileSystem.Directory do
+    for DiskFile in Files do
       with Items.Add do
       begin
         Data := DiskFile;
@@ -1515,6 +1523,8 @@ begin
       end;
     EndUpdate;
   end;
+
+  Files.Free;
 end;
 
 procedure TfrmMain.RefreshStrings(Disk: TDSKDisk);

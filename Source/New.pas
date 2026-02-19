@@ -160,6 +160,7 @@ end;
 
 destructor TfrmNew.Destroy;
 begin
+  CurrentFormat.Free;
   formIcon.Free;
   inherited Destroy;
 end;
@@ -419,6 +420,7 @@ begin
       Caption := Format.Name;
       SubItems.Add(StrInt(Format.GetCapacityBytes div 1024));
       SubItems.Add(StrInt(Format.GetUsableBytes div 1024));
+      Format.Free;
     end;
   lvwFormats.EndUpdate;
 
@@ -445,6 +447,7 @@ end;
 
 procedure TfrmNew.SetCurrentFormat(ItemIndex: integer);
 begin
+  CurrentFormat.Free;
   CurrentFormat := TDSKFormatSpecification.Create(ItemIndex);
   UpdateDetails;
 end;
