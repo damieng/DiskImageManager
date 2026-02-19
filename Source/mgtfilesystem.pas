@@ -149,8 +149,8 @@ begin
         Meta := Format('Custom 0x%x', [Data[0] and 63]);
     end;
 
-    if Data[0] and 64 = 1 then  Meta := Meta + ' (protected)';
-    if Data[0] and 128 = 1 then Meta := Meta + ' (hidden)';
+    if Data[0] and 64 <> 0 then  Meta := Meta + ' (protected)';
+    if Data[0] and 128 <> 0 then Meta := Meta + ' (hidden)';
 
     SectorsAllocated := Data[11] * 256 + Data[12];
     AllocatedSize := SectorsAllocated * FParentDisk.GetFirstSector().AdvertisedSize;

@@ -66,8 +66,11 @@ end;
 
 // Get string as an integer
 function IntStr(S: string): integer;
+var
+  Code: integer;
 begin
-  Val(S, Result);
+  Val(S, Result, Code);
+  if Code <> 0 then Result := 0;
 end;
 
 // Extract ASCII string from a char array
@@ -206,10 +209,11 @@ begin
   Break.DelimitedText := StringReplace(Description, ' ', '_', [rfReplaceAll]);
   Result := TFont.Create;
   Result.Name := StringReplace(Break[0], '_', ' ', [rfReplaceAll]);
-  Result.Size := IntStr(StringReplace(Break[1], 'pt', '', [rfReplaceAll]));
-  if (Break[1] = 'Bold') then
+  if Break.Count > 1 then
+    Result.Size := IntStr(StringReplace(Break[1], 'pt', '', [rfReplaceAll]));
+  if (Break.Count > 2) and (Break[2] = 'Bold') then
     Result.Style := Result.Style + [fsBold];
-  if (Break[2] = 'Italic') then
+  if (Break.Count > 3) and (Break[3] = 'Italic') then
     Result.Style := Result.Style + [fsItalic];
   Break.Free;
 end;

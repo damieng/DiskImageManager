@@ -700,16 +700,15 @@ var
   FoundNode: TTreeNode;
   FirstSector: TDSKSector;
 begin
+  FirstSector := nil;
+
   // Jump to the first sector for this file
   if TObject(lvwMain.Selected.Data).ClassType = TCPMFile then
-  begin
-    FirstSector := TCPMFile((lvwMain.Selected).Data).FirstSector;
-  end;
-
-  if TObject(lvwMain.Selected.Data).ClassType = TMGTFile then
-  begin
+    FirstSector := TCPMFile((lvwMain.Selected).Data).FirstSector
+  else if TObject(lvwMain.Selected.Data).ClassType = TMGTFile then
     FirstSector := TMGTFile((lvwMain.Selected).Data).FirstSector;
-  end;
+
+  if FirstSector = nil then exit;
 
   FoundNode := FindTreeNodeFromData(tvwMain.Selected.Parent, FirstSector);
   if FoundNode <> nil then
@@ -1534,7 +1533,8 @@ begin
 
   for Idx := 0 to Strings.Count - 1 do
     memo.Lines.Append(Strings[Idx]);
-  memo.Lines.Delete(memo.Lines.Count - 1);
+  if memo.Lines.Count > 0 then
+    memo.Lines.Delete(memo.Lines.Count - 1);
 
   pnlMemo.Show;
 end;

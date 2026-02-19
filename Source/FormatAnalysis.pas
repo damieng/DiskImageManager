@@ -387,7 +387,7 @@ begin
   end;
 
   // W.R.M. (Martech)
-  if (Side.Tracks > 9) and (Side.Track[9].Sectors > 9) and (Side.Track[8].Sector[9].DataSize > 128) then
+  if (Side.Tracks > 9) and (Side.Track[8].Sectors > 9) and (Side.Track[8].Sector[9].DataSize > 128) then
     if StrBufPos(Side.Track[8].Sector[9].Data, 'W.R.M Disc') = 0 then
       if StrBufPos(Side.Track[8].Sector[9].Data, 'Protection') > 0 then
         if StrBufPos(Side.Track[8].Sector[9].Data, 'System (c) 1987') > 0 then
@@ -636,7 +636,7 @@ begin
     end;
 
   // Make sure the ID's are sequential
-  if (LowIdx < 255) and (NextLowIdx < 255) and (NextLowID = LowID - 1) then
+  if (LowIdx < 255) and (NextLowIdx < 255) and (NextLowID = LowID + 1) then
   begin
     // Positive skew (or negative less than sector-count)
     if (LowIdx < NextLowIdx) then
@@ -651,11 +651,14 @@ begin
   // Confirm the interleave for every sector
   ExpectedID := Track.Sector[0].ID;
   for SIdx := 0 to Track.Sectors - 1 do
+  begin
     if Track.Sector[SIdx].ID <> ExpectedID then
     begin
       Result := Format('Expected %d but sector %d ID was %d not %d', [Interleave, SIdx, Track.Sector[SIdx].ID, ExpectedID]);
       Exit;
     end;
+    ExpectedID := ExpectedID + 1;
+  end;
 
   Result := Format('%d', [Interleave]);
 end;

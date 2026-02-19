@@ -473,7 +473,7 @@ var
   Side: TDSKSide;
 begin
   for Side in Disk.Side do
-    if Side.HasDataRate or Side.HasDataRate or Side.HasVariantSectors then
+    if Side.HasDataRate or Side.HasRecordingMode or Side.HasVariantSectors then
     begin
       Result := True;
       exit;
@@ -986,7 +986,7 @@ begin
   OldSides := Sides;
   if OldSides > NewSides then
   begin
-    for Idx := NewSides - 1 to OldSides do
+    for Idx := NewSides to OldSides - 1 do
       Side[Idx].Free;
     SetLength(Side, NewSides);
   end;
@@ -1116,43 +1116,46 @@ begin
   Result.Duplicates := DupIgnore;
   CurrentText := '';
   Sector := Side[0].Track[0].Sector[0];
-  Index := Sides;
   Index := 0;
   Uniques := TStringList.Create;
   Uniques.Duplicates := DupIgnore;
   Uniques.Sorted := True;
 
-  while Sector <> nil do
-  begin
-    NextByte := Sector.Data[Index];
-    if (NextByte >= 32) and (NextByte <= 127) then
+  try
+    while Sector <> nil do
     begin
-      CurrentText := CurrentText + Chr(NextByte);
-    end
-    else
-    begin
-      if CurrentText.Trim(TrimChars).Length >= MinLength then
+      NextByte := Sector.Data[Index];
+      if (NextByte >= 32) and (NextByte <= 127) then
       begin
-        Uniques.Clear;
-        for CIdx := 0 to CurrentText.Length - 1 do
+        CurrentText := CurrentText + Chr(NextByte);
+      end
+      else
+      begin
+        if CurrentText.Trim(TrimChars).Length >= MinLength then
         begin
-          CurrChar := CurrentText[CIdx];
-          if IsUpper(CurrChar) or IsLower(CurrChar) then Uniques.Append(CurrChar);
-          if (Uniques.Count >= MinUniques) then break;
+          Uniques.Clear;
+          for CIdx := 1 to CurrentText.Length do
+          begin
+            CurrChar := CurrentText[CIdx];
+            if IsUpper(CurrChar) or IsLower(CurrChar) then Uniques.Append(CurrChar);
+            if (Uniques.Count >= MinUniques) then break;
+          end;
+
+          if (Uniques.Count >= MinUniques) then
+            Result.Append(CurrentText.Trim());
         end;
-
-        if (Uniques.Count >= MinUniques) then
-          Result.Append(CurrentText.Trim());
+        CurrentText := '';
       end;
-      CurrentText := '';
-    end;
 
-    Inc(Index);
-    if Index >= Sector.DataSize then
-    begin
-      Sector := GetNextLogicalSector(Sector);
-      Index := 0;
+      Inc(Index);
+      if Index >= Sector.DataSize then
+      begin
+        Sector := GetNextLogicalSector(Sector);
+        Index := 0;
+      end;
     end;
+  finally
+    Uniques.Free;
   end;
 end;
 
@@ -1314,7 +1317,7 @@ begin
   OldTracks := Tracks;
   if OldTracks > NewTracks then
   begin
-    for Idx := NewTracks - 1 to OldTracks do
+    for Idx := NewTracks to OldTracks - 1 do
       Track[Idx].Free;
     SetLength(Track, NewTracks);
   end;
@@ -1439,7 +1442,7 @@ begin
 
   if OldSectors > NewSectors then
   begin
-    for SIdx := NewSectors - 1 to OldSectors do
+    for SIdx := NewSectors to OldSectors - 1 do
       Sector[SIdx].Free;
     SetLength(Sector, NewSectors);
   end;
@@ -1523,6 +1526,7 @@ var
   DeclaredSize: integer;
 begin
   Result := 1;
+  if FDCSize > High(FDCSectorSizes) then exit;
   DeclaredSize := FDCSectorSizes[FDCSize];
   if (DeclaredSize = 0) or (DataSize mod DeclaredSize <> 0) then exit;
   Result := DataSize div DeclaredSize;
