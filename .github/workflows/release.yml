@@ -1,0 +1,67 @@
+name: Build and Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            target-cpu: i386
+            target-os: win32
+            artifact: DiskImageManager-win32.zip
+          - os: windows-latest
+            target-cpu: x86_64
+            target-os: win64
+            artifact: DiskImageManager-win64.zip
+          - os: ubuntu-latest
+            target-cpu: x86_64
+            target-os: linux
+            artifact: DiskImageManager-linux-x64.tar.gz
+          - os: macos-latest
+            target-cpu: x86_64
+            target-os: darwin
+            artifact: DiskImageManager-macos-x64.tar.gz
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Lazarus
+        uses: gcarreno/setup-lazarus@v3
+        with:
+          lazarus-version: stable
+
+      - name: Build package
+        run: lazbuild --add-package Source/DIMComponents.lpk
+
+      - name: Build application
+        run: >
+          lazbuild
+          --build-mode=Debug
+          --cpu=${{ matrix.target-cpu }}
+          --os=${{ matrix.target-os }}
+          Source/DiskImageManager.lpi
+
+      - name: Package (Windows)
+        if: startsWith(matrix.os, 'windows')
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Path out -Recurse -Filter "DiskImageManager.exe" | Select-Object -First 1
+          Compress-Archive -Path $exe.FullName -DestinationPath ${{ matrix.artifact }}
+
+      - name: Package (Linux/macOS)
+        if: "!startsWith(matrix.os, 'windows')"
+        run: |
+          binary=$(find out -name "DiskImageManager" -o -name "diskimagemanager" | head -1)
+          chmod +x "$binary"
+          tar czf ${{ matrix.artifact }} -C "$(dirname "$binary")" "$(basename "$binary")"
+
+      - name: Upload release asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload ${{ github.event.release.tag_name }} ${{ matrix.artifact }}
