@@ -10,26 +10,29 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - cpu: x86_64
+          - name: win64
+            args: --os=win64 --cpu=x86_64
             artifact: DiskImageManager-win64.zip
-          - cpu: i386
+          - name: win32
+            args: --os=win32 --cpu=i386
             artifact: DiskImageManager-win32.zip
 
     runs-on: windows-latest
 
     steps:
+      - name: Install Lazarus
+        uses: ollydev/setup-lazarus-fpcup@v3.3
+        with:
+          laz: lazarus_3_8
+          fpc: release_3_2_2
+
       - uses: actions/checkout@v4
 
-      - name: Install Lazarus
-        uses: ollydev/setup-lazarus-fpcup@v1
-        with:
-          cpu: ${{ matrix.cpu }}
-
       - name: Build package
-        run: lazbuild --add-package Source/DIMComponents.lpk
+        run: lazbuild ${{ matrix.args }} --add-package Source/DIMComponents.lpk
 
       - name: Build application
-        run: lazbuild -B Source/DiskImageManager.lpi
+        run: lazbuild ${{ matrix.args }} -B Source/DiskImageManager.lpi
 
       - name: Package
         shell: pwsh
