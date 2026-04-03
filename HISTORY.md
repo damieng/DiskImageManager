@@ -1,6 +1,22 @@
 # Disk Image Manager
 Development Build Notes
 
+## 2.10.0 (03 April 2026)
+### New
+- Sinclair BASIC file viewer with syntax highlighting
+- Spectrum screen$ display
+- FLASH attribute support
+- Basic TS2068 disk detection
+- High DPI support for all dialog forms
+
+### Fixes
+- Fix memory leaks across FileSystem, New, and Main units
+- Fix allocation size on identified disks
+- Do not consider end-of-cylinder status an error flag
+- Handle invalid files better
+- Better file share and error handling
+- Fix build version label font
+
 ## Build 50 (18 March 2009)
 ###	New
 -	Now available under the BSD licence
