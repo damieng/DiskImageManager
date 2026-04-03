@@ -21,7 +21,9 @@ These images are traditionally created with CPDRead under DOS but Simon Owen's m
 * Visual customisable map of space utilisation, track structure and controller flags
 * Save visual map to bitmap
 * Hex and ASCII display of sector data
-* Search sector data for ASCII data 
+* Search sector data for ASCII data
+* Sinclair BASIC file viewer with syntax highlighting
+* Spectrum screen$ display
 
 ### Disk format identification
 
@@ -38,6 +40,7 @@ Capable of identifying the following original disk formats even when de-skewed b
 * MGT SAM Coupe BDOS
 * SAMDOS
 * MasterDOS
+* Timex TS2068
 
 ### Copy protection identification
 
@@ -82,7 +85,7 @@ Identification of copy-protection schemes both signed and somtimes unsigned:
 
 ## Building
 
-This application requires the [Lazarus development system](http://www.lazarus.freepascal.org/) and was tested using Lazarus IDE v4.2 on Windows 11.
+This application requires the [Lazarus development system](http://www.lazarus.freepascal.org/) and was tested using Lazarus IDE v4.2 on Windows 11 with high DPI support.
 
 To be able to build and visually edit the forms you will need to install the supplied DIMComponents package. To do that:
 
@@ -126,14 +129,13 @@ To be able to build and visually edit the forms you will need to install the sup
 - Rename file
 - File property sheet to view/modify directory entry and headers
 - Optimize disk (+3, CPC) (defrag + interleave)
-- List BASIC programs (+3, CPC)
 - View image files (+3, CPC)
 - Add files to disk
 - Add/remove headers
 
 ## Licence
 
-Copyright 2002-2025 Damien Guard.
+Copyright 2002-2026 Damien Guard.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
