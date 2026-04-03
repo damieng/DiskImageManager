@@ -23,21 +23,11 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Lazarus
-        uses: gcarreno/setup-lazarus@v3
+        uses: ollydev/setup-lazarus-fpcup@v1
         with:
-          lazarus-version: stable
-          with-cache: false
-
-      - name: Install i386-win32 cross-compiler
-        if: matrix.target-cpu == 'i386'
-        shell: pwsh
-        run: |
-          $fpcBin = Split-Path (Get-Command fpc.exe).Source
-          $fpcBase = Split-Path (Split-Path $fpcBin)
-          $url = "https://ftpmirror.infania.net/mirror/fpc/dist/3.2.2/bootstrap/x86_64-win64-ppcross386.zip"
-          $zip = "$env:TEMP\ppcross386.zip"
-          Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing
-          Expand-Archive -Path $zip -DestinationPath $fpcBin -Force
+          laz: stable
+          cpu: ${{ matrix.target-cpu }}
+          os: ${{ matrix.target-os }}
 
       - name: Build package
         run: lazbuild --add-package Source/DIMComponents.lpk
