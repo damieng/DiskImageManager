@@ -8,6 +8,7 @@ object frmOptions: TfrmOptions
   ClientHeight = 359
   ClientWidth = 306
   Color = clBtnFace
+  DesignTimePPI = 96
   Font.CharSet = ANSI_CHARSET
   Font.Color = clWindowText
   Font.Height = -11

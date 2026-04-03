@@ -9,6 +9,7 @@ object frmSectorProperties: TfrmSectorProperties
   ClientHeight = 467
   ClientWidth = 375
   Color = clBtnFace
+  DesignTimePPI = 96
   Font.CharSet = ANSI_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
