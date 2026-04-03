@@ -34,10 +34,10 @@ jobs:
         run: |
           $fpcBin = Split-Path (Get-Command fpc.exe).Source
           $fpcBase = Split-Path (Split-Path $fpcBin)
-          $url = "https://sourceforge.net/projects/freepascal/files/Win32/3.2.2/fpc-3.2.2.i386-win32.cross.x86_64-win64.exe/download"
-          $installer = "$env:TEMP\fpc-cross-i386.exe"
-          Invoke-WebRequest -Uri $url -OutFile $installer -UseBasicParsing -UserAgent "Mozilla/5.0"
-          Start-Process -FilePath $installer -ArgumentList "/VERYSILENT","/SUPPRESSMSGBOXES","/DIR=$fpcBase" -Wait -NoNewWindow
+          $url = "https://ftpmirror.infania.net/mirror/fpc/dist/3.2.2/bootstrap/x86_64-win64-ppcross386.zip"
+          $zip = "$env:TEMP\ppcross386.zip"
+          Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing
+          Expand-Archive -Path $zip -DestinationPath $fpcBin -Force
 
       - name: Build package
         run: lazbuild --add-package Source/DIMComponents.lpk
@@ -58,4 +58,4 @@ jobs:
       - name: Upload release asset
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ github.event.release.tag_name }} ${{ matrix.artifact }}
+        run: gh release upload ${{ github.event.release.tag_name }} ${{ matrix.artifact }} --clobber
