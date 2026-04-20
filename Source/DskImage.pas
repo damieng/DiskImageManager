@@ -2124,12 +2124,13 @@ begin
       Name := 'Amstrad PCW CF2DD';
       Sides := dsSideDoubleAlternate;
       TracksPerSide := 80;
-      DirBlocks := 4;
+      DirBlocks := 2;
       BlockShift := 4;
     end;
     2:
     begin
       Name := 'Amstrad CPC System';
+      ResTracks := 2;
       FirstSector := 65;
       Interleave := 2;
     end;
