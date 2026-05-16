@@ -134,7 +134,7 @@ begin
   for Index := 0 to MaxEntries - 1 do
   begin
     // Move to next sector if out of data
-    if (SectorOffset + DIR_ENTRY_SIZE > Sector.DataSize) then
+    if (SectorOffset + DIR_ENTRY_SIZE > Sector.GetCopySize) then
     begin
       Sector := FParentDisk.GetNextLogicalSector(Sector);
       if Sector = nil then break;
@@ -360,7 +360,7 @@ begin
     repeat
       begin
         // Final (possibly partial) sector
-        if (BytesLeft < Sector.DataSize) then
+        if (BytesLeft < Sector.GetCopySize) then
         begin
           Move(Sector.Data, FileData[TargetIdx], BytesLeft);
           SectorsLeft := 0;
@@ -368,9 +368,9 @@ begin
         else
         begin
           // Full sector
-          Move(Sector.Data, FileData[TargetIdx], Sector.DataSize);
-          BytesLeft := BytesLeft - Sector.DataSize;
-          TargetIdx := TargetIdx + Sector.DataSize;
+          Move(Sector.Data, FileData[TargetIdx], Sector.GetCopySize);
+          BytesLeft := BytesLeft - Sector.GetCopySize;
+          TargetIdx := TargetIdx + Sector.GetCopySize;
           Sector := Disk.GetNextLogicalSector(Sector);
           Dec(SectorsLeft);
         end;

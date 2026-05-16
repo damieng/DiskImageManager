@@ -83,7 +83,7 @@ begin
   for Index := 0 to MaxEntries - 1 do
   begin
     // Move to next sector if out of data
-    if (SectorOffset + DIR_ENTRY_SIZE > Sector.DataSize) then
+    if (SectorOffset + DIR_ENTRY_SIZE > Sector.GetCopySize) then
     begin
       Sector := FParentDisk.GetNextLogicalSector(Sector);
       SectorOffset := 0;

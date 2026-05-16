@@ -203,6 +203,8 @@ type
     function GetModChecksum(ModValue: integer): integer;
     function FindText(Text: string; CaseSensitive: boolean): integer;
     function GetCopyCount: integer;
+    function GetCopySize: word;
+    function GetCopy(Idx: integer): PByte;
 
     procedure FillSector(Filler: byte);
     procedure ResetFDC;
@@ -540,7 +542,7 @@ var
   Track: TDSKTrack;
   OFFTrackEntry: TOFFTrackEntry;
   SIdx, TIdx, EIdx: integer;
-  TOff, EOff: integer;
+  TOff: integer;
   ReadSize: integer;
   TrackSizeIdx: integer;
   SizeT: word;
@@ -666,7 +668,6 @@ begin
           end;
 
           // Load the actual sectors in
-          EOff := 0;
           for EIdx := 0 to Sectors - 1 do
             with Sector[EIdx] do
             begin
@@ -703,7 +704,9 @@ begin
               if DataSize > 0 then
                 DiskFile.ReadBuffer(Data, DataSize);
 
-              EOff := EOff + AdvertisedSize;
+              // Keep the stream aligned when a record on disk exceeded our buffer.
+              if AdvertisedSize > DataSize then
+                DiskFile.Seek(AdvertisedSize - DataSize, soCurrent);
             end;
         end;
       end;
@@ -937,9 +940,9 @@ begin
   if Track = nil then exit;
   Sector := Track.GetFirstLogicalSector();
 
-  while (Sector <> nil) and (Offset + Sector.DataSize <= TargetOffset) do
+  while (Sector <> nil) and (Offset + Sector.GetCopySize <= TargetOffset) do
   begin
-    Offset := Offset + Sector.DataSize;
+    Offset := Offset + Sector.GetCopySize;
     Sector := GetNextLogicalSector(Sector);
   end;
 
@@ -1550,15 +1553,41 @@ begin
   Result := DataSize div DeclaredSize;
 end;
 
-// Get filler byte or -1 if in use, -2 if unformatted
+// Size of one copy of a (possibly multi-copy v5 weak) sector.
+function TDSKSector.GetCopySize: word;
+var
+  Count: integer;
+begin
+  Count := GetCopyCount;
+  if Count > 1 then
+    Result := DataSize div Count
+  else
+    Result := DataSize;
+end;
+
+// Pointer to the Idx'th copy. Idx is clamped to [0, GetCopyCount-1].
+function TDSKSector.GetCopy(Idx: integer): PByte;
+var
+  Count: integer;
+begin
+  Count := GetCopyCount;
+  if Idx < 0 then Idx := 0;
+  if Idx >= Count then Idx := Count - 1;
+  Result := @Data[Idx * GetCopySize];
+end;
+
+// Get filler byte or -1 if in use, -2 if unformatted.
+// Inspects copy 0 only; weak-sector copies 1..K-1 typically differ by design.
 function TDSKSector.GetFillByte: integer;
 var
   Idx: integer;
+  Limit: integer;
 begin
   Result := -2;
   if DataSize > 0 then
     Result := Data[0];
-  for Idx := 0 to DataSize - 1 do
+  Limit := GetCopySize;
+  for Idx := 0 to Limit - 1 do
     if Data[Idx] <> Data[0] then
     begin
       Result := -1;
@@ -1597,12 +1626,16 @@ begin
   end;
 end;
 
+// Modular sum over copy 0 — for a v5 weak sector, summing concatenated copies
+// would not match what real hardware sees in any single read.
 function TDSKSector.GetModChecksum(ModValue: integer): integer;
 var
   Idx: integer;
+  Limit: integer;
 begin
   Result := 0;
-  for Idx := 0 to DataSize - 1 do
+  Limit := GetCopySize;
+  for Idx := 0 to Limit - 1 do
     Result := (Result + Data[Idx]) mod ModValue;
 end;
 
