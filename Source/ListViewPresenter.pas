@@ -265,7 +265,9 @@ begin
         if Protection <> '' then
           AddListInfo('Copy protection', Protection);
         if Disk.BootableOn <> '' then
-          AddListInfo('Boot sector', Disk.BootableOn);
+          AddListInfo('Boot sector', Disk.BootableOn)
+        else
+          AddListInfo('Boot sector', 'Unknown');
         if disk.HasFDCErrors then
           AddListInfo('FDC errors', 'Yes')
         else

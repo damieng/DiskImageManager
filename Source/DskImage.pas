@@ -1097,11 +1097,11 @@ var
   Mod256: integer;
 begin
   Result := '';
-  if (Side[0].Tracks > 0) and (Side[0].Track[0].Sectors > 1) then
+  if (Side[0].Tracks > 0) and (Side[0].Track[0].Sectors > 0) then
   begin
-    if Side[0].Track[0].Sector[1].Status = ssFormattedInUse then
+    if Side[0].Track[0].Sector[0].Status = ssFormattedInUse then
     begin
-      Mod256 := Side[0].Track[0].Sector[1].GetModChecksum(256);
+      Mod256 := Side[0].Track[0].Sector[0].GetModChecksum(256);
       case Mod256 of
         1: Result := 'Amstrad PCW 9512';
         3: Result := 'Spectrum +3';

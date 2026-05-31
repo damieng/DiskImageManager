@@ -1,6 +1,12 @@
 # Disk Image Manager
 Development Build Notes
 
+## 2.11.0 (31 May 2026)
+### Fixes
+- Fix boot sector detection checking wrong sector (was checking T0S1 instead of T0S0)
+- Always show boot sector status in disk info (shows "Unknown" if not detected)
+- Fallback to default +3/PCW 180K spec when T0S0 contains invalid specification bytes
+
 ## 2.10.0 (03 April 2026)
 ### New
 - Sinclair BASIC file viewer with syntax highlighting
