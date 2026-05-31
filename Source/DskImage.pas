@@ -1977,6 +1977,14 @@ begin
     FGapFormat := Data[9];
     FChecksum := Data[15];
 
+    if (FTracksPerSide = 0) or (FSectorsPerTrack = 0) or
+      (FTracksPerSide > MaxTracks) or (FSectorSize = 0) then
+    begin
+      SetDefaults;
+      Source := 'Default fallback +3/PCW 180K';
+      exit;
+    end;
+
     if GetBlockCount > 255 then
         FAllocationSize := asWord
     else
