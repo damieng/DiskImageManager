@@ -146,518 +146,1364 @@ begin
      Result := 'TS2068';
 end;
 
+// ===========================================================================
+// Copy protection detection
+//
+// This is an idiomatic Pascal port of the fingerprinting flow implemented in
+// dskmanager-rust (src/protection.rs), itself a direct implementation of
+// "Disk-Protection-Fingerprinting.md". It walks Track 0, classifies its
+// geometry, and branches out only as far as needed.
+//
+// Mapping from the Rust model to the Disk Image Manager model:
+//   Rust Disk (one disk side) -> TDSKSide
+//   disk.get_track(t)         -> GetTrk(Side, t)   (nil when out of range)
+//   track.get_sector_by_index -> GetSec(Track, i)  (nil when out of range)
+//   sector.advertised_size()  -> AdvSize(Sector)   = 128 shl FDCSize
+//   sector.actual_size()      -> Sector.DataSize
+//   sector.is_deleted()       -> IsDeleted(Sector) = ST2 bit 6 (0x40)
+//   sector.has_error()        -> SectorHasError(Sector)
+//   ST1 / ST2 raw byte        -> Sector.FDCStatus[1] / Sector.FDCStatus[2]
+// ===========================================================================
+
 type
-  TSpeedlockSig = record
-    Signature: string;
-    Label_: string;
+  TProtectionResult = record
+    Found: boolean;
+    Name: string;
+    Reason: string;
   end;
 
-const
-  SpeedlockSignatures: array[0..9] of TSpeedlockSig = (
-    (Signature: 'SPEEDLOCK PROTECTION SYSTEM (C) 1987 D.LOOKER & D.AUBREY JONES : VERSION D/2.1'; Label_: 'Speedlock 1987 v2.1'),
-    (Signature: 'SPEEDLOCK DISC PROTECTION SYSTEMS COPYRIGHT 1987 '; Label_: 'Speedlock disc 1987'),
-    (Signature: 'SPEEDLOCK +3 DISC PROTECTION SYSTEM COPYRIGHT 1987 SPEEDLOCK ASSOCIATES'; Label_: 'Speedlock +3 1987'),
-    (Signature: 'SPEEDLOCK +3 DISC PROTECTION SYSTEM COPYRIGHT 1988 SPEEDLOCK ASSOCIATES'; Label_: 'Speedlock +3 1988'),
-    (Signature: 'SPEEDLOCK DISC PROTECTION SYSTEMS (C) 1988 SPEEDLOCK ASSOCIATES'; Label_: 'Speedlock 1988'),
-    (Signature: 'SPEEDLOCK DISC PROTECTION SYSTEMS (C) 1989 SPEEDLOCK ASSOCIATES'; Label_: 'Speedlock 1989'),
-    (Signature: 'SPEEDLOCK DISC PROTECTION SYSTEMS (C) 1990 SPEEDLOCK ASSOCIATES'; Label_: 'Speedlock 1990'),
-    (Signature: 'SPEEDLOCK PROTECTION SYSTEM (C) 1985 '; Label_: 'Speedlock 1985'),
-    (Signature: 'SPEEDLOCK PROTECTION SYSTEM (C) 1986 '; Label_: 'Speedlock 1986'),
-    (Signature: 'SPEEDLOCK PROTECTION SYSTEM (C) 1987 '; Label_: 'Speedlock 1987')
-  );
+  TT0Class = (t0SpeedlockPlus3, t0BigSector, t0TenSector, t0TenSectorDDAM,
+    t0EighteenSector, t0SixteenSector, t0NineteenSector, t0EightSector,
+    t0FiveSector, t0Speedlock9x512, t0Standard);
 
-// We have two techniques for copy-protection detection - ASCII signatures
-// and structural characteristics.
+// --- Result constructors (mirror ProtectionResult::confirmed/probable/maybe) ---
 
-function DetectAlkatraz(Side: TDSKSide): string;
-var
-  TIdx, Offset: integer;
+function ProtNone: TProtectionResult;
 begin
-  Result := '';
+  Result.Found := False;
+  Result.Name := '';
+  Result.Reason := '';
+end;
 
-  Offset := StrBufPos(Side.Track[0].Sector[0].Data, ' THE ALKATRAZ PROTECTION SYSTEM   (C) 1987  Appleby Associates');
-  if Offset > -1 then
+function ProtConfirmed(AName, AReason: string): TProtectionResult;
+begin
+  Result.Found := True;
+  Result.Name := AName;
+  Result.Reason := AReason;
+end;
+
+function ProtProbable(AName, AReason: string): TProtectionResult;
+begin
+  Result.Found := True;
+  Result.Name := AName;
+  Result.Reason := 'probably, ' + AReason;
+end;
+
+function ProtMaybe(AName, AReason: string): TProtectionResult;
+begin
+  Result.Found := True;
+  Result.Name := AName;
+  Result.Reason := 'maybe, ' + AReason;
+end;
+
+function ProtToStr(R: TProtectionResult): string;
+begin
+  if R.Found then
+    Result := SysUtils.Format('%s (%s)', [R.Name, R.Reason])
+  else
+    Result := '';
+end;
+
+// --- Geometry / FDC helpers ------------------------------------------------
+
+// Advertised size from the FDC size code N: 128 << N (matches Rust advertised_size).
+// Note: TDSKSector.AdvertisedSize is the on-disk record length, NOT this value.
+function AdvSize(S: TDSKSector): integer;
+begin
+  if S.FDCSize <= 8 then
+    Result := 128 shl S.FDCSize
+  else
+    Result := 0;
+end;
+
+function IsDeleted(S: TDSKSector): boolean;
+begin
+  Result := (S.FDCStatus[2] and $40) <> 0;
+end;
+
+// Any FDC error: ST1 non-zero, or ST2 non-zero ignoring the deleted-data mark.
+function SectorHasError(S: TDSKSector): boolean;
+begin
+  Result := (S.FDCStatus[1] <> 0) or ((S.FDCStatus[2] and $BF) <> 0);
+end;
+
+function GetTrk(Side: TDSKSide; T: integer): TDSKTrack;
+begin
+  if (T >= 0) and (T < Side.Tracks) then
+    Result := Side.Track[T]
+  else
+    Result := nil;
+end;
+
+function GetSec(Track: TDSKTrack; I: integer): TDSKSector;
+begin
+  if (Track <> nil) and (I >= 0) and (I < Track.Sectors) then
+    Result := Track.Sector[I]
+  else
+    Result := nil;
+end;
+
+function IsCpcDisk(T0: TDSKTrack): boolean;
+var
+  S0: TDSKSector;
+begin
+  S0 := GetSec(T0, 0);
+  Result := (S0 <> nil) and (S0.ID >= 65);
+end;
+
+function AnyDeleted(Track: TDSKTrack): boolean;
+var
+  I: integer;
+begin
+  Result := False;
+  if Track = nil then exit;
+  for I := 0 to Track.Sectors - 1 do
+    if IsDeleted(Track.Sector[I]) then
+    begin
+      Result := True;
+      exit;
+    end;
+end;
+
+function TrackHasError(Track: TDSKTrack): boolean;
+var
+  I: integer;
+begin
+  Result := False;
+  if Track = nil then exit;
+  for I := 0 to Track.Sectors - 1 do
+    if SectorHasError(Track.Sector[I]) then
+    begin
+      Result := True;
+      exit;
+    end;
+end;
+
+// Common advertised sector size, or -1 when empty / non-uniform (mirrors
+// Rust uniform_sector_size returning None in both those cases).
+function UniformAdvSize(Track: TDSKTrack): integer;
+var
+  I, First: integer;
+begin
+  if (Track = nil) or (Track.Sectors = 0) then
   begin
-    Result := Format('Alkatraz +3 (signed at T0/S0 +%d', [Offset]);
+    Result := -1;
+    exit;
+  end;
+  First := AdvSize(Track.Sector[0]);
+  for I := 1 to Track.Sectors - 1 do
+    if AdvSize(Track.Sector[I]) <> First then
+    begin
+      Result := -1;
+      exit;
+    end;
+  Result := First;
+end;
+
+function SideIsUniform(Side: TDSKSide): boolean;
+var
+  Sc, Sz, T: integer;
+  First: TDSKTrack;
+  Track: TDSKTrack;
+begin
+  Result := True;
+  if Side.Tracks = 0 then exit;
+  First := GetTrk(Side, 0);
+  if First = nil then exit;
+  Sc := First.Sectors;
+  Sz := UniformAdvSize(First);
+  for T := 1 to Side.Tracks - 1 do
+  begin
+    Track := GetTrk(Side, T);
+    if Track = nil then continue;
+    if (Track.Sectors <> Sc) or (UniformAdvSize(Track) <> Sz) then
+    begin
+      Result := False;
+      exit;
+    end;
+  end;
+end;
+
+function SideHasFDCErrors(Side: TDSKSide): boolean;
+var
+  T: integer;
+begin
+  Result := False;
+  for T := 0 to Side.Tracks - 1 do
+    if TrackHasError(GetTrk(Side, T)) then
+    begin
+      Result := True;
+      exit;
+    end;
+end;
+
+// 16 sectors with a full CHRN ramp: id == track == side == size == index.
+function IsDiscSysTrack(Track: TDSKTrack): boolean;
+var
+  I: integer;
+  S: TDSKSector;
+begin
+  Result := False;
+  if (Track = nil) or (Track.Sectors <> 16) then exit;
+  for I := 0 to 15 do
+  begin
+    S := Track.Sector[I];
+    if not ((S.ID = I) and (S.Track = I) and (S.Side = I) and (S.FDCSize = I)) then exit;
+  end;
+  Result := True;
+end;
+
+// 16 sectors with the weaker Players ramp: id == size == index.
+function IsPlayersTrack(Track: TDSKTrack): boolean;
+var
+  I: integer;
+  S: TDSKSector;
+begin
+  Result := False;
+  if (Track = nil) or (Track.Sectors <> 16) then exit;
+  for I := 0 to 15 do
+  begin
+    S := Track.Sector[I];
+    if not ((S.ID = I) and (S.FDCSize = I)) then exit;
+  end;
+  Result := True;
+end;
+
+function IntInArray(Value: integer; const Arr: array of integer): boolean;
+var
+  I: integer;
+begin
+  Result := False;
+  for I := 0 to High(Arr) do
+    if Arr[I] = Value then
+    begin
+      Result := True;
+      exit;
+    end;
+end;
+
+function LargestTrackDataSize(Side: TDSKSide): integer;
+var
+  T, S, Sum: integer;
+  Track: TDSKTrack;
+begin
+  Result := 0;
+  for T := 0 to Side.Tracks - 1 do
+  begin
+    Track := GetTrk(Side, T);
+    if Track = nil then continue;
+    Sum := 0;
+    for S := 0 to Track.Sectors - 1 do
+      Sum := Sum + Track.Sector[S].DataSize;
+    if Sum > Result then Result := Sum;
+  end;
+end;
+
+// --- T0 classification (spec 3.2) ------------------------------------------
+
+function ClassifyT0(T0: TDSKTrack): TT0Class;
+var
+  Sc, I: integer;
+  S0, S8, S: TDSKSector;
+  HiFiller, WeakUnder: boolean;
+begin
+  Sc := T0.Sectors;
+
+  // 10-sector cases are more specific than the >= 7 + DDAM check below.
+  if Sc = 10 then
+  begin
+    S8 := GetSec(T0, 8);
+    if (S8 <> nil) and (S8.DataSize = 512) then
+    begin
+      if AnyDeleted(T0) then
+        Result := t0TenSectorDDAM
+      else
+        Result := t0TenSector;
+      exit;
+    end;
+  end;
+
+  if (Sc >= 7) and AnyDeleted(T0) then
+  begin
+    Result := t0SpeedlockPlus3;
     exit;
   end;
 
-  for TIdx := 0 to Side.Tracks - 2 do
-    if (Side.Track[TIdx].Sectors = 18) and (Side.Track[TIdx].Sector[0].DataSize = 256) then
-      begin
-        Result := Format('Alkatraz CPC (18 sector T%d)', [TIdx]);
-        exit;
-      end;
-
-    for TIdx := 0 to Side.Tracks - 2 do
-    if (Side.Track[TIdx].Sectors = 18) and (Side.Track[TIdx].SectorSize = 256) then
-      if (Side.Track[TIdx + 1].Sectors > 0) and (Side.Track[TIdx + 1].Sector[0].FDCStatus[2] = 64) then
-      begin
-        Result := Format('Alkatraz CPC (18 sector T%d)', [TIdx]);
-        exit;
-      end;
-end;
-
-function DetectFrontier(Side: TDSKSide): string;
-var
-  Offset: integer;
-begin
-  Result := '';
-  if (Side.Tracks > 10) and (Side.Track[1].Sectors > 0) and (Side.Track[0].Sector[0].DataSize > 1) then
+  if Sc = 1 then
   begin
-    Offset := StrBufPos(Side.Track[1].Sector[0].Data, 'W DISK PROTECTION SYSTEM. (C) 1990 BY NEW FRONTIER SOFT.');
-    if Offset > -1 then
+    S0 := GetSec(T0, 0);
+    if (S0 <> nil) and (S0.FDCSize = 6) and (S0.FDCStatus[1] = $20) then
     begin
-      Result := Format('Frontier (signed T1/S0 +%d)', [Offset]);
+      Result := t0BigSector;
       exit;
     end;
+  end;
 
-    if (Side.Track[9].Sectors = 1) and (Side.Track[0].Sector[0].DataSize = 4096) and
-      (Side.Track[0].Sector[0].FDCStatus[1] = 0) then
-      Result := 'Frontier (probably, unsigned)';
+  if Sc = 18 then begin Result := t0EighteenSector; exit; end;
+  if Sc = 19 then begin Result := t0NineteenSector; exit; end;
+  if Sc = 16 then begin Result := t0SixteenSector; exit; end;
+
+  if Sc = 8 then
+  begin
+    Result := t0EightSector;
+    for I := 0 to T0.Sectors - 1 do
+      if AdvSize(T0.Sector[I]) <> 512 then
+      begin
+        Result := t0Standard;
+        break;
+      end;
+    if Result = t0EightSector then exit;
+  end;
+
+  if Sc = 5 then
+  begin
+    Result := t0FiveSector;
+    for I := 0 to T0.Sectors - 1 do
+      if AdvSize(T0.Sector[I]) <> 1024 then
+      begin
+        Result := t0Standard;
+        break;
+      end;
+    if Result = t0FiveSector then exit;
+  end;
+
+  // Speedlock 9x512 variant: high-ID fillers + a weak N=0 sector.
+  HiFiller := False;
+  WeakUnder := False;
+  for I := 0 to T0.Sectors - 1 do
+  begin
+    S := T0.Sector[I];
+    if (S.ID >= $80) and (S.ID < $C1) and (S.FDCSize = 2) then HiFiller := True;
+    if (S.FDCSize = 0) and (((S.FDCStatus[1] and $20) <> 0) or ((S.FDCStatus[2] and $20) <> 0)) then
+      WeakUnder := True;
+  end;
+  if HiFiller and WeakUnder then
+    Result := t0Speedlock9x512
+  else
+    Result := t0Standard;
+end;
+
+// --- Step 1a: T0 signature scan (spec 3.1) ---------------------------------
+
+function ScanT0Signatures(T0: TDSKTrack): TProtectionResult;
+var
+  S0, S2, S7, Sector: TDSKSector;
+  SIdx: integer;
+  TiAddr, TiPhone: string;
+begin
+  Result := ProtNone;
+  S0 := GetSec(T0, 0);
+  if S0 = nil then exit;
+
+  // Alkatraz +3 (note: 1 leading, 3 mid, 2 mid spaces)
+  if StrBufPos(S0.Data, ' THE ALKATRAZ PROTECTION SYSTEM   (C) 1987  Appleby Associates') > -1 then
+  begin
+    Result := ProtConfirmed('Alkatraz +3', 'signed T0/S0');
+    exit;
+  end;
+
+  // Three Inch Loader
+  TiAddr := '***Loader Copyright Three Inch Software 1988, All Rights Reserved. Three Inch Software, 73 Surbiton Road, Kingston upon Thames, KT1 2HG***';
+  TiPhone := '***Loader Copyright Three Inch Software 1988, All Rights Reserved. 01-546 2754';
+
+  if StrBufPos(S0.Data, TiAddr) > -1 then
+  begin
+    Result := ProtConfirmed('Three Inch Loader type 1', 'signed T0/S0');
+    exit;
+  end;
+  if T0.Sectors > 7 then
+  begin
+    S7 := GetSec(T0, 7);
+    if (S7 <> nil) and (StrBufPos(S7.Data, TiAddr) > -1) then
+    begin
+      Result := ProtConfirmed('Three Inch Loader type 1-0-7', 'signed T0/S7');
+      exit;
+    end;
+  end;
+  if StrBufPos(S0.Data, TiPhone) > -1 then
+  begin
+    Result := ProtConfirmed('Three Inch Loader type 2', 'signed T0/S0');
+    exit;
+  end;
+
+  // Laser Load (3 spaces after Load, 4 after Computer)
+  if T0.Sectors > 2 then
+  begin
+    S2 := GetSec(T0, 2);
+    if (S2 <> nil) and (StrBufPos(S2.Data, 'Laser Load   By C.J.Pink For Consult Computer    Systems') > -1) then
+    begin
+      Result := ProtConfirmed('Laser Load by C.J. Pink', 'signed T0/S2');
+      exit;
+    end;
+  end;
+
+  // P.M.S.
+  if StrBufPos(S0.Data, '[C] P.M.S. 1986') > -1 then
+  begin
+    Result := ProtConfirmed('P.M.S. 1986', 'signed T0/S0');
+    exit;
+  end;
+  if StrBufPos(S0.Data, 'P.M.S. LOADER [C]1986') > -1 then
+  begin
+    Result := ProtConfirmed('P.M.S. Loader 1986 v1', 'signed T0/S0');
+    exit;
+  end;
+  if StrBufPos(S0.Data, 'P.M.S.LOADER [C]1986') > -1 then
+  begin
+    Result := ProtConfirmed('P.M.S. Loader 1986 v2', 'signed T0/S0');
+    exit;
+  end;
+  if StrBufPos(S0.Data, 'P.M.S.LOADER [C]1987') > -1 then
+  begin
+    Result := ProtConfirmed('P.M.S. 1987', 'signed T0/S0');
+    exit;
+  end;
+
+  // ERE / Remi HERBULOT
+  if T0.Sectors > 6 then
+    for SIdx := 0 to T0.Sectors - 1 do
+    begin
+      Sector := GetSec(T0, SIdx);
+      if Sector = nil then continue;
+      if StrBufPos(Sector.Data, 'PROTECTION      Remi HERBULOT') > -1 then
+      begin
+        Result := ProtConfirmed('ERE/Remi HERBULOT', 'signed T0');
+        exit;
+      end;
+      if StrBufPos(Sector.Data, 'PROTECTION  V2.1Remi HERBULOT') > -1 then
+      begin
+        Result := ProtConfirmed('ERE/Remi HERBULOT 2.1', 'signed T0');
+        exit;
+      end;
+    end;
+
+  // ARMOURLOC ("0K free" exactly at offset 2)
+  if (T0.Sectors = 9) and (StrBufPos(S0.Data, '0K free') = 2) then
+  begin
+    Result := ProtConfirmed('ARMOURLOC', 'anti-hacker protection');
+    exit;
+  end;
+
+  // Studio B
+  if StrBufPos(S0.Data, 'Disc format (c) 1986 Studio B Ltd.') > -1 then
+  begin
+    Result := ProtConfirmed('Studio B Disc format', 'signed T0/S0');
+    exit;
   end;
 end;
 
-function DetectHexagon(Side: TDSKSide): string;
-var
-  TIdx, SIdx, Offset: integer;
-begin
-  Result := '';
-  if (Side.Track[0].Sectors = 10) and (Side.Track[0].Sector[8].DataSize = 512) and (Side.Tracks > 2) then
-  begin
-    for TIdx := 0 to 3 do
-    begin
-      for SIdx := 0 to Side.Track[TIdx].Sectors - 1 do
-      begin
-        Offset := StrBufPos(Side.Track[TIdx].Sector[SIdx].Data, 'HEXAGON DISK PROTECTION c 1989');
-        if Offset > -1 then
-        begin
-          Result := Format('Hexagon (signed T%d/S%d +%d)', [TIdx, SIdx, Offset]);
-          exit;
-        end;
-        Offset := StrBufPos(Side.Track[TIdx].Sector[SIdx].Data, 'HEXAGON Disk Protection c 1989');
-        if Offset > -1 then
-        begin
-          Result := Format('Hexagon (signed T%d/S%d +%d)', [TIdx, SIdx, Offset]);
-          exit;
-        end;
-      end;
+// --- Step 1 resolvers (spec 4) ---------------------------------------------
 
-      if (Side.Track[TIdx].IsFormatted) and (Side.Track[TIdx].Sectors = 1) and (Side.Track[TIdx].Sector[0].FDCSize = 6) and
-        (Side.Track[TIdx].Sector[0].FDCStatus[1] = 32) and (Side.Track[TIdx].Sector[0].FDCStatus[2] = 96) then
-        Result := 'Hexagon (probably, unsigned)';
+// 4.1 - T0 has deleted marks (Speedlock +3)
+function ResolveSpeedlockPlus3(Side: TDSKSide; T0: TDSKTrack): TProtectionResult;
+var
+  T1: TDSKTrack;
+  T1S0, S6, S8: TDSKSector;
+begin
+  Result := ProtNone;
+  T1 := GetTrk(Side, 1);
+  if (T1 = nil) or (T1.Sectors <> 5) then exit;
+  T1S0 := GetSec(T1, 0);
+  if (T1S0 = nil) or (AdvSize(T1S0) <> 1024) then exit;
+
+  if T0.Sectors = 9 then
+  begin
+    S6 := GetSec(T0, 6);
+    S8 := GetSec(T0, 8);
+    if (S6 <> nil) and (S8 <> nil) then
+    begin
+      if (S6.FDCStatus[2] = $40) and (S8.FDCStatus[2] = $00) then
+      begin
+        Result := ProtProbable('Speedlock +3 1987', 'unsigned');
+        exit;
+      end;
+      if (S6.FDCStatus[2] = $40) and (S8.FDCStatus[2] = $40) then
+      begin
+        Result := ProtProbable('Speedlock +3 1988', 'unsigned');
+        exit;
+      end;
+    end;
+  end;
+
+  Result := ProtProbable('Speedlock +3 1987/1988',
+    SysUtils.Format('unsigned (T0=%d sectors with deleted data)', [T0.Sectors]));
+end;
+
+// 4.2 - T0 is 1 giant weak sector
+function ResolveBigSector(Side: TDSKSide; T0: TDSKTrack): TProtectionResult;
+var
+  Cpc: boolean;
+  T1: TDSKTrack;
+  T1S0: TDSKSector;
+begin
+  Cpc := IsCpcDisk(T0);
+  T1 := GetTrk(Side, 1);
+  if (T1 <> nil) and (T1.Sectors = 1) then
+  begin
+    T1S0 := GetSec(T1, 0);
+    if (T1S0 <> nil) and (T1S0.FDCStatus[1] = $20) then
+    begin
+      if Cpc then
+        Result := ProtProbable('Hexagon', 'CPC big-sector engine')
+      else
+        Result := ProtProbable('Speedlock 1989/1990', '+3 big-sector engine');
+      exit;
+    end;
+  end;
+
+  if Cpc then
+    Result := ProtProbable('Hexagon', 'CPC, T0 big sector')
+  else
+    Result := ProtProbable('Speedlock 1989/1990', '+3, T0 big sector');
+end;
+
+// 4.3 - T0 has 10 clean sectors, no DDAM (Hexagon)
+function ResolveHexagon(Side: TDSKSide; T0: TDSKTrack): TProtectionResult;
+var
+  Cpc: boolean;
+  Limit, T, SIdx: integer;
+  Track: TDSKTrack;
+  S0, Sector: TDSKSector;
+begin
+  Result := ProtNone;
+  Cpc := IsCpcDisk(T0);
+  if Side.Tracks < 4 then Limit := Side.Tracks else Limit := 4;
+  for T := 0 to Limit - 1 do
+  begin
+    Track := GetTrk(Side, T);
+    if Track = nil then continue;
+
+    for SIdx := 0 to Track.Sectors - 1 do
+    begin
+      Sector := Track.Sector[SIdx];
+      if StrBufPos(Sector.Data, 'HEXAGON DISK PROTECTION c 1989') > -1 then
+      begin
+        Result := ProtConfirmed('Hexagon', SysUtils.Format('signed T%d/S%d', [T, SIdx]));
+        exit;
+      end;
+      if StrBufPos(Sector.Data, 'HEXAGON Disk Protection c 1989') > -1 then
+      begin
+        Result := ProtConfirmed('Hexagon', SysUtils.Format('signed T%d/S%d', [T, SIdx]));
+        exit;
+      end;
+    end;
+
+    // Unsigned: single oversized sector with N=6, ST1=0x20, ST2=0x60
+    if Track.Sectors = 1 then
+    begin
+      S0 := GetSec(Track, 0);
+      if (S0 <> nil) and (S0.FDCSize = 6) and (S0.FDCStatus[1] = $20) and (S0.FDCStatus[2] = $60) then
+      begin
+        if Cpc then
+          Result := ProtProbable('Hexagon', 'CPC, unsigned')
+        else
+          Result := ProtProbable('Hexagon', 'unsigned');
+        exit;
+      end;
     end;
   end;
 end;
 
-function DetectPaulOwens(Side: TDSKSide): string;
+// 4.3b - T0 has 10 sectors with DDAM (Speedlock 1989 CPC)
+function ResolveSpeedlock1989Cpc(Side: TDSKSide; T0: TDSKTrack): TProtectionResult;
 var
-  Offset: integer;
+  Cpc: boolean;
+  T1: TDSKTrack;
+  T1S0: TDSKSector;
 begin
-  Result := '';
-  if (Side.Track[0].Sectors = 9) and (Side.Tracks > 10) and (Side.Track[1].Sectors = 0) then
+  Result := ProtNone;
+  Cpc := IsCpcDisk(T0);
+  T1 := GetTrk(Side, 1);
+
+  if Cpc then
   begin
-    Offset := StrBufPos(Side.Track[0].Sector[2].Data, 'PAUL OWENS' + #128 + 'PROTECTION SYS');
-    if Offset > -1 then
+    if (T1 <> nil) and (T1.Sectors = 1) then
     begin
-      Result := Format('Paul Owens (signed T0/S2 +%d)', [Offset]);
+      T1S0 := GetSec(T1, 0);
+      if (T1S0 <> nil) and (T1S0.FDCStatus[1] = $20) then
+      begin
+        Result := ProtProbable('Speedlock 1989', 'CPC, 10-sector T0 + DDAM + big-sector T1');
+        exit;
+      end;
+    end;
+    Result := ProtProbable('Speedlock 1989', 'CPC, 10-sector T0 + DDAM');
+    exit;
+  end;
+
+  if (T1 <> nil) and (T1.Sectors = 1) then
+  begin
+    T1S0 := GetSec(T1, 0);
+    if (T1S0 <> nil) and (T1S0.FDCStatus[1] = $20) then
+      Result := ProtProbable('Speedlock 1989/1990', '+3, 10-sector T0 + DDAM + big-sector T1');
+  end;
+end;
+
+// 4.4 - T0 has 18 sectors (Alkatraz CPC)
+function Resolve18Sector(Side: TDSKSide; T0: TDSKTrack): TProtectionResult;
+var
+  S0, T1S0: TDSKSector;
+  T1: TDSKTrack;
+begin
+  S0 := GetSec(T0, 0);
+  if (S0 <> nil) and ((S0.DataSize = 256) or (AdvSize(S0) = 256)) then
+  begin
+    Result := ProtConfirmed('Alkatraz CPC', '18-sector T0, 256B sectors');
+    exit;
+  end;
+
+  T1 := GetTrk(Side, 1);
+  if (T1 <> nil) and (T1.Sectors > 0) then
+  begin
+    T1S0 := GetSec(T1, 0);
+    if (T1S0 <> nil) and (T1S0.FDCStatus[2] = $40) then
+    begin
+      Result := ProtConfirmed('Alkatraz CPC', '18-sector T0');
       exit;
-    end
+    end;
+  end;
+
+  Result := ProtMaybe('18-sector track', 'unknown scheme');
+end;
+
+// 4.5 - T0 has 16 sectors (DiscSYS / Players / Mean PS)
+function Resolve16Sector(Side: TDSKSide; T0: TDSKTrack): TProtectionResult;
+var
+  SIdx: integer;
+  Sector, S4: TDSKSector;
+  T2: TDSKTrack;
+  Reason, Cleaned: string;
+begin
+  Result := ProtNone;
+
+  if IsDiscSysTrack(T0) then
+  begin
+    for SIdx := 0 to T0.Sectors - 1 do
+    begin
+      Sector := T0.Sector[SIdx];
+      if StrBufPos(Sector.Data, 'MEAN PROTECTION SYSTEM') > -1 then
+      begin
+        Result := ProtConfirmed('Mean Protection System', 'signed T0');
+        exit;
+      end;
+    end;
+
+    Reason := '16-sector CHRN ramp on T0';
+    T2 := GetTrk(Side, 2);
+    if T2 <> nil then
+    begin
+      S4 := GetSec(T2, 4);
+      if (S4 <> nil) and (S4.DataSize > 160) then
+      begin
+        Cleaned := StrBlockClean(S4.Data, 85, 22).Trim();
+        if Cleaned.StartsWith('discsys', True) and (Length(Cleaned) > 8) then
+          Reason := Reason + ' (' + Cleaned.Substring(8).Trim() + ')'
+        else if Cleaned.StartsWith('multi-', True) then
+          Reason := Reason + ' (' + Cleaned + ')';
+      end;
+    end;
+
+    Result := ProtConfirmed('DiscSYS', Reason);
+    exit;
+  end;
+
+  if IsPlayersTrack(T0) then
+  begin
+    Result := ProtMaybe('Players',
+      SysUtils.Format('super-sized %d byte track', [LargestTrackDataSize(Side)]));
+    exit;
+  end;
+end;
+
+// 4.6 - T0 has 19 sectors (KBI-19 / CAAV)
+function Resolve19Sector(T0: TDSKTrack): TProtectionResult;
+var
+  S0, S1: TDSKSector;
+begin
+  if T0.Sectors > 1 then
+  begin
+    S1 := GetSec(T0, 1);
+    if (S1 <> nil) and (StrBufPos(S1.Data, '(c) 1986 for KBI ') > -1) then
+    begin
+      Result := ProtConfirmed('KBI-19', 'signed T0/S1');
+      exit;
+    end;
+  end;
+
+  S0 := GetSec(T0, 0);
+  if (S0 <> nil) and (StrBufPos(S0.Data, 'ALAIN LAURENT GENERATION 5 1989') > -1) then
+  begin
+    Result := ProtConfirmed('CAAV', 'signed T0/S0');
+    exit;
+  end;
+
+  Result := ProtProbable('KBI-19 or CAAV', 'unsigned, 19-sector T0');
+end;
+
+// 4.7 - T0 has 8 x 512-byte sectors (unsigned Alkatraz +3 or CPC)
+function Resolve8Sector(Side: TDSKSide; T0: TDSKTrack): TProtectionResult;
+var
+  Cpc: boolean;
+  T1, Ht: TDSKTrack;
+  T1S0, Hs0: TDSKSector;
+  Limit, T: integer;
+  AName: string;
+begin
+  Result := ProtNone;
+  Cpc := IsCpcDisk(T0);
+
+  T1 := GetTrk(Side, 1);
+  if T1 = nil then exit;
+  if T1.Sectors <> 8 then exit;
+  T1S0 := GetSec(T1, 0);
+  if (T1S0 = nil) or (AdvSize(T1S0) <> 512) then exit;
+
+  if Side.Tracks < 42 then Limit := Side.Tracks else Limit := 42;
+  for T := 2 to Limit - 1 do
+  begin
+    Ht := GetTrk(Side, T);
+    if Ht = nil then continue;
+    if Ht.Sectors = 18 then
+    begin
+      Hs0 := GetSec(Ht, 0);
+      if (Hs0 <> nil) and ((AdvSize(Hs0) = 256) or (Hs0.DataSize = 256)) then
+      begin
+        if Cpc then AName := 'Alkatraz CPC' else AName := 'Alkatraz +3';
+        Result := ProtProbable(AName,
+          SysUtils.Format('unsigned (8-sector data + 18-sector protection at T%d)', [T]));
+        exit;
+      end;
+      break;
+    end;
+    if Ht.Sectors = 8 then continue;
+    if Ht.Sectors = 9 then break;
+  end;
+
+  if Cpc then exit;
+  Result := ProtMaybe('Alkatraz +3', 'unsigned (uniform 8x512 data tracks, no signature found)');
+end;
+
+// 4.8 - T0 has 5 x 1024-byte sectors (unsigned Speedlock data side)
+function Resolve5Sector(Side: TDSKSide; T0: TDSKTrack): TProtectionResult;
+var
+  Cpc: boolean;
+  T1: TDSKTrack;
+  T1S0: TDSKSector;
+begin
+  Result := ProtNone;
+  Cpc := IsCpcDisk(T0);
+
+  T1 := GetTrk(Side, 1);
+  if (T1 <> nil) and (T1.Sectors = 5) then
+  begin
+    T1S0 := GetSec(T1, 0);
+    if (T1S0 <> nil) and (AdvSize(T1S0) = 1024) then
+    begin
+      if Cpc then
+        Result := ProtProbable('Speedlock (CPC)', 'unsigned data side (5x1024 uniform)')
+      else
+        Result := ProtProbable('Speedlock +3 1987/1988', 'unsigned data side (5x1024 uniform)');
+    end;
+  end;
+end;
+
+// Speedlock 9x512 variant: high-ID fillers + weak N=0 sector, DDAM bulk data
+function ResolveSpeedlock9x512(Side: TDSKSide; T0: TDSKTrack): TProtectionResult;
+var
+  Limit, T: integer;
+begin
+  Result := ProtNone;
+  if Side.Tracks < 40 then Limit := Side.Tracks else Limit := 40;
+  for T := 4 to Limit - 1 do
+    if AnyDeleted(GetTrk(Side, T)) then
+    begin
+      Result := ProtConfirmed('Speedlock +3 1987',
+        '9x512 variant: high-ID T0 sectors + weak N=0 sector, DDAM data');
+      exit;
+    end;
+end;
+
+// --- Step 2 resolvers (spec 5) ---------------------------------------------
+
+// 5.1 - T1 is empty (track-1-gap family)
+function ResolveEmptyT1Family(Side: TDSKSide; T0: TDSKTrack): TProtectionResult;
+var
+  T2: TDSKTrack;
+  S2, T2S0, Sector: TDSKSector;
+  Sig: string;
+  SIdx: integer;
+begin
+  T2 := GetTrk(Side, 2);
+  if T2 = nil then
+  begin
+    Result := ProtMaybe('P.M.S. Loader 1986/1987', 'unsigned (T0 used / T1 empty / T2 missing)');
+    exit;
+  end;
+
+  Sig := 'PAUL OWENS' + #128 + 'PROTECTION SYS';
+  if T0.Sectors = 9 then
+  begin
+    S2 := GetSec(T0, 2);
+    if (S2 <> nil) and (StrBufPos(S2.Data, Sig) > -1) then
+    begin
+      Result := ProtConfirmed('Paul Owens', 'signed T0/S2');
+      exit;
+    end;
+  end;
+
+  if T2.Sectors > 0 then
+  begin
+    T2S0 := GetSec(T2, 0);
+    if (T2S0 <> nil) and (StrBufPos(T2S0.Data, 'DISCLOC') > -1) then
+    begin
+      Result := ProtConfirmed('DiscLoc/Oddball', 'signed T2/S0');
+      exit;
+    end;
+  end;
+
+  if IsDiscSysTrack(T2) then
+    for SIdx := 0 to T0.Sectors - 1 do
+    begin
+      Sector := GetSec(T0, SIdx);
+      if (Sector <> nil) and (StrBufPos(Sector.Data, 'MEAN PROTECTION SYSTEM') > -1) then
+      begin
+        Result := ProtConfirmed('Mean Protection System', 'signed T0 + DiscSYS T2');
+        exit;
+      end;
+    end;
+
+  if T2.Sectors = 6 then
+  begin
+    T2S0 := GetSec(T2, 0);
+    if (T2S0 <> nil) and (T2S0.DataSize = 256) then
+    begin
+      Result := ProtProbable('Paul Owens', 'unsigned');
+      exit;
+    end;
+  end;
+
+  Result := ProtMaybe('P.M.S. Loader 1986/1987', 'unsigned (T0 used / T1 empty / T2 used)');
+end;
+
+// 5.2 - T1 is 5 x 1024, T0 has no DDAM (Speedlock data side)
+function ResolveSpeedlock5x1024(T0, T1: TDSKTrack): TProtectionResult;
+begin
+  Result := ProtNone;
+  if AnyDeleted(T0) then exit;
+  if IsCpcDisk(T0) then
+    Result := ProtProbable('Speedlock (CPC)', 'data side (5x1024 T1, no deleted-data marks on T0)')
+  else
+    Result := ProtProbable('Speedlock +3 1987/1988', 'data side (5x1024 T1, no deleted-data marks on T0)');
+end;
+
+// 5.3 - T1 is 1 weak big sector
+function ResolveSpeedlock1989(T0, T1: TDSKTrack): TProtectionResult;
+var
+  Cpc, HasDdam: boolean;
+begin
+  Cpc := IsCpcDisk(T0);
+  HasDdam := AnyDeleted(T0);
+
+  if Cpc then
+    Result := ProtProbable('Hexagon', 'CPC, standard T0 + big-sector T1')
+  else if HasDdam then
+    Result := ProtProbable('Speedlock 1989/1990', '+3, T0 DDAM + big-sector T1')
+  else
+    Result := ProtProbable('Speedlock 1989/1990', '+3, standard T0 + big-sector T1');
+end;
+
+// --- Step 3: high-track probes (spec 6) ------------------------------------
+
+function ScanHighTracks(Side: TDSKSide; T0: TDSKTrack): TProtectionResult;
+var
+  Tc, Offset, SIdx: integer;
+  T1, T3, T8, T9, T38, T39, T40: TDSKTrack;
+  T3S0, S9, T0S0, Sector, S4: TDSKSector;
+  Sig: string;
+begin
+  Result := ProtNone;
+  Tc := Side.Tracks;
+
+  // Amsoft/EXOPAL - T3/S0
+  if Tc > 3 then
+  begin
+    T3 := GetTrk(Side, 3);
+    if (T3 <> nil) and (T3.Sectors > 0) then
+    begin
+      T3S0 := GetSec(T3, 0);
+      if (T3S0 <> nil) and (T3S0.DataSize = 512) then
+      begin
+        Offset := StrBufPos(T3S0.Data, 'Amsoft disc protection system');
+        if (Offset > 1) and (StrBufPos(T3S0.Data, 'EXOPAL') > -1) then
+        begin
+          Result := ProtConfirmed('Amsoft/EXOPAL', 'signed T3/S0');
+          exit;
+        end;
+      end;
+    end;
+  end;
+
+  // W.R.M - T8/S9
+  if Tc > 9 then
+  begin
+    T8 := GetTrk(Side, 8);
+    if (T8 <> nil) and (T8.Sectors > 9) then
+    begin
+      S9 := GetSec(T8, 9);
+      if (S9 <> nil) and (S9.DataSize > 128) then
+        if (StrBufPos(S9.Data, 'W.R.M Disc') = 0) and
+           (StrBufPos(S9.Data, 'Protection') > -1) and
+           (StrBufPos(S9.Data, 'System (c) 1987') > -1) then
+        begin
+          Result := ProtConfirmed('W.R.M Disc Protection', 'signed T8/S9');
+          exit;
+        end;
+    end;
+  end;
+
+  // Frontier (unsigned) - T9
+  if Tc > 10 then
+  begin
+    T9 := GetTrk(Side, 9);
+    if (T9 <> nil) and (T9.Sectors = 1) then
+    begin
+      T0S0 := GetSec(T0, 0);
+      if (T0S0 <> nil) and (T0S0.DataSize = 4096) and (T0S0.FDCStatus[1] = 0) then
+      begin
+        Result := ProtProbable('Frontier', 'unsigned (T9 single sector, T0/S0 = 4096)');
+        exit;
+      end;
+    end;
+  end;
+
+  // Frontier (signed) and Three Inch Loader type 3-1-4 - both on T1
+  if Tc > 1 then
+  begin
+    T1 := GetTrk(Side, 1);
+    if T1 <> nil then
+    begin
+      for SIdx := 0 to T1.Sectors - 1 do
+      begin
+        Sector := T1.Sector[SIdx];
+        if StrBufPos(Sector.Data, 'NEW DISK PROTECTION SYSTEM. (C) 1990 BY NEW FRONTIER SOFT.') > -1 then
+        begin
+          Result := ProtConfirmed('Frontier', 'signed T1');
+          exit;
+        end;
+      end;
+
+      if T1.Sectors > 4 then
+      begin
+        S4 := GetSec(T1, 4);
+        if S4 <> nil then
+        begin
+          Sig := 'Loader ' + #127 + '1988 Three Inch Software';
+          if StrBufPos(S4.Data, Sig) > -1 then
+          begin
+            Result := ProtConfirmed('Three Inch Loader type 3-1-4', 'signed T1/S4');
+            exit;
+          end;
+        end;
+      end;
+    end;
+  end;
+
+  // KBI-10 - T38 + T39
+  if Tc >= 40 then
+  begin
+    T38 := GetTrk(Side, 38);
+    T39 := GetTrk(Side, 39);
+    if (T38 <> nil) and (T39 <> nil) and (T39.Sectors = 10) and (T38.Sectors = 9) then
+    begin
+      S9 := GetSec(T39, 9);
+      if (S9 <> nil) and (S9.FDCStatus[1] = $20) and (S9.FDCStatus[2] = $20) then
+      begin
+        Result := ProtProbable('KBI-10', 'weak sector T39/S9');
+        exit;
+      end;
+    end;
+  end;
+
+  // Infogrames/Logiciel - T39
+  if Tc > 39 then
+  begin
+    T39 := GetTrk(Side, 39);
+    if (T39 <> nil) and (T39.Sectors = 9) then
+      for SIdx := 0 to T39.Sectors - 1 do
+      begin
+        Sector := T39.Sector[SIdx];
+        if (Sector.FDCSize = 2) and (Sector.DataSize = 540) then
+        begin
+          Result := ProtProbable('Infogrames/Logiciel', SysUtils.Format('gap data sector T39/S%d', [SIdx]));
+          exit;
+        end;
+      end;
+  end;
+
+  // Rainbow Arts - T40
+  if Tc > 40 then
+  begin
+    T40 := GetTrk(Side, 40);
+    if (T40 <> nil) and (T40.Sectors = 9) then
+      for SIdx := 0 to T40.Sectors - 1 do
+      begin
+        Sector := T40.Sector[SIdx];
+        if (Sector.ID = 198) and (Sector.FDCStatus[1] = $20) and (Sector.FDCStatus[2] = $20) then
+        begin
+          Result := ProtProbable('Rainbow Arts', SysUtils.Format('weak sector T40/S%d', [SIdx]));
+          exit;
+        end;
+      end;
+  end;
+end;
+
+// --- Step 4: mid-disk odd-sector sweep (spec 7) ----------------------------
+
+function SweepMidDisk(Side: TDSKSide; T0: TDSKTrack): TProtectionResult;
+var
+  Cpc: boolean;
+  Limit, T: integer;
+  Ht: TDSKTrack;
+  Hs0, S0, S1: TDSKSector;
+  AName: string;
+begin
+  Result := ProtNone;
+  Cpc := IsCpcDisk(T0);
+  if Side.Tracks < 42 then Limit := Side.Tracks else Limit := 42;
+
+  for T := 2 to Limit - 1 do
+  begin
+    Ht := GetTrk(Side, T);
+    if Ht = nil then continue;
+    if (Ht.Sectors = 0) or (Ht.Sectors = 9) then continue;
+
+    // 18-sector -> Alkatraz CPC
+    if Ht.Sectors = 18 then
+    begin
+      Hs0 := GetSec(Ht, 0);
+      if (Hs0 <> nil) and ((Hs0.DataSize = 256) or (AdvSize(Hs0) = 256)) then
+      begin
+        Result := ProtConfirmed('Alkatraz CPC', SysUtils.Format('18-sector T%d', [T]));
+        exit;
+      end;
+    end;
+
+    // 16-sector -> DiscSYS or Players
+    if Ht.Sectors = 16 then
+    begin
+      if IsDiscSysTrack(Ht) then
+      begin
+        Result := ProtConfirmed('DiscSYS', SysUtils.Format('16-sector CHRN ramp at T%d', [T]));
+        exit;
+      end;
+      if IsPlayersTrack(Ht) then
+      begin
+        Result := ProtMaybe('Players', SysUtils.Format('16-sector id==size at T%d', [T]));
+        exit;
+      end;
+    end;
+
+    // 19-sector -> KBI-19 / CAAV
+    if Ht.Sectors = 19 then
+    begin
+      if Ht.Sectors > 1 then
+      begin
+        S1 := GetSec(Ht, 1);
+        if (S1 <> nil) and (StrBufPos(S1.Data, '(c) 1986 for KBI ') > -1) then
+        begin
+          Result := ProtConfirmed('KBI-19', SysUtils.Format('signed T%d/S1', [T]));
+          exit;
+        end;
+      end;
+      S0 := GetSec(Ht, 0);
+      if (S0 <> nil) and (StrBufPos(S0.Data, 'ALAIN LAURENT GENERATION 5 1989') > -1) then
+      begin
+        Result := ProtConfirmed('CAAV', SysUtils.Format('signed T%d/S0', [T]));
+        exit;
+      end;
+      Result := ProtProbable('KBI-19 or CAAV', SysUtils.Format('unsigned, 19-sector T%d', [T]));
+      exit;
+    end;
+
+    // 5-sector -> unsigned Speedlock data side
+    if Ht.Sectors = 5 then
+    begin
+      Hs0 := GetSec(Ht, 0);
+      if (Hs0 <> nil) and (AdvSize(Hs0) = 1024) then
+      begin
+        if Cpc then AName := 'Speedlock (CPC)' else AName := 'Speedlock +3 1987/1988';
+        Result := ProtProbable(AName, SysUtils.Format('5x1024 at T%d', [T]));
+        exit;
+      end;
+    end;
+
+    // 8-sector -> unsigned Alkatraz +3 data track (+3 only)
+    if Ht.Sectors = 8 then
+    begin
+      Hs0 := GetSec(Ht, 0);
+      if (Hs0 <> nil) and (AdvSize(Hs0) = 512) and (not Cpc) then
+      begin
+        Result := ProtMaybe('Alkatraz +3', SysUtils.Format('unsigned (8x512 data at T%d)', [T]));
+        exit;
+      end;
+    end;
+
+    // Single big sector with CRC -> Speedlock 1989 / Hexagon
+    if Ht.Sectors = 1 then
+    begin
+      Hs0 := GetSec(Ht, 0);
+      if (Hs0 <> nil) and (Hs0.FDCSize = 6) and (Hs0.FDCStatus[1] = $20) then
+      begin
+        if Cpc then
+          Result := ProtProbable('Hexagon', SysUtils.Format('big-sector at T%d (CPC)', [T]))
+        else
+          Result := ProtProbable('Speedlock 1989/1990', SysUtils.Format('big-sector at T%d (+3)', [T]));
+        exit;
+      end;
+    end;
+  end;
+end;
+
+// --- Stripped-FDC fallbacks (spec 9) ---------------------------------------
+
+function StrippedFdcFallbacks(Side: TDSKSide; T0: TDSKTrack): TProtectionResult;
+var
+  T1: TDSKTrack;
+  T1S0: TDSKSector;
+begin
+  Result := ProtNone;
+  if SideHasFDCErrors(Side) then exit;
+
+  if T0.Sectors >= 8 then
+  begin
+    T1 := GetTrk(Side, 1);
+    if (T1 <> nil) and (T1.Sectors = 5) then
+    begin
+      T1S0 := GetSec(T1, 0);
+      if (T1S0 <> nil) and (AdvSize(T1S0) = 1024) then
+      begin
+        if IsCpcDisk(T0) then
+          Result := ProtProbable('Speedlock (CPC)', 'layout matches, stripped FDC flags')
+        else
+          Result := ProtProbable('Speedlock +3 1987/1988', 'layout matches, stripped FDC flags');
+        exit;
+      end;
+    end;
+  end;
+
+  if (T0.Sectors >= 8) and (Side.Tracks > 40) then
+  begin
+    T1 := GetTrk(Side, 1);
+    if (T1 <> nil) and (T1.Sectors = 1) then
+    begin
+      T1S0 := GetSec(T1, 0);
+      if (T1S0 <> nil) and (T1S0.FDCSize = 6) then
+      begin
+        if IsCpcDisk(T0) then
+          Result := ProtProbable('Hexagon', 'layout matches, stripped FDC flags (CPC)')
+        else
+          Result := ProtProbable('Speedlock 1989/1990', 'layout matches, stripped FDC flags');
+      end;
+    end;
+  end;
+end;
+
+// --- Unknown-protection fallback (non-uniform disk with FDC errors) ---------
+
+function UnknownFallback(Side: TDSKSide): TProtectionResult;
+var
+  T, Used, MaxValid: integer;
+  ErrorTracks: array of integer;
+  IsLoneHigh, AllOk: boolean;
+  Track: TDSKTrack;
+begin
+  Result := ProtNone;
+  if SideIsUniform(Side) then exit;
+
+  Used := 0;
+  for T := 0 to Side.Tracks - 1 do
+    if GetTrk(Side, T).Sectors > 0 then Inc(Used);
+  if Used < 40 then MaxValid := Used else MaxValid := 40;
+
+  SetLength(ErrorTracks, 0);
+  for T := 0 to MaxValid - 1 do
+    if TrackHasError(GetTrk(Side, T)) then
+    begin
+      SetLength(ErrorTracks, Length(ErrorTracks) + 1);
+      ErrorTracks[High(ErrorTracks)] := T;
+    end;
+
+  if Length(ErrorTracks) = 0 then exit;
+
+  // A lone high-track CRC error on an otherwise standard disk is not protection.
+  IsLoneHigh := False;
+  if Length(ErrorTracks) <= 2 then
+  begin
+    AllOk := True;
+    for T := 0 to High(ErrorTracks) do
+      if ErrorTracks[T] < 35 then AllOk := False;
+    if AllOk then
+    begin
+      AllOk := True;
+      for T := 0 to Side.Tracks - 1 do
+      begin
+        Track := GetTrk(Side, T);
+        if (Track = nil) or (Track.Sectors = 0) then continue;
+        if IntInArray(T, ErrorTracks) then continue;
+        if (Track.Sectors = 9) and (UniformAdvSize(Track) = 512) and (not AnyDeleted(Track)) then continue;
+        AllOk := False;
+        break;
+      end;
+      IsLoneHigh := AllOk;
+    end;
+  end;
+
+  if not IsLoneHigh then
+    Result := ProtConfirmed('Unknown copy protection', 'non-uniform disk with FDC errors');
+end;
+
+// --- Main detection flow (spec 2) ------------------------------------------
+
+function DetectSide(Side: TDSKSide): TProtectionResult;
+var
+  T0, T1: TDSKTrack;
+  T0S0, T1S0, Sector: TDSKSector;
+  T0Sc, T0Sz, SIdx: integer;
+begin
+  Result := ProtNone;
+  if Side.Tracks < 2 then exit;
+
+  T0 := GetTrk(Side, 0);
+  if (T0 = nil) or (T0.Sectors < 1) then exit;
+  T0S0 := GetSec(T0, 0);
+  if (T0S0 = nil) or (T0S0.DataSize < 128) then exit;
+
+  // Pre-screen: a uniform disk with no FDC errors is unprotected, except for
+  // the two uniform shapes that indicate an unsigned data side.
+  if SideIsUniform(Side) and (not SideHasFDCErrors(Side)) then
+  begin
+    T0Sc := T0.Sectors;
+    T0Sz := UniformAdvSize(T0);
+    if (T0Sc = 5) and (T0Sz = 1024) then
+      // could be unsigned Speedlock data side - continue
+    else if (T0Sc = 8) and (T0Sz = 512) then
+      // could be unsigned Alkatraz +3 - continue
     else
-    if (Side.Track[2].Sectors = 6) and (Side.Track[2].Sector[0].DataSize = 256) then
-      Result := 'Paul Owens (probably, unsigned)';
-  end;
-end;
-
-function DetectSpeedlock(Side: TDSKSide): string;
-var
-  TIdx, SIdx, SigIdx, Offset: integer;
-  Sector: TDSKSector;
-begin
-  Result := '';
-
-  // Speedlock signatures somewhere... (usually 0 but not always)
-  for TIdx := 0 to Side.Tracks - 1 do
-    for SIdx := 0 to Side.Track[TIdx].Sectors - 1 do
-    begin
-      Sector := Side.Track[TIdx].Sector[SIdx];
-      for SigIdx := 0 to High(SpeedlockSignatures) do
-      begin
-        Offset := StrBufPos(Sector.Data, SpeedlockSignatures[SigIdx].Signature);
-        if Offset > -1 then
-        begin
-          Result := Format('%s (signed T%d/S%d +%d)', [SpeedlockSignatures[SigIdx].Label_, TIdx, SIdx, Offset]);
-          exit;
-        end;
-      end;
-    end;
-
-  // Unsigned Speedlock +3 1987
-  if (Side.Track[0].Sectors = 9) and (Side.Track[1].Sectors = 5) and (Side.Track[1].Sector[0].DataSize = 1024) and
-    (Side.Track[0].Sector[6].FDCStatus[2] = 64) and (Side.Track[0].Sector[8].FDCStatus[2] = 0) then
-    Result := 'Speedlock +3 1987 (probably, unsigned)';
-
-  // Unsigned Speedlock +3 1988
-  if (Side.Track[0].Sectors = 9) and (Side.Track[1].Sectors = 5) and (Side.Track[1].Sector[0].DataSize = 1024) and
-    (Side.Track[0].Sector[6].FDCStatus[2] = 64) and (Side.Track[0].Sector[8].FDCStatus[2] = 64) then
-    Result := 'Speedlock +3 1988 (probably, unsigned)';
-
-  // Unsigned Speedlock 1989/1990
-  if (Side.Track[0].Sectors > 7) and (Side.Tracks > 40) and (Side.Track[1].Sectors = 1) and
-    (Side.Track[1].Sector[0].ID = 193) and (Side.Track[1].Sector[0].FDCStatus[1] = 32) then
-    Result := 'Speedlock 1989/1990 (probably, unsigned)';
-end;
-
-function DetectThreeInchLoader(Side: TDSKSide): string;
-var
-  Offset: integer;
-begin
-  Result := '';
-
-  Offset := StrBufPos(Side.Track[0].Sector[0].Data,
-    '***Loader Copyright Three Inch Software 1988, All Rights Reserved. Three Inch Software, 73 Surbiton Road, Kingston upon Thames, KT1 2HG***');
-  if Offset > -1 then
-  begin
-    Result := Format('Three Inch Loader type 1 (signed T0/S0 +%d)', [Offset]);
-    exit;
+      exit;
   end;
 
-  if Side.Track[0].Sectors > 7 then
+  // Step 1a: T0 signatures
+  Result := ScanT0Signatures(T0);
+  if Result.Found then exit;
+
+  // Step 1b: classify T0 geometry -> resolver
+  case ClassifyT0(T0) of
+    t0SpeedlockPlus3:
+      begin Result := ResolveSpeedlockPlus3(Side, T0); if Result.Found then exit; end;
+    t0BigSector:
+      begin Result := ResolveBigSector(Side, T0); if Result.Found then exit; end;
+    t0TenSector:
+      begin Result := ResolveHexagon(Side, T0); if Result.Found then exit; end;
+    t0TenSectorDDAM:
+      begin Result := ResolveSpeedlock1989Cpc(Side, T0); if Result.Found then exit; end;
+    t0EighteenSector:
+      begin Result := Resolve18Sector(Side, T0); exit; end;
+    t0SixteenSector:
+      begin Result := Resolve16Sector(Side, T0); if Result.Found then exit; end;
+    t0NineteenSector:
+      begin Result := Resolve19Sector(T0); exit; end;
+    t0EightSector:
+      begin Result := Resolve8Sector(Side, T0); if Result.Found then exit; end;
+    t0FiveSector:
+      begin Result := Resolve5Sector(Side, T0); if Result.Found then exit; end;
+    t0Speedlock9x512:
+      begin Result := ResolveSpeedlock9x512(Side, T0); if Result.Found then exit; end;
+    t0Standard: ;
+  end;
+
+  // Step 2: Track 1
+  T1 := GetTrk(Side, 1);
+  if T1 <> nil then
   begin
-    Offset := StrBufPos(Side.Track[0].Sector[7].Data,
-      '***Loader Copyright Three Inch Software 1988, All Rights Reserved. Three Inch Software, 73 Surbiton Road, Kingston upon Thames, KT1 2HG***');
-    if Offset > -1 then
+    if T1.Sectors = 0 then
     begin
-      Result := Format('Three Inch Loader type 1-0-7 (signed T0/S7 +%d)', [Offset]);
+      Result := ResolveEmptyT1Family(Side, T0);
       exit;
     end;
-  end;
 
-  Offset := StrBufPos(Side.Track[0].Sector[0].Data,
-    '***Loader Copyright Three Inch Software 1988, All Rights Reserved. 01-546 2754');
-  if Offset > -1 then
-  begin
-    Result := Format('Three Inch Loader type 2 (signed T0/S0 +%d)', [Offset]);
-    exit;
-  end;
-
-  // Microprose Soccer
-  if (Side.Tracks > 1) and (Side.Track[1].Sectors > 4) then
-  begin
-    Offset := StrBufPos(Side.Track[1].Sector[4].Data, 'Loader ' + #127 + '1988 Three Inch Software');
-    if Offset > -1 then
-      Result := Format('Three Inch Loader type 3-1-4 (signed T1/S4 +%d)', [Offset]);
-  end;
-end;
-
-function DetectLaserLoad(Side: TDSKSide): string;
-var
-  Offset: integer;
-begin
-  Result := '';
-  // Laser loader (War in Middle Earth CPC)
-  if (Side.Track[0].Sectors > 2) then
-  begin
-    Offset := StrBufPos(Side.Track[0].Sector[2].Data, 'Laser Load   By C.J.Pink For Consult Computer    Systems');
-    if Offset > -1 then
-      Result := Format('Laser Load by C.J. Pink (signed T0/S2 +%d)', [Offset]);
-  end;
-end;
-
-function DetectWRM(Side: TDSKSide): string;
-begin
-  Result := '';
-  // W.R.M. (Martech)
-  if (Side.Tracks > 9) and (Side.Track[8].Sectors > 9) and (Side.Track[8].Sector[9].DataSize > 128) then
-    if StrBufPos(Side.Track[8].Sector[9].Data, 'W.R.M Disc') = 0 then
-      if StrBufPos(Side.Track[8].Sector[9].Data, 'Protection') > 0 then
-        if StrBufPos(Side.Track[8].Sector[9].Data, 'System (c) 1987') > 0 then
-          Result := 'W.R.M Disc Protection (signed T0/S9 +0)';
-end;
-
-function DetectPMS(Side: TDSKSide): string;
-var
-  Offset: integer;
-begin
-  Result := '';
-
-  Offset := StrBufPos(Side.Track[0].Sector[0].Data, '[C] P.M.S. 1986');
-  if Offset > -1 then
-  begin
-    Result := Format('P.M.S. 1986 (signed T0/S0 +%d)', [Offset]);
-    exit;
-  end;
-
-  Offset := StrBufPos(Side.Track[0].Sector[0].Data, 'P.M.S. LOADER [C]1986');
-  if Offset > -1 then
-  begin
-    Result := Format('P.M.S. Loader 1986 v1 (signed T0/S0 +%d)', [Offset]);
-    exit;
-  end;
-
-  Offset := StrBufPos(Side.Track[0].Sector[0].Data, 'P.M.S.LOADER [C]1986');
-  if Offset > -1 then
-  begin
-    Result := Format('P.M.S. Loader 1986 v2 (signed T0/S0 +%d)', [Offset]);
-    exit;
-  end;
-
-  Offset := StrBufPos(Side.Track[0].Sector[0].Data, 'P.M.S.LOADER [C]1987');
-  if Offset > -1 then
-  begin
-    Result := Format('P.M.S. 1987 (signed T0/S0 +%d)', [Offset]);
-    exit;
-  end;
-
-  if ((Side.Tracks > 2) and Side.Track[0].IsFormatted) and (not Side.Track[1].IsFormatted and Side.Track[2].IsFormatted) then
-    Result := 'P.M.S. Loader 1986/1987 (maybe, unsigned)';
-end;
-
-function DetectPlayers(Side: TDSKSide): string;
-var
-  TIdx, SIdx: integer;
-  Sector: TDSKSector;
-begin
-  Result := '';
-  for TIdx := 0 to Side.Tracks - 1 do
-    if (Side.Track[TIdx].Sectors = 16) then
+    if T1.Sectors = 5 then
     begin
-      for SIdx := 0 to Side.Track[TIdx].Sectors - 1 do
+      T1S0 := GetSec(T1, 0);
+      if (T1S0 <> nil) and (AdvSize(T1S0) = 1024) then
       begin
-        Sector := Side.Track[TIdx].Sector[SIdx];
-        if (Sector.ID <> SIdx) or (Sector.FDCSize <> SIdx) then
-          break;
-      end;
-      Result := Format('Players (maybe, super-sized %d byte track %d)', [Side.GetLargestTrackSize(), TIdx]);
-    end;
-end;
-
-function DetectInfogrames(Side: TDSKSide): string;
-var
-  SIdx: integer;
-  Sector: TDSKSector;
-begin
-  Result := '';
-  // Infogrames / Loriciel Gap
-  if (Side.Tracks > 39) and (Side.Track[39].Sectors = 9) then
-    for SIdx := 0 to Side.Track[39].Sectors - 1 do
-    begin
-      Sector := Side.Track[39].Sector[SIdx];
-      if (Sector.FDCSize = 2) and (Sector.DataSize = 540) then // Can be used with others...
-        Result := Format('Infogrames/Logiciel (gap data sector T39/S%d)', [SIdx]);
-    end;
-end;
-
-function DetectRainbowArts(Side: TDSKSide): string;
-var
-  SIdx: integer;
-  Sector: TDSKSector;
-begin
-  Result := '';
-  if (Side.Tracks > 40) and (Side.Track[40].Sectors = 9) then
-    for SIdx := 0 to Side.Track[40].Sectors - 1 do
-    begin
-      Sector := Side.Track[40].Sector[SIdx];
-      if (Sector.ID = 198) and (Sector.FDCStatus[1] = 32) and (Sector.FDCStatus[2] = 32) then
-      begin
-        Result := Format('Rainbow Arts (weak sector T40/S%d)', [SIdx]);
-        exit;
-      end;
-    end;
-end;
-
-function DetectRemiHerbulot(Side: TDSKSide): string;
-var
-  SIdx, Offset: integer;
-begin
-  Result := '';
-  if (Side.Track[0].Sectors > 6) then
-    for SIdx := 0 to Side.Track[0].Sectors - 1 do
-    begin
-      Offset := StrBufPos(Side.Track[0].Sector[SIdx].Data, 'PROTECTION      Remi HERBULOT');
-      if Offset > -1 then
-        Result := Format('ERE/Remi HERBULOT (signed T0/S%d +%d)', [SIdx, Offset]);
-
-      Offset := StrBufPos(Side.Track[0].Sector[SIdx].Data, 'PROTECTION  V2.1Remi HERBULOT');
-      if Offset > -1 then
-        Result := Format('ERE/Remi HERBULOT 2.1 (signed T0/S%d +%d)', [SIdx, Offset]);
-    end;
-end;
-
-function DetectKBI(Side: TDSKSide): string;
-var
-  TIdx, Offset, LastTIdx: integer;
-  Sector: TDSKSector;
-begin
-  Result := '';
-
-  // KBI (CPC)
-  LastTIdx := -1;
-  for TIdx := 0 to Side.Tracks - 1 do
-    if (Side.Track[TIdx].Sectors = 19) then
-    begin
-      LastTIdx := TIdx;
-      Offset := StrBufPos(Side.Track[TIdx].Sector[1].Data, '(c) 1986 for KBI ');
-      if Offset > -1 then
-      begin
-        Result := Format('KBI-19 (signed T%d/S1 +%d)', [TIdx, Offset]);
-        exit;
-      end;
-
-      Offset := StrBufPos(Side.Track[TIdx].Sector[0].Data, 'ALAIN LAURENT GENERATION 5 1989');
-      if Offset > -1 then
-      begin
-        Result := Format('CAAV (signed T%d/S0 +%d)', [TIdx, Offset]);
+        Result := ResolveSpeedlock5x1024(T0, T1);
         exit;
       end;
     end;
 
-  if (LastTIdx > 0) then
-  begin
-    Result := Format('KBI-19 or CAAV (probably, unsigned track %d)', [LastTIdx]);
-    exit;
-  end;
-
-  if (Side.Tracks >= 40) and (Side.Track[39].Sectors = 10) and (Side.Track[38].Sectors = 9) then
-  begin
-    Sector := Side.Track[39].Sector[9];
-    if (Sector.FDCStatus[1] = 32) and (Sector.FDCStatus[2] = 32) then
-      Result := 'KBI-10';
-  end;
-end;
-
-function DetectDiscSys(Side: TDSKSide): string;
-var
-  TIdx, SIdx, Offset, LastTIdx: integer;
-  Temp: string;
-  Sector: TDSKSector;
-begin
-  Result := '';
-  LastTIdx := -1;
-  for TIdx := 0 to Side.Tracks - 1 do
-  begin
-    if (Side.Track[TIdx].Sectors = 16) then
-      for SIdx := 0 to Side.Track[TIdx].Sectors - 1 do
+    if T1.Sectors = 1 then
+    begin
+      T1S0 := GetSec(T1, 0);
+      if (T1S0 <> nil) and (T1S0.FDCStatus[1] = $20) then
       begin
-        Sector := Side.Track[TIdx].Sector[SIdx];
-        if (Sector.ID = SIdx) and (Sector.Track = SIdx) and (Sector.Side = SIdx) and (Sector.ID = SIdx) and
-          (Sector.FDCSize = SIdx) then
+        Result := ResolveSpeedlock1989(T0, T1);
+        exit;
+      end;
+    end;
+
+    if T1.Sectors = 16 then
+    begin
+      if IsDiscSysTrack(T1) then
+      begin
+        for SIdx := 0 to T0.Sectors - 1 do
         begin
-          Result := Format('DiscSYS on track %d', [TIdx]);
-          LastTIdx := TIdx;
+          Sector := GetSec(T0, SIdx);
+          if (Sector <> nil) and (StrBufPos(Sector.Data, 'MEAN PROTECTION SYSTEM') > -1) then
+          begin
+            Result := ProtConfirmed('Mean Protection System',
+              SysUtils.Format('signed T0/S%d + DiscSYS T1', [SIdx]));
+            exit;
+          end;
         end;
-      end;
-  end;
-
-  if LastTIdx > -1 then
-    if (Side.Tracks > 2) and (Side.Track[2].Sectors > 4) and (Side.Track[2].Sector[4].DataSize > 160) then
-    begin
-      Temp := StrBlockClean(Side.Track[2].Sector[4].Data, 85, 22).Trim();
-      if Temp.StartsWith('discsys', True) then
-      begin
-        Result := Result + ' (' + Temp.Substring(8) + ')';
+        Result := ProtConfirmed('DiscSYS', '16-sector CHRN ramp on T1');
         exit;
       end;
-      if Temp.StartsWith('multi-', True) then
+      if IsPlayersTrack(T1) then
       begin
-        Result := Result + ' (' + Temp + ')';
+        Result := ProtMaybe('Players', '16-sector id==size pattern on T1');
         exit;
       end;
     end;
-
-  if LastTIdx = 1 then
-    for SIdx := 0 to Side.Track[0].Sectors - 1 do
-    begin
-      Offset := StrBufPos(Side.Track[0].Sector[SIdx].Data, 'MEAN PROTECTION SYSTEM');
-      if Offset > -1 then
-      begin
-        Result := Format('Mean Protection System (signed T0S%d +%d)', [SIdx, Offset]);
-        exit;
-      end;
-    end;
-end;
-
-function DetectAmsoft(Side: TDSKSide): string;
-var
-  Offset: integer;
-begin
-  Result := '';
-  if (Side.Tracks > 3) and (Side.Track[3].Sectors > 0) and (Side.Track[3].Sector[0].DataSize = 512) then
-  begin
-    Offset := StrBufPos(Side.Track[3].Sector[0].Data, 'Amsoft disc protection system');
-    if Offset > 1 then
-    begin
-      Offset := StrBufPos(Side.Track[3].Sector[0].Data, 'EXOPAL');
-      if Offset > -1 then
-        Result := Format('Amsoft/EXOPAL (signed T3S0 +%d)', [Offset]);
-    end;
   end;
-end;
 
-function DetectArmourloc(Side: TDSKSide): string;
-begin
-  Result := '';
-  // Armourloc - possibly anti-hacker rather than anti-copy as no weird sectors
-  if (Side.Track[0].Sectors = 9) and (StrBufPos(Side.Track[0].Sector[0].Data, '0K free') = 2) then
-    Result := 'ARMOURLOC';
-end;
+  // Step 3: high-track probes
+  Result := ScanHighTracks(Side, T0);
+  if Result.Found then exit;
 
-function DetectStudioB(Side: TDSKSide): string;
-var
-  Offset: integer;
-begin
-  Result := '';
-  if (Side.Tracks > 3) and (Side.Track[0].IsFormatted) and (not Side.Track[1].IsFormatted) and (Side.Track[2].IsFormatted) then
-  begin
-    Offset := StrBufPos(Side.Track[0].Sector[0].Data, 'Disc format (c) 1986 Studio B Ltd.');
-    if Offset > -1 then
-      Result := Format('Studio B Disc format (signed T0S0 +%d)', [Offset]);
+  // Step 4: mid-disk sweep
+  Result := SweepMidDisk(Side, T0);
+  if Result.Found then exit;
 
-    Offset := StrBufPos(Side.Track[2].Sector[0].Data, 'DISCLOC');
-    if Offset > -1 then
-      Result := Format('DiscLoc/Oddball (signed T2S0 +%d)', [Offset]);
-  end;
+  // Stripped-FDC fallbacks
+  Result := StrippedFdcFallbacks(Side, T0);
+  if Result.Found then exit;
+
+  // Unknown protection fallback
+  Result := UnknownFallback(Side);
 end;
 
 function DetectProtection(Side: TDSKSide): string;
-var
-  Temp: string;
 begin
-  Result := '';
-  if (Side.Tracks < 2) or (Side.Track[0].Sectors < 1) or (Side.Track[0].Sector[0].DataSize < 128) then exit;
-  if (Side.ParentDisk.IsUniform(true) and not Side.ParentDisk.HasFDCErrors) then exit;
-
-  Result := DetectAlkatraz(Side);        if Result <> '' then exit;
-  Result := DetectFrontier(Side);        if Result <> '' then exit;
-  Result := DetectHexagon(Side);         if Result <> '' then exit;
-  Result := DetectPaulOwens(Side);       if Result <> '' then exit;
-  Result := DetectSpeedlock(Side);       if Result <> '' then exit;
-  Result := DetectThreeInchLoader(Side); if Result <> '' then exit;
-  Result := DetectLaserLoad(Side);       if Result <> '' then exit;
-  Result := DetectWRM(Side);             if Result <> '' then exit;
-  Result := DetectPMS(Side);             if Result <> '' then exit;
-  Result := DetectPlayers(Side);         if Result <> '' then exit;
-  Result := DetectInfogrames(Side);      if Result <> '' then exit;
-  Result := DetectRainbowArts(Side);     if Result <> '' then exit;
-
-  // Remi Herbulot can combine with KBI
-  Result := DetectRemiHerbulot(Side);
-  Temp := DetectKBI(Side);
-  if Temp <> '' then begin
-    if Result <> '' then Result := Temp + ' + ' + Result
-    else Result := Temp;
-    exit;
-  end;
-  if Result <> '' then exit;
-
-  Result := DetectDiscSys(Side);         if Result <> '' then exit;
-  Result := DetectAmsoft(Side);          if Result <> '' then exit;
-  Result := DetectArmourloc(Side);       if Result <> '' then exit;
-  Result := DetectStudioB(Side);         if Result <> '' then exit;
-
-  // Unknown copy protection
-  if (not Side.ParentDisk.IsUniform(True)) and (Side.ParentDisk.HasFDCErrors) then
-    Result := 'Unknown copy protection';
+  Result := ProtToStr(DetectSide(Side));
 end;
 
 function DetectInterleave(Track: TDskTrack): string;
