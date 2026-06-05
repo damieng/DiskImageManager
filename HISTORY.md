@@ -1,11 +1,21 @@
 # Disk Image Manager
 Development Build Notes
 
-## 2.11.0 (31 May 2026)
+## 2.11.0 (05 June 2026)
+### Changes
+- Rewrote copy protection detection as a staged fingerprinting flow (T0 signature scan, T0 geometry classification, Track 1 family checks, high-track probes, and a mid-disk odd-sector sweep) instead of independent whole-disk scans
+### New
+- Detect unsigned Alkatraz +3 (uniform 8x512 data tracks) and locate the 18-sector protection track wherever it sits
+- Detect unsigned Speedlock data sides (uniform 5x1024 tracks)
+- Distinguish Hexagon from Speedlock 1989 on CPC/+3 disks using the Track 0 sector count and deleted-data marks
+- Detect the Speedlock 9x512 high-ID-filler variant
 ### Fixes
 - Fix boot sector detection checking wrong sector (was checking T0S1 instead of T0S0)
 - Always show boot sector status in disk info (shows "Unknown" if not detected)
 - Fallback to default +3/PCW 180K spec when T0S0 contains invalid specification bytes
+- Handle SAMdisk v5 multi-copy (weak) sectors correctly, fixing file extraction, CP/M block counts, and per-sector checksum/fill that previously ran over concatenated copies
+- Keep later sectors aligned when a record's stored length exceeds the maximum sector size
+- Fix PCW 720K directory blocks to 2 and CPC System reserved tracks to 2
 
 ## 2.10.0 (03 April 2026)
 ### New
