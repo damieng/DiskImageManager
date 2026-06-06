@@ -5,6 +5,7 @@ Development Build Notes
 ### Changes
 - Rewrote copy protection detection as a staged fingerprinting flow (T0 signature scan, T0 geometry classification, Track 1 family checks, high-track probes, and a mid-disk odd-sector sweep) instead of independent whole-disk scans
 ### New
+- Amstrad (Locomotive) BASIC file viewer with syntax highlighting for AMSDOS tokenized BASIC files
 - Detect unsigned Alkatraz +3 (uniform 8x512 data tracks) and locate the 18-sector protection track wherever it sits
 - Detect unsigned Speedlock data sides (uniform 5x1024 tracks)
 - Distinguish Hexagon from Speedlock 1989 on CPC/+3 disks using the Track 0 sector count and deleted-data marks

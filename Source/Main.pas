@@ -1442,6 +1442,13 @@ begin
   else
     DiskName := '';
 
+  // Amstrad (AMSDOS) tokenized BASIC files
+  if (DiskFile.HeaderType = 'AMSDOS') and (DiskFile.Meta = 'BASIC') then
+  begin
+    ShowBasicViewer(DiskImage.Disk, DiskFile, DiskName);
+    Exit;
+  end;
+
   // Check for PLUS3DOS files
   if DiskFile.HeaderType <> 'PLUS3DOS' then
     Exit;

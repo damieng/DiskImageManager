@@ -15,7 +15,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls,
-  DskImage, FileSystem, SinclairBasic, RTFView;
+  DskImage, FileSystem, SinclairBasic, AmstradBasic, RTFView;
 
 type
   TfrmFileViewer = class(TForm)
@@ -100,7 +100,8 @@ end;
 
 procedure TfrmFileViewer.LoadBasicFile(DiskImage: TDSKDisk; DiskFile: TCPMFile; const DiskName: string);
 var
-  Parser: TSinclairBasicParser;
+  SinclairParser: TSinclairBasicParser;
+  AmstradParser: TAmstradBasicParser;
   RTFText: string;
 begin
   FDiskName := DiskName;
@@ -109,15 +110,28 @@ begin
 
   EnsureViewer;
 
-  Parser := TSinclairBasicParser.Create(sbMode128K);
-  try
-    RTFText := Parser.DecodeFileRTF(DiskImage, DiskFile);
-    if RTFText = '' then
-      RTFText := '{\rtf1\ansi (Unable to decode BASIC program)}';
-    FViewer.LoadRTF(RTFText);
-  finally
-    Parser.Free;
+  if DiskFile.HeaderType = 'AMSDOS' then
+  begin
+    AmstradParser := TAmstradBasicParser.Create;
+    try
+      RTFText := AmstradParser.DecodeFileRTF(DiskImage, DiskFile);
+    finally
+      AmstradParser.Free;
+    end;
+  end
+  else
+  begin
+    SinclairParser := TSinclairBasicParser.Create(sbMode128K);
+    try
+      RTFText := SinclairParser.DecodeFileRTF(DiskImage, DiskFile);
+    finally
+      SinclairParser.Free;
+    end;
   end;
+
+  if RTFText = '' then
+    RTFText := '{\rtf1\ansi (Unable to decode BASIC program)}';
+  FViewer.LoadRTF(RTFText);
 end;
 
 end.
