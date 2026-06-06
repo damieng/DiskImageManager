@@ -103,6 +103,7 @@ type
     procedure edtFillerChange(Sender: TObject);
     procedure btnCloseClick(Sender: TObject);
     procedure btnFormatClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure lvwFormatsChange(Sender: TObject; Item: TListItem; Change: TItemChange);
     procedure cboSidesChange(Sender: TObject);
@@ -166,11 +167,10 @@ begin
 end;
 
 procedure TfrmNew.edtFillerChange(Sender: TObject);
-var
-  Value: integer;
 begin
-  if TryStrToInt('$' + edtFiller.Text, Value) then
-    udFiller.Position := Value;
+  CurrentFormat.FillerByte := udFiller.Position;
+  UpdateSummary;
+  UpdateFileDetails;
 end;
 
 procedure TfrmNew.btnCloseClick(Sender: TObject);
@@ -243,7 +243,7 @@ begin
   hexDPB := hexDPB + ' ' + StrHex(udSectors.Position);
   hexDPB := hexDPB + ' ' + StrHex(Trunc(Log2(udSecSize.Position) - 7));
   hexDPB := hexDPB + ' ' + StrHex(udResTracks.Position);
-  hexDPB := hexDPB + ' ' + StrHex(udBlockShift.Position >> 3);
+  hexDPB := hexDPB + ' ' + StrHex(udBlockShift.Position);
   hexDPB := hexDPB + ' ' + StrHex(udDirBlocks.Position);
   hexDPB := hexDPB + ' ' + StrHex(udGapRW.Position);
   hexDPB := hexDPB + ' ' + StrHex(udGapFormat.Position);
@@ -409,6 +409,12 @@ begin
   frmMain.AddWorkspaceImage(NewImage);
 end;
 
+procedure TfrmNew.FormClose(Sender: TObject; var CloseAction: TCloseAction);
+begin
+  // Each File > New creates a fresh modeless instance, so release it on close
+  CloseAction := caFree;
+end;
+
 procedure TfrmNew.FormCreate(Sender: TObject);
 var
   Idx: integer;
@@ -427,7 +433,8 @@ begin
     end;
   lvwFormats.EndUpdate;
 
-  for Idx := 0 to Length(DSKSpecSides) - 2 do
+  // Double (Reverse) is omitted: writing the disk specification does not support it
+  for Idx := Ord(dsSideSingle) to Ord(dsSideDoubleSuccessive) do
     cboSides.Items.Add(DSKSpecSides[TDSKSpecSide(Idx)]);
 
   for Idx := 0 to Length(DSKRecordingMode) - 1 do
@@ -445,7 +452,7 @@ end;
 procedure TfrmNew.lvwFormatsChange(Sender: TObject; Item: TListItem; Change: TItemChange);
 begin
   if lvwFormats.Selected <> nil then
-    SetCurrentFormat(Item.ImageIndex);
+    SetCurrentFormat(lvwFormats.Selected.ImageIndex);
 end;
 
 procedure TfrmNew.SetCurrentFormat(ItemIndex: integer);

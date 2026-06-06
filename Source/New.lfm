@@ -13,6 +13,7 @@ object frmNew: TfrmNew
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
+  OnClose = FormClose
   OnCreate = FormCreate
   OnShow = FormShow
   Position = poMainFormCenter
@@ -372,8 +373,8 @@ object frmNew: TfrmNew
           Associate = edtSecSize
           Increment = 256
           Max = 6912
-          Min = 0
-          Position = 1
+          Min = 128
+          Position = 512
           TabOrder = 4
           Thousands = False
         end
@@ -477,9 +478,9 @@ object frmNew: TfrmNew
           Alignment = taRightJustify
           MaxLength = 3
           ParentBidiMode = False
+          OnChange = edtFillerChange
           TabOrder = 15
-          Text = 'E5'
-          TextHint = 'In hexadecimal'
+          Text = '229'
         end
         object udFiller: TUpDown
           Left = 257
@@ -489,7 +490,7 @@ object frmNew: TfrmNew
           Associate = edtFiller
           Max = 255
           Min = 0
-          Position = 1
+          Position = 229
           TabOrder = 16
         end
         object udTracks: TUpDown
