@@ -46,6 +46,7 @@ type
     FIsChanged: boolean;
     procedure SetIsChanged(NewValue: boolean);
     function LoadFileDSK(DiskFile: TStream): boolean;
+    function RecoverExtTrackSize(DiskFile: TStream; ExpTrack, ExpSide: integer): integer;
     function SaveFileDSK(DiskFile: TFileStream; SaveFileFormat: TDSKImageFormat; Compress: boolean): boolean;
   public
     FileFormat: TDSKImageFormat;
@@ -533,6 +534,48 @@ begin
     Result := NextSector;
 end;
 
+// Recover the byte length of an Extended DSK track whose size-table entry is
+// zero. Peeks at the Track-Info block at the current position (restoring it
+// afterwards). Only succeeds when a valid block is present whose track/side
+// numbers match the expected ones - otherwise the zero entry denotes a
+// genuinely unformatted track and the peek would land on the next track's data.
+// Returns the full track length (Track-Info block + sector data), or 0.
+function TDSKImage.RecoverExtTrackSize(DiskFile: TStream; ExpTrack, ExpSide: integer): integer;
+var
+  SavePos: int64;
+  PeekTRK: TTRKInfoBlock;
+  PeekSCT: TSCTInfoBlock;
+  BytesRead, EIdx, DataLen: integer;
+begin
+  Result := 0;
+  SavePos := DiskFile.Position;
+  if SavePos + SizeOf(PeekTRK) > DiskFile.Size then
+    exit;
+
+  BytesRead := DiskFile.Read(PeekTRK, SizeOf(PeekTRK));
+  DiskFile.Position := SavePos;
+  if BytesRead < SizeOf(PeekTRK) then
+    exit;
+
+  // Must be a real Track-Info block belonging to the expected track and side.
+  if not CompareBlock(PeekTRK.TrackData, DiskInfoTrack) then
+    exit;
+  if (PeekTRK.TIB_TrackNum <> ExpTrack) or (PeekTRK.TIB_SideNum <> ExpSide) then
+    exit;
+
+  Result := 256; // The Track-Info block itself
+  for EIdx := 0 to PeekTRK.TIB_NumSectors - 1 do
+  begin
+    if (EIdx + 1) * SizeOf(PeekSCT) > SizeOf(PeekTRK.SectorInfoList) then
+      Break;
+    Move(PeekTRK.SectorInfoList[EIdx * SizeOf(PeekSCT)], PeekSCT, SizeOf(PeekSCT));
+    DataLen := PeekSCT.SIB_DataLength;
+    if (DataLen = 0) and (PeekSCT.SIB_Size <= High(FDCSectorSizes)) then
+      DataLen := FDCSectorSizes[PeekSCT.SIB_Size];
+    Result := Result + DataLen;
+  end;
+end;
+
 function TDSKImage.LoadFileDSK(DiskFile: TStream): boolean;
 var
   DSKInfoBlock: TDSKInfoBlock;
@@ -549,10 +592,12 @@ var
   FoundIncorrectTrackMarkers: boolean;
   NextTrackPosition: integer;
   ErrorMessage: string;
+  RecoveredTracks, RecoveredSize: integer;
 begin
   Result := False;
   FoundIncorrectTrackMarkers := False;
   NextTrackPosition := 0;
+  RecoveredTracks := 0;
 
   DiskFile.ReadBuffer(DSKInfoBlock, SizeOf(DSKInfoBlock));
 
@@ -603,6 +648,19 @@ begin
 
         // Bad place to set this, we don't know disk format yet...
         Logical := (TIdx * DSKInfoBlock.Disk_NumSides) + SIdx;
+
+        // Some writers (e.g. CPDRead) emit an Extended DSK with a blank track-
+        // size table even though real track data follows. Recover by reading
+        // the actual Track-Info block at the current position.
+        if (FileFormat = diExtendedDSK) and (SizeT = 0) then
+        begin
+          RecoveredSize := RecoverExtTrackSize(DiskFile, TIdx, SIdx);
+          if RecoveredSize > 256 then
+          begin
+            SizeT := RecoveredSize - 256;
+            Inc(RecoveredTracks);
+          end;
+        end;
 
         if SizeT > 0 then // Don't load if track is unformatted
         begin
@@ -712,6 +770,11 @@ begin
       end;
     end;
   end;
+
+  if RecoveredTracks > 0 then
+    Messages.Add(SysUtils.Format(
+      'Extended DSK track-size table was missing; recovered %d track(s) by scanning',
+      [RecoveredTracks]));
 
   if (FileFormat = diExtendedDSK) and (DiskFile.Position < DiskFile.Size) then
   begin

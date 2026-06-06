@@ -10,6 +10,7 @@ Development Build Notes
 - Distinguish Hexagon from Speedlock 1989 on CPC/+3 disks using the Track 0 sector count and deleted-data marks
 - Detect the Speedlock 9x512 high-ID-filler variant
 ### Fixes
+- Recover Extended DSK images with a blank track-size table (e.g. some CPDRead output) by scanning for the real track data, with a warning instead of showing every track as unformatted
 - Fix boot sector detection checking wrong sector (was checking T0S1 instead of T0S0)
 - Always show boot sector status in disk info (shows "Unknown" if not detected)
 - Fallback to default +3/PCW 180K spec when T0S0 contains invalid specification bytes
