@@ -240,10 +240,10 @@ const
   // Two thresholds because the two decision points have different phase counts
   // (mode 2 has 7 within-byte boundaries, mode 1 has 3) and so different scales.
   // Calibrated against known mode-0/1 sample screens: mode-1 screens score
-  // <= 1.28 at mode 1 while mode-0 screens score >= 1.60, and every non-mode-2
-  // screen scores >= 1.44 at mode 2. The thresholds sit in those gaps.
+  // <= 1.28 at mode 1 while mode-0 screens score >= 1.41, and every non-mode-2
+  // screen scores >= 1.43 at mode 2. The thresholds sit in those gaps.
   Mode2BandingThreshold = 1.38;  // below this, mode 2 looks coherent -> mode 2
-  Mode1BandingThreshold = 1.44;  // at/above this, mode 1 still bands -> mode 0
+  Mode1BandingThreshold = 1.35;  // at/above this, mode 1 still bands -> mode 0
   // Screens with almost no horizontal detail give no banding signal at all;
   // treat any overall edge fraction below this as "flat" and fall back to mode 1.
   FlatEdgeFloor = 0.01;
