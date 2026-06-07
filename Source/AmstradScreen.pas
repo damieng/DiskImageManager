@@ -28,23 +28,32 @@ const
 type
   TAmstradMode = (amMode0, amMode1, amMode2);
 
+  // A decoded Amstrad picture: a full (interleaved) screen, or a linear
+  // Advanced OCP Art Studio window clip.
+  TAmstradImage = record
+    Data: TDiskByteArray;   // raw pixel bytes (MJH already expanded)
+    Mode: TAmstradMode;     // guessed display mode (the user can override it)
+    BytesPerRow: integer;   // bytes of pixel data per row
+    Rows: integer;          // number of pixel rows
+    Interleaved: boolean;   // True for full screens (CPC scanline interleave)
+    IsWindow: boolean;      // True for .WIN window clips
+  end;
+
   TAmstradScreen = class
   public
     class function IsValidScreenSize(Size: integer): boolean;
     // True if Data begins with an "MJH" Advanced OCP Art Studio compressed block.
     class function IsMJHCompressed(const Data: array of byte): boolean;
-    // Decompress concatenated "MJH" RLE blocks into raw screen bytes. Returns an
-    // empty array if Data is not a valid MJH stream.
+    // Decompress concatenated "MJH" RLE blocks into raw bytes. Returns an empty
+    // array if Data is not a valid MJH stream.
     class function DecompressMJH(const Data: array of byte): TDiskByteArray;
-    // Return displayable screen bytes from a file's data, expanding MJH
-    // compression if present. Returns an empty array unless the result is a
-    // valid full-screen size (so .WIN window clips and non-screens are rejected).
-    class function GetScreenData(const Data: array of byte): TDiskByteArray;
-    // Guess the intended graphics mode by looking for the vertical-line/banding
-    // artifacts that appear when screen data is decoded at too high a resolution.
-    class function GuessMode(const Data: array of byte; Offset: integer = 0): TAmstradMode;
-    class procedure RenderToBitmap(const Data: array of byte; Mode: TAmstradMode;
-      Bitmap: TBitmap; Zoom: integer; Offset: integer = 0);
+    // Decode a file's raw data (expanding MJH compression) into a full screen or
+    // a window image, guessing the display mode. Returns False if it is neither.
+    class function LoadImage(const Raw: array of byte; out Image: TAmstradImage): boolean;
+    // Cheap routing check: True if Raw is a CPC screen or an OCP window.
+    class function CanDisplay(const Raw: array of byte): boolean;
+    // Render a decoded image to Bitmap at the given zoom.
+    class procedure RenderImage(const Image: TAmstradImage; Bitmap: TBitmap; Zoom: integer);
   end;
 
 implementation
@@ -130,16 +139,21 @@ begin
   end;
 end;
 
-// Decode one scanline into Row (length PixelsPerLine) for the given mode.
+// Decode one row into Row for the given mode. Interleaved uses the CPC screen
+// scanline layout; otherwise rows are linear, BytesPerRow apart.
 procedure DecodeRow(const Data: array of byte; Mode: TAmstradMode;
-  Offset, Y, PixelsPerByte: integer; var Row: array of integer);
+  Offset, Y, PixelsPerByte, BytesPerRow: integer; Interleaved: boolean;
+  var Row: array of integer);
 var
   Col, P, Idx, DataLen, LineBase: integer;
   B: byte;
 begin
   DataLen := Length(Data);
-  LineBase := ScreenLineBase(Y);
-  for Col := 0 to CPCBytesPerLine - 1 do
+  if Interleaved then
+    LineBase := ScreenLineBase(Y)
+  else
+    LineBase := Y * BytesPerRow;
+  for Col := 0 to BytesPerRow - 1 do
   begin
     Idx := Offset + LineBase + Col;
     if (Idx >= 0) and (Idx < DataLen) then
@@ -217,23 +231,6 @@ begin
   SetLength(Result, OutLen);  // trim any over-allocation from a short final block
 end;
 
-class function TAmstradScreen.GetScreenData(const Data: array of byte): TDiskByteArray;
-begin
-  if IsMJHCompressed(Data) then
-    Result := DecompressMJH(Data)
-  else
-  begin
-    SetLength(Result, Length(Data));
-    if Length(Data) > 0 then
-      Move(Data[0], Result[0], Length(Data));
-  end;
-
-  // A real screen is ~16K; MJH window (.WIN) clips and other files decompress
-  // to something smaller, so reject anything outside the valid screen range.
-  if not IsValidScreenSize(Length(Result)) then
-    Result := nil;
-end;
-
 const
   // A mode is judged "banded" when its busiest within-byte edge phase exceeds
   // the average within-byte phase by these factors. Decoding data at too high a
@@ -255,9 +252,10 @@ const
 // the busiest within-byte edge phase to the mean within-byte phase (>= 1, higher
 // means more banding) and reports the overall edge fraction via OverallEdgeFrac.
 function ModeBandingScore(const Data: array of byte; Mode: TAmstradMode;
-  Offset: integer; out OverallEdgeFrac: Double): Double;
+  Offset, BytesPerRow, Rows: integer; Interleaved: boolean;
+  out OverallEdgeFrac: Double): Double;
 var
-  PixelsPerLine, PixelsPerByte, Y, X, Phase, NumPhases: integer;
+  PixelsPerLine, PixelsPerByte, RowPixels, Y, X, Phase, NumPhases: integer;
   Row: array of integer;
   PhaseEdges, PhaseBounds: array of int64;
   TotalEdges, TotalBounds: int64;
@@ -272,7 +270,8 @@ begin
   if PixelsPerByte < 2 then
     Exit;  // need at least one within-byte boundary to measure
 
-  SetLength(Row, PixelsPerLine);
+  RowPixels := BytesPerRow * PixelsPerByte;
+  SetLength(Row, RowPixels);
   SetLength(PhaseEdges, PixelsPerByte);
   SetLength(PhaseBounds, PixelsPerByte);
   for X := 0 to PixelsPerByte - 1 do
@@ -281,10 +280,10 @@ begin
     PhaseBounds[X] := 0;
   end;
 
-  for Y := 0 to CPCLines - 1 do
+  for Y := 0 to Rows - 1 do
   begin
-    DecodeRow(Data, Mode, Offset, Y, PixelsPerByte, Row);
-    for X := 0 to PixelsPerLine - 2 do
+    DecodeRow(Data, Mode, Offset, Y, PixelsPerByte, BytesPerRow, Interleaved, Row);
+    for X := 0 to RowPixels - 2 do
     begin
       Phase := X mod PixelsPerByte;  // 0..ppb-2 within a byte, ppb-1 crosses bytes
       Inc(PhaseBounds[Phase]);
@@ -324,14 +323,16 @@ begin
     Result := MaxFrac / MeanFrac;
 end;
 
-class function TAmstradScreen.GuessMode(const Data: array of byte;
-  Offset: integer): TAmstradMode;
+// Guess the display mode of an image (screen or window) by looking for the
+// vertical-line banding that appears when data is decoded too high a resolution.
+function GuessModeFor(const Data: array of byte; Offset, BytesPerRow, Rows: integer;
+  Interleaved: boolean): TAmstradMode;
 var
   Score2, Score1, Overall2, Overall1: double;
 begin
   // Start at the highest resolution and step down: a coherent image stays put,
   // banding means the data was authored for a lower-resolution mode.
-  Score2 := ModeBandingScore(Data, amMode2, Offset, Overall2);
+  Score2 := ModeBandingScore(Data, amMode2, Offset, BytesPerRow, Rows, Interleaved, Overall2);
 
   // No horizontal detail at all - nothing to analyse, keep the historical default.
   if Overall2 < FlatEdgeFloor then
@@ -348,15 +349,102 @@ begin
   end;
 
   // Mode 2 banded; retry at mode 1. Coherent -> mode 1, still banded -> mode 0.
-  Score1 := ModeBandingScore(Data, amMode1, Offset, Overall1);
+  Score1 := ModeBandingScore(Data, amMode1, Offset, BytesPerRow, Rows, Interleaved, Overall1);
   if Score1 < Mode1BandingThreshold then
     Result := amMode1
   else
     Result := amMode0;
 end;
 
-class procedure TAmstradScreen.RenderToBitmap(const Data: array of byte;
-  Mode: TAmstradMode; Bitmap: TBitmap; Zoom: integer; Offset: integer);
+// Detect an Advanced OCP Art Studio window clip. The (uncompressed) window ends
+// with a 4-byte block (width in mode-2 pixels, height in lines, spare) preceded
+// by one further byte, so 5 bytes of trailer follow the linear pixel data.
+function ParseWindow(const Data: array of byte; out BytesPerRow, Rows: integer): boolean;
+var
+  Len, PixLen, Width: integer;
+begin
+  Result := False;
+  BytesPerRow := 0;
+  Rows := 0;
+  Len := Length(Data);
+  if Len < 6 then
+    Exit;
+
+  Rows := Data[Len - 2];
+  if (Rows < 1) or (Rows > CPCLines) then
+    Exit;
+
+  PixLen := Len - 5;
+  if (PixLen < 1) or (PixLen mod Rows <> 0) then
+    Exit;
+
+  BytesPerRow := PixLen div Rows;
+  if (BytesPerRow < 1) or (BytesPerRow > CPCBytesPerLine) then
+    Exit;
+
+  // Sanity-check the stored width against the row length so we don't mistake an
+  // arbitrary file for a window: width is in mode-2 pixels, ~8 per stored byte.
+  Width := Data[Len - 4] or (Data[Len - 3] shl 8);
+  if (Width > BytesPerRow * 8) or (Width <= (BytesPerRow - 2) * 8) then
+    Exit;
+
+  Result := True;
+end;
+
+class function TAmstradScreen.LoadImage(const Raw: array of byte;
+  out Image: TAmstradImage): boolean;
+var
+  BytesPerRow, Rows: integer;
+begin
+  Result := False;
+
+  if IsMJHCompressed(Raw) then
+    Image.Data := DecompressMJH(Raw)
+  else
+  begin
+    SetLength(Image.Data, Length(Raw));
+    if Length(Raw) > 0 then
+      Move(Raw[0], Image.Data[0], Length(Raw));
+  end;
+
+  if IsValidScreenSize(Length(Image.Data)) then
+  begin
+    Image.BytesPerRow := CPCBytesPerLine;
+    Image.Rows := CPCLines;
+    Image.Interleaved := True;
+    Image.IsWindow := False;
+    Image.Mode := GuessModeFor(Image.Data, 0, CPCBytesPerLine, CPCLines, True);
+    Result := True;
+  end
+  else if ParseWindow(Image.Data, BytesPerRow, Rows) then
+  begin
+    Image.BytesPerRow := BytesPerRow;
+    Image.Rows := Rows;
+    Image.Interleaved := False;
+    Image.IsWindow := True;
+    Image.Mode := GuessModeFor(Image.Data, 0, BytesPerRow, Rows, False);
+    Result := True;
+  end;
+end;
+
+class function TAmstradScreen.CanDisplay(const Raw: array of byte): boolean;
+var
+  Decoded: TDiskByteArray;
+  BytesPerRow, Rows: integer;
+begin
+  if IsMJHCompressed(Raw) then
+  begin
+    Decoded := DecompressMJH(Raw);
+    Result := IsValidScreenSize(Length(Decoded)) or
+              ParseWindow(Decoded, BytesPerRow, Rows);
+  end
+  else
+    Result := IsValidScreenSize(Length(Raw)) or
+              ParseWindow(Raw, BytesPerRow, Rows);
+end;
+
+class procedure TAmstradScreen.RenderImage(const Image: TAmstradImage;
+  Bitmap: TBitmap; Zoom: integer);
 var
   PenColor: array[0..15] of TColor;
   PixelsPerLine, PixelsPerByte, PixelWidth: integer;
@@ -368,30 +456,34 @@ begin
   if Zoom < 1 then
     Zoom := 1;
 
-  ModeMetrics(Mode, PixelsPerLine, PixelsPerByte);
-  PixelWidth := CPCDisplayWidth div PixelsPerLine;  // 4, 2 or 1
+  ModeMetrics(Image.Mode, PixelsPerLine, PixelsPerByte);
+  PixelWidth := 8 div PixelsPerByte;  // display units per pixel: 4, 2 or 1
 
   for P := 0 to 15 do
     PenColor[P] := RGBToColor(HardwarePalette[DefaultInk[P]].R,
       HardwarePalette[DefaultInk[P]].G, HardwarePalette[DefaultInk[P]].B);
 
-  Bitmap.PixelFormat := pf24bit;
-  Bitmap.Width := CPCDisplayWidth * Zoom;
-  Bitmap.Height := CPCDisplayHeight * Zoom;
-
-  DataLen := Length(Data);
   BlockW := PixelWidth * Zoom;
   BlockH := 2 * Zoom;  // scanlines are doubled to keep a sensible aspect ratio
 
-  for Y := 0 to CPCLines - 1 do
+  Bitmap.PixelFormat := pf24bit;
+  Bitmap.Width := Image.BytesPerRow * PixelsPerByte * BlockW;
+  Bitmap.Height := Image.Rows * BlockH;
+
+  DataLen := Length(Image.Data);
+
+  for Y := 0 to Image.Rows - 1 do
   begin
-    LineBase := ScreenLineBase(Y);
+    if Image.Interleaved then
+      LineBase := ScreenLineBase(Y)
+    else
+      LineBase := Y * Image.BytesPerRow;
     Top := Y * BlockH;
 
-    for Col := 0 to CPCBytesPerLine - 1 do
+    for Col := 0 to Image.BytesPerRow - 1 do
     begin
-      if (Offset + LineBase + Col >= 0) and (Offset + LineBase + Col < DataLen) then
-        B := Data[Offset + LineBase + Col]
+      if (LineBase + Col >= 0) and (LineBase + Col < DataLen) then
+        B := Image.Data[LineBase + Col]
       else
         B := 0;
 
@@ -399,7 +491,7 @@ begin
       begin
         LX := Col * PixelsPerByte + P;
         Left := LX * BlockW;
-        Bitmap.Canvas.Brush.Color := PenColor[DecodePen(B, P, Mode)];
+        Bitmap.Canvas.Brush.Color := PenColor[DecodePen(B, P, Image.Mode)];
         Bitmap.Canvas.FillRect(Left, Top, Left + BlockW, Top + BlockH);
       end;
     end;

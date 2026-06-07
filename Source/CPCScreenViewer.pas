@@ -34,9 +34,8 @@ type
   private
     FDiskName: string;
     FFileName: string;
-    FScreenData: array of byte;
+    FImage: TAmstradImage;
     FZoom: integer;
-    FMode: TAmstradMode;
     procedure BuildZoomMenu;
     procedure btnZoomClick(Sender: TObject);
     procedure ZoomMenuClick(Sender: TObject);
@@ -70,8 +69,7 @@ begin
   FDiskName := '';
   FFileName := '';
   FZoom := 1;
-  FMode := amMode1;
-  SetLength(FScreenData, 0);
+  SetLength(FImage.Data, 0);
   BuildZoomMenu;
 
   // A TSpeedButton's PopupMenu only opens on right-click, so also open the
@@ -82,19 +80,27 @@ end;
 procedure TfrmCPCScreenViewer.UpdateCaption;
 begin
   Caption := Format('%s on %s x%d', [FFileName, FDiskName, FZoom]);
+  if FImage.IsWindow then
+    Caption := Caption + ' (window)';
 end;
 
 procedure TfrmCPCScreenViewer.RenderScreen;
+var
+  ClientW: integer;
 begin
-  if Length(FScreenData) = 0 then
+  if Length(FImage.Data) = 0 then
     Exit;
 
-  TAmstradScreen.RenderToBitmap(FScreenData, FMode, imgScreen.Picture.Bitmap, FZoom);
+  TAmstradScreen.RenderImage(FImage, imgScreen.Picture.Bitmap, FZoom);
 
   imgScreen.Width := imgScreen.Picture.Bitmap.Width;
   imgScreen.Height := imgScreen.Picture.Bitmap.Height;
 
-  ClientWidth := imgScreen.Picture.Bitmap.Width;
+  // A small window can be narrower than the toolbar; keep room for its controls.
+  ClientW := imgScreen.Picture.Bitmap.Width;
+  if ClientW < 240 then
+    ClientW := 240;
+  ClientWidth := ClientW;
   ClientHeight := imgScreen.Picture.Bitmap.Height + toolbar.Height;
 
   UpdateCaption;
@@ -102,31 +108,21 @@ end;
 
 procedure TfrmCPCScreenViewer.LoadScreenFile(DiskImage: TDSKDisk;
   DiskFile: TCPMFile; const DiskName: string);
-var
-  FileData: TDiskByteArray;
-  DataSize: integer;
 begin
   FDiskName := DiskName;
   FFileName := DiskFile.FileName;
 
-  // Raw screen RAM (AMSDOS header stripped), expanding MJH compression if
-  // present. Empty means it is not a valid full-screen image.
-  FileData := TAmstradScreen.GetScreenData(DiskFile.GetData(False));
-  DataSize := Length(FileData);
-
-  if DataSize = 0 then
+  // Decode the file (AMSDOS header stripped, MJH compression expanded) into a
+  // full screen or window image with a guessed mode. Empty means unrecognised.
+  if not TAmstradScreen.LoadImage(DiskFile.GetData(False), FImage) then
   begin
     Caption := 'Invalid screen file';
     Exit;
   end;
 
-  SetLength(FScreenData, DataSize);
-  Move(FileData[0], FScreenData[0], DataSize);
-
-  // Auto-detect the intended mode from banding artifacts; the user can still
-  // override via the dropdown. Setting ItemIndex in code does not fire OnChange.
-  FMode := TAmstradScreen.GuessMode(FScreenData);
-  cmbMode.ItemIndex := Ord(FMode);
+  // Reflect the guessed mode; the user can still override via the dropdown.
+  // Setting ItemIndex in code does not fire OnChange.
+  cmbMode.ItemIndex := Ord(FImage.Mode);
 
   RenderScreen;
 end;
@@ -169,9 +165,9 @@ end;
 procedure TfrmCPCScreenViewer.cmbModeChange(Sender: TObject);
 begin
   case cmbMode.ItemIndex of
-    0: FMode := amMode0;
-    1: FMode := amMode1;
-    2: FMode := amMode2;
+    0: FImage.Mode := amMode0;
+    1: FImage.Mode := amMode1;
+    2: FImage.Mode := amMode2;
   end;
   RenderScreen;
 end;

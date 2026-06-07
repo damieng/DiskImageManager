@@ -384,9 +384,11 @@ begin
     until SectorsLeft = 0;
   end;
 
-  // Strip any headers
+  // Strip any headers. Size is the payload length (it excludes the header), so
+  // the headerless copy takes Size bytes from just past the header - subtracting
+  // HeaderSize here would drop the final HeaderSize bytes of the file.
   if (not WithHeader) and ((HeaderType = 'PLUS3DOS') or (HeaderType = 'AMSDOS')) then
-    Result := Copy(FileData, HeaderSize, Size - HeaderSize)
+    Result := Copy(FileData, HeaderSize, Size)
   else
     Result := Copy(FileData, 0, Size + HeaderSize);
 end;

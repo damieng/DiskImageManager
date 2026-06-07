@@ -855,6 +855,25 @@ object frmMain: TfrmMain
       OnClick = itmSaveSelectedFilesWithHeadersToClick
     end
   end
+  object popDiskImage: TPopupMenu
+    Images = imlSmall
+    Left = 328
+    Top = 304
+    object itmDiskCopyPath: TMenuItem
+      Caption = 'Copy Full Path to Clipboard'
+      Hint = 'Copy the full path of this disk image to the clipboard as text'
+      ImageIndex = 16
+      OnClick = itmDiskCopyPathClick
+    end
+    object itmDiskCloseSep: TMenuItem
+      Caption = '-'
+    end
+    object itmDiskClose: TMenuItem
+      Caption = 'Close'
+      Hint = 'Close this disk image'
+      OnClick = itmCloseClick
+    end
+  end
   object dlgFind: TFindDialog
     Options = [frDown, frHideUpDown, frDisableWholeWord, frHideEntireScope]
     OnFind = dlgFindFind

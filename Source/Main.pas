@@ -128,6 +128,10 @@ type
     itmEditCopy: TMenuItem;
     itmEditSelectAll: TMenuItem;
     popListItem: TPopupMenu;
+    popDiskImage: TPopupMenu;
+    itmDiskClose: TMenuItem;
+    itmDiskCloseSep: TMenuItem;
+    itmDiskCopyPath: TMenuItem;
     itmCopyDetailsClipboard: TMenuItem;
     N7: TMenuItem;
     itmFind: TMenuItem;
@@ -138,6 +142,7 @@ type
     procedure itmCollapseAllClick(Sender: TObject);
     procedure itmCollapseChildrenClick(Sender: TObject);
     procedure itmCopyMapToClipboardClick(Sender: TObject);
+    procedure itmDiskCopyPathClick(Sender: TObject);
     procedure itmExpandAllClick(Sender: TObject);
     procedure itmExpandChildrenClick(Sender: TObject);
     procedure itmFileSectorClick(Sender: TObject);
@@ -831,6 +836,8 @@ begin
   begin
     AllowImageFile := True;
     ObjectData := TObject(tvwMain.Selected.Data);
+    if ObjectData.ClassType = TDSKImage then
+      tvwMain.PopupMenu := popDiskImage;
     if ObjectData.ClassType = TDSKSector then
       tvwMain.PopupMenu := popSector;
     if ObjectData.ClassType = TDSKTrack then
@@ -998,6 +1005,15 @@ begin
   if (tvwMain.Selected <> nil) then
     CloseImage(GetCurrentImage);
   Settings.Save();
+end;
+
+procedure TfrmMain.itmDiskCopyPathClick(Sender: TObject);
+var
+  Image: TDSKImage;
+begin
+  Image := GetCurrentImage;
+  if Image <> nil then
+    Clipboard.AsText := Image.FileName;
 end;
 
 procedure TfrmMain.itmExitClick(Sender: TObject);
@@ -1452,13 +1468,12 @@ begin
 
   // Amstrad CPC screen dumps: roughly 16K files (raw screen RAM carries no
   // header, and some carry a few extra bytes spilling into a 17th block), plus
-  // MJH-compressed Advanced OCP Art Studio screens. Compressed files fail the
-  // size check, so confirm they expand to a full screen (this rejects the
-  // smaller .WIN window clips, which are also MJH but not full screens).
-  // PLUS3DOS files are handled by the Spectrum viewers below.
+  // Advanced OCP Art Studio screens and .WIN window clips (both optionally
+  // MJH-compressed). Compressed files fail the size check, so confirm the data
+  // decodes to a screen or window. PLUS3DOS files go to the Spectrum viewers.
   if (DiskFile.HeaderType <> 'PLUS3DOS') and
      (TAmstradScreen.IsValidScreenSize(DiskFile.Size) or
-      (Length(TAmstradScreen.GetScreenData(DiskFile.GetData(False))) > 0)) then
+      TAmstradScreen.CanDisplay(DiskFile.GetData(False))) then
   begin
     ShowCPCScreenViewer(DiskImage.Disk, DiskFile, DiskName);
     Exit;
