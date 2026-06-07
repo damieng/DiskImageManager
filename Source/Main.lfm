@@ -719,7 +719,7 @@ object frmMain: TfrmMain
   end
   object dlgSave: TSaveDialog
     DefaultExt = '.*.dsk'
-    Filter = 'Standard disk image|*.DSK|Extended disk image|*.DSK'
+    Filter = 'Standard disk image|*.DSK|Extended disk image|*.DSK|MGT/SAM image|*.MGT'
     Options = [ofOverwritePrompt, ofHideReadOnly, ofEnableSizing]
     Left = 328
     Top = 112

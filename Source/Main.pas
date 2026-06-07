@@ -1133,12 +1133,14 @@ begin
 
   case Image.FileFormat of
     diStandardDSK: dlgSave.FilterIndex := 1;
+    diRawMGT: dlgSave.FilterIndex := 3;
     else
       dlgSave.FilterIndex := 2;
   end;
 
   if dlgSave.Execute then
     case dlgSave.FilterIndex of
+      3: Image.SaveFile(dlgSave.FileName, diRawMGT, Copy, False);
       2: Image.SaveFile(dlgSave.FileName, diExtendedDSK, Copy,
           Settings.RemoveEmptyTracks);
       1:

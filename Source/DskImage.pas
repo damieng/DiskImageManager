@@ -35,7 +35,7 @@ type
   TDSKSpecification = class;
 
   // Image
-  TDSKImageFormat = (diStandardDSK, diExtendedDSK, diNotYetSaved, diInvalid);
+  TDSKImageFormat = (diStandardDSK, diExtendedDSK, diRawMGT, diNotYetSaved, diInvalid);
 
   TDSKImage = class(TObject)
   private
@@ -50,6 +50,7 @@ type
     function LoadFileMGT(DiskFile: TStream): boolean;
     function RecoverExtTrackSize(DiskFile: TStream; ExpTrack, ExpSide: integer): integer;
     function SaveFileDSK(DiskFile: TFileStream; SaveFileFormat: TDSKImageFormat; Compress: boolean): boolean;
+    function SaveFileMGT(DiskFile: TFileStream): boolean;
   public
     FileFormat: TDSKImageFormat;
     Messages: TStringList;
@@ -330,6 +331,7 @@ const
   DSKImageFormats: array[TDSKImageFormat] of string = (
     'Standard DSK',
     'Extended DSK',
+    'MGT image',
     'Not yet saved',
     'Invalid'
     );
@@ -464,10 +466,9 @@ begin
   end
   else if SameText(ExtractFileExt(FileName), '.mgt') and (Stream.Size = MGTRawSize) then
   begin
-    // Raw MGT/SAM image: a headerless sector dump, treated in memory as a
-    // standard disk so it can be browsed (and saved out as a DSK).
+    // Raw MGT/SAM image: a headerless sector dump.
     Stream.Seek(0, soFromBeginning);
-    FileFormat := diStandardDSK;
+    FileFormat := diRawMGT;
     LoadFileMGT(Stream);
     FIsChanged := False;
   end
@@ -881,6 +882,7 @@ begin
     case SaveFileFormat of
       diStandardDSK: Result := SaveFileDSK(DiskFile, diStandardDSK, False);
       diExtendedDSK: Result := SaveFileDSK(DiskFile, diExtendedDSK, Compress);
+      diRawMGT: Result := SaveFileMGT(DiskFile);
       else
         MessageDlg(SysUtils.Format('Unknown file format %i', [SaveFileFormat]), mtError, [mbOK], 0);
     end;
@@ -1037,6 +1039,55 @@ begin
       end;
     DiskFile.WriteByte(0); // Not in the spec but in the SAMdisk images
   end;
+
+  Result := True;
+end;
+
+// Save a raw MGT/SAM image: a headerless dump of 2 sides x 80 tracks x 10
+// sectors x 512 bytes, sides stored successively (all of side 0, then all of
+// side 1). Sectors are written in ID order 1..10; anything missing is written
+// as 512 filler bytes so the file is always exactly MGTRawSize.
+function TDSKImage.SaveFileMGT(DiskFile: TFileStream): boolean;
+const
+  MGTSides = 2;
+  MGTTracks = 80;
+  MGTSectorsPerTrack = 10;
+  MGTSectorSize = 512;
+  MGTFirstSectorID = 1;
+var
+  SIdx, TIdx, SectorID, ByteIdx: integer;
+  Blank: array[0..MGTSectorSize - 1] of byte;
+  Sector: TDSKSector;
+  Track: TDSKTrack;
+begin
+  FillChar(Blank, SizeOf(Blank), 0);
+
+  for SIdx := 0 to MGTSides - 1 do
+    for TIdx := 0 to MGTTracks - 1 do
+    begin
+      Track := nil;
+      if (SIdx < Disk.Sides) and (TIdx < Disk.Side[SIdx].Tracks) then
+        Track := Disk.Side[SIdx].Track[TIdx];
+
+      for SectorID := MGTFirstSectorID to MGTFirstSectorID + MGTSectorsPerTrack - 1 do
+      begin
+        Sector := nil;
+        if Track <> nil then
+          Sector := Track.GetLogicalSectorByID(SectorID);
+
+        if (Sector <> nil) and (Sector.DataSize >= MGTSectorSize) then
+          DiskFile.WriteBuffer(Sector.Data, MGTSectorSize)
+        else if Sector <> nil then
+        begin
+          // Short sector: write what we have, then pad to 512.
+          DiskFile.WriteBuffer(Sector.Data, Sector.DataSize);
+          for ByteIdx := Sector.DataSize to MGTSectorSize - 1 do
+            DiskFile.WriteByte(0);
+        end
+        else
+          DiskFile.WriteBuffer(Blank, MGTSectorSize);
+      end;
+    end;
 
   Result := True;
 end;
