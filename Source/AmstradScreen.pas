@@ -36,6 +36,10 @@ type
     // Decompress concatenated "MJH" RLE blocks into raw screen bytes. Returns an
     // empty array if Data is not a valid MJH stream.
     class function DecompressMJH(const Data: array of byte): TDiskByteArray;
+    // Return displayable screen bytes from a file's data, expanding MJH
+    // compression if present. Returns an empty array unless the result is a
+    // valid full-screen size (so .WIN window clips and non-screens are rejected).
+    class function GetScreenData(const Data: array of byte): TDiskByteArray;
     // Guess the intended graphics mode by looking for the vertical-line/banding
     // artifacts that appear when screen data is decoded at too high a resolution.
     class function GuessMode(const Data: array of byte; Offset: integer = 0): TAmstradMode;
@@ -211,6 +215,23 @@ begin
   end;
 
   SetLength(Result, OutLen);  // trim any over-allocation from a short final block
+end;
+
+class function TAmstradScreen.GetScreenData(const Data: array of byte): TDiskByteArray;
+begin
+  if IsMJHCompressed(Data) then
+    Result := DecompressMJH(Data)
+  else
+  begin
+    SetLength(Result, Length(Data));
+    if Length(Data) > 0 then
+      Move(Data[0], Result[0], Length(Data));
+  end;
+
+  // A real screen is ~16K; MJH window (.WIN) clips and other files decompress
+  // to something smaller, so reject anything outside the valid screen range.
+  if not IsValidScreenSize(Length(Result)) then
+    Result := nil;
 end;
 
 const

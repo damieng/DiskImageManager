@@ -1,0 +1,73 @@
+object frmZXScreenViewer: TfrmZXScreenViewer
+  Left = 603
+  Height = 417
+  Top = 287
+  Width = 512
+  Caption = 'ZX Screen Viewer'
+  ClientHeight = 417
+  ClientWidth = 512
+  Color = clBtnFace
+  DesignTimePPI = 120
+  Font.CharSet = ANSI_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -14
+  Font.Name = 'Tahoma'
+  Position = poScreenCenter
+  LCLVersion = '4.2.0.0'
+  OnCreate = FormCreate
+  object imgScreen: TImage
+    Left = 0
+    Height = 384
+    Top = 33
+    Width = 512
+    Align = alClient
+  end
+  object toolbar: TPanel
+    Left = 0
+    Height = 33
+    Top = 0
+    Width = 512
+    Align = alTop
+    ClientHeight = 33
+    ClientWidth = 512
+    ParentBackground = False
+    TabOrder = 0
+    object btnZoom: TSpeedButton
+      Left = 8
+      Height = 24
+      Top = 5
+      Width = 24
+      Color = clForm
+      Flat = True
+      Images = imlToolbar
+      ImageIndex = 0
+      PopupMenu = popZoom
+    end
+  end
+  object imlToolbar: TImageList
+    Height = 24
+    Width = 24
+    Left = 320
+    Bitmap = {
+      4C7A010000001800000018000000E50000000000000078DAFBFFFF3FC3FF7AAD
+      FF700CE2538AD1CD43E29F3973E6FFF51A7B8234481F2E1A9FF9C400A01D7F48
+      723F1043F550C77C2C18EA37AA990F0F2B5CEE7FFFE4FFFFF31B68E7FEF3EB21
+      E1B7BD8336EE0781DD7D083BFEFDA34DF863B1836AEEC761074DD20F921D674E
+      9FA6AEFBD1EC78B9B0F0DF7F06064652DD0FCAFB84F0F3C565D0BCA9DD0FB7A3
+      4E3BFE7F83D61D7CEE27B1FC6A47B1A341AB8150D948B27DC87660319F22F763
+      D8A1759CAAEE6FD08A0186793918D76B1FC656775018FEB751CA6022EA26AA84
+      170DCD23B5BEA155FD8BAF5E25962664FEA00B0F3C18004F83E661
+    }
+  end
+  object popZoom: TPopupMenu
+    Left = 467
+    Top = 5
+  end
+  object tmrFlash: TTimer
+    Enabled = False
+    Interval = 640
+    OnTimer = tmrFlashTimer
+    Left = 400
+    Top = 5
+  end
+end

@@ -30,7 +30,7 @@
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="2"/>
       <MinorVersionNr Value="11"/>
-      <BuildNr Value="125"/>
+      <BuildNr Value="127"/>
       <StringTable CompanyName="Envy Technologies" InternalName="Disk Image Manager" LegalCopyright="Copyright 2002-2026 Damien Guard." OriginalFilename="DiskImageManager.exe" ProductName="Disk Image Manager"/>
     </VersionInfo>
     <BuildModes Count="2">
@@ -187,9 +187,9 @@
         <IsPartOfProject Value="True"/>
       </Unit16>
       <Unit17>
-        <Filename Value="GraphicsFileViewer.pas"/>
+        <Filename Value="ZXScreenViewer.pas"/>
         <IsPartOfProject Value="True"/>
-        <ComponentName Value="frmGraphicsFileViewer"/>
+        <ComponentName Value="frmZXScreenViewer"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit17>

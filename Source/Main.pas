@@ -16,7 +16,7 @@ interface
 uses
   DiskMap, DskImage, Utils, About, Options, SectorProperties,
   TrackProperties, Settings, FileSystem, MGTFileSystem, ListViewPresenter,
-  Comparers, FileViewer, SinclairBasic, GraphicsFileViewer, SpectrumScreen,
+  Comparers, FileViewer, SinclairBasic, ZXScreenViewer, SpectrumScreen,
   CPCScreenViewer, AmstradScreen,
   Classes, Graphics, SysUtils, Forms, Dialogs, Menus,
   ComCtrls, ExtCtrls, Controls,
@@ -1451,10 +1451,14 @@ begin
   end;
 
   // Amstrad CPC screen dumps: roughly 16K files (raw screen RAM carries no
-  // header, and some carry a few extra bytes spilling into a 17th block).
+  // header, and some carry a few extra bytes spilling into a 17th block), plus
+  // MJH-compressed Advanced OCP Art Studio screens. Compressed files fail the
+  // size check, so confirm they expand to a full screen (this rejects the
+  // smaller .WIN window clips, which are also MJH but not full screens).
   // PLUS3DOS files are handled by the Spectrum viewers below.
   if (DiskFile.HeaderType <> 'PLUS3DOS') and
-     TAmstradScreen.IsValidScreenSize(DiskFile.Size) then
+     (TAmstradScreen.IsValidScreenSize(DiskFile.Size) or
+      (Length(TAmstradScreen.GetScreenData(DiskFile.GetData(False))) > 0)) then
   begin
     ShowCPCScreenViewer(DiskImage.Disk, DiskFile, DiskName);
     Exit;
@@ -1467,7 +1471,7 @@ begin
   // Check if this is a SCREEN$ file (6912 bytes with color, 6144 bytes without)
   if TSpectrumScreen.IsValidScreenSize(DiskFile.Size - DiskFile.HeaderSize) then
   begin
-    ShowScreenViewer(DiskImage.Disk, DiskFile, DiskName);
+    ShowZXScreenViewer(DiskImage.Disk, DiskFile, DiskName);
     Exit;
   end;
 

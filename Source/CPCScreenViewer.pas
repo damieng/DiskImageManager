@@ -109,16 +109,12 @@ begin
   FDiskName := DiskName;
   FFileName := DiskFile.FileName;
 
-  // Raw screen RAM, stripped of any AMSDOS header
-  FileData := DiskFile.GetData(False);
-
-  // Advanced OCP Art Studio screens are MJH-RLE compressed; expand them first.
-  if TAmstradScreen.IsMJHCompressed(FileData) then
-    FileData := TAmstradScreen.DecompressMJH(FileData);
-
+  // Raw screen RAM (AMSDOS header stripped), expanding MJH compression if
+  // present. Empty means it is not a valid full-screen image.
+  FileData := TAmstradScreen.GetScreenData(DiskFile.GetData(False));
   DataSize := Length(FileData);
 
-  if not TAmstradScreen.IsValidScreenSize(DataSize) then
+  if DataSize = 0 then
   begin
     Caption := 'Invalid screen file';
     Exit;

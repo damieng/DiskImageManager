@@ -1,9 +1,9 @@
-unit GraphicsFileViewer;
+unit ZXScreenViewer;
 
 {$MODE Delphi}
 
 {
-  Disk Image Manager - Graphics file viewer for Spectrum SCREEN$ files
+  Disk Image Manager - ZX Spectrum SCREEN$ viewer window
 
   Copyright (c) Damien Guard. All rights reserved.
   Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,21 +14,21 @@ unit GraphicsFileViewer;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, ExtCtrls, ComCtrls, StdCtrls,
-  DskImage, FileSystem, Utils, SpectrumScreen;
+  Classes, SysUtils, Types, Forms, Controls, Graphics, ExtCtrls, ComCtrls,
+  StdCtrls, Buttons, Menus, DskImage, FileSystem, Utils, SpectrumScreen;
 
 type
 
-  { TfrmGraphicsFileViewer }
+  { TfrmZXScreenViewer }
 
-  TfrmGraphicsFileViewer = class(TForm)
-    lblZoom: TLabel;
-    toolbar: TToolBar;
+  TfrmZXScreenViewer = class(TForm)
+    btnZoom: TSpeedButton;
+    imlToolbar: TImageList;
     imgScreen: TImage;
-    tckZoom: TTrackBar;
+    popZoom: TPopupMenu;
+    toolbar: TPanel;
     tmrFlash: TTimer;
     procedure FormCreate(Sender: TObject);
-    procedure tckZoomChange(Sender: TObject);
     procedure tmrFlashTimer(Sender: TObject);
   private
     FDiskName: string;
@@ -39,6 +39,10 @@ type
     FFlashPhase: boolean;
     FBitmapNormal: TBitmap;
     FBitmapFlash: TBitmap;
+    procedure BuildZoomMenu;
+    procedure btnZoomClick(Sender: TObject);
+    procedure ZoomMenuClick(Sender: TObject);
+    procedure UpdateZoomChecks;
     procedure UpdateCaption;
     procedure RenderScreen;
     procedure RenderBothPhases;
@@ -50,23 +54,24 @@ type
     property FileName: string read FFileName write FFileName;
   end;
 
-procedure ShowScreenViewer(DiskImage: TDSKDisk; DiskFile: TCPMFile; const DiskName: string);
+procedure ShowZXScreenViewer(DiskImage: TDSKDisk; DiskFile: TCPMFile; const DiskName: string);
 
 implementation
 
+// Note: editing ZXScreenViewer.lfm alone will not refresh the embedded form
+// resource unless this unit also recompiles, so keep them changing together.
 {$R *.lfm}
 
-procedure ShowScreenViewer(DiskImage: TDSKDisk; DiskFile: TCPMFile; const DiskName: string);
+procedure ShowZXScreenViewer(DiskImage: TDSKDisk; DiskFile: TCPMFile; const DiskName: string);
 var
-  Viewer: TfrmGraphicsFileViewer;
+  Viewer: TfrmZXScreenViewer;
 begin
-  Viewer := TfrmGraphicsFileViewer.Create(Application);
+  Viewer := TfrmZXScreenViewer.Create(Application);
   Viewer.LoadScreenFile(DiskImage, DiskFile, DiskName);
   Viewer.Show;
-  Viewer.SetZoom(2);
 end;
 
-procedure TfrmGraphicsFileViewer.FormCreate(Sender: TObject);
+procedure TfrmZXScreenViewer.FormCreate(Sender: TObject);
 begin
   FDiskName := '';
   FFileName := '';
@@ -74,12 +79,18 @@ begin
   FFlashPhase := False;
   SetLength(FScreenData, 0);
 
-  // Create bitmaps for flash animation
+  // Bitmaps for flash animation
   FBitmapNormal := TBitmap.Create;
   FBitmapFlash := TBitmap.Create;
+
+  BuildZoomMenu;
+
+  // A TSpeedButton's PopupMenu only opens on right-click, so also open the
+  // zoom menu on a normal left-click.
+  btnZoom.OnClick := btnZoomClick;
 end;
 
-destructor TfrmGraphicsFileViewer.Destroy;
+destructor TfrmZXScreenViewer.Destroy;
 begin
   tmrFlash.Enabled := False;
   FBitmapNormal.Free;
@@ -87,17 +98,53 @@ begin
   inherited Destroy;
 end;
 
-procedure TfrmGraphicsFileViewer.UpdateCaption;
+procedure TfrmZXScreenViewer.BuildZoomMenu;
+var
+  I: integer;
+  Item: TMenuItem;
 begin
-  Caption := Format('%s on %s x%d', [FFileName, FDiskName, FZoom])
+  for I := 1 to 4 do
+  begin
+    Item := TMenuItem.Create(popZoom);
+    Item.Caption := Format('%d' + #$C3#$97, [I]);  // e.g. "2x" with a multiply sign
+    Item.Tag := I;
+    Item.RadioItem := True;
+    Item.OnClick := ZoomMenuClick;
+    popZoom.Items.Add(Item);
+  end;
 end;
 
-procedure TfrmGraphicsFileViewer.SetZoom(NewZoom: integer);
+procedure TfrmZXScreenViewer.btnZoomClick(Sender: TObject);
+var
+  P: TPoint;
+begin
+  P := btnZoom.ControlToScreen(Point(0, btnZoom.Height));
+  popZoom.PopUp(P.X, P.Y);
+end;
+
+procedure TfrmZXScreenViewer.ZoomMenuClick(Sender: TObject);
+begin
+  SetZoom(TMenuItem(Sender).Tag);
+end;
+
+procedure TfrmZXScreenViewer.UpdateZoomChecks;
+var
+  I: integer;
+begin
+  for I := 0 to popZoom.Items.Count - 1 do
+    popZoom.Items[I].Checked := popZoom.Items[I].Tag = FZoom;
+end;
+
+procedure TfrmZXScreenViewer.UpdateCaption;
+begin
+  Caption := Format('%s on %s x%d', [FFileName, FDiskName, FZoom]);
+end;
+
+procedure TfrmZXScreenViewer.SetZoom(NewZoom: integer);
 begin
   if NewZoom = FZoom then Exit;
 
   FZoom := NewZoom;
-
   UpdateCaption;
 
   // Re-render both phases at new zoom level
@@ -106,10 +153,10 @@ begin
   else
     RenderScreen;
 
-  tckZoom.Position := FZoom;
+  UpdateZoomChecks;
 end;
 
-procedure TfrmGraphicsFileViewer.RenderBothPhases;
+procedure TfrmZXScreenViewer.RenderBothPhases;
 var
   NewWidth, NewHeight: integer;
 begin
@@ -143,7 +190,7 @@ begin
   ClientHeight := NewHeight + toolbar.Height;
 end;
 
-procedure TfrmGraphicsFileViewer.RenderScreen;
+procedure TfrmZXScreenViewer.RenderScreen;
 var
   NewWidth, NewHeight: integer;
 begin
@@ -169,7 +216,7 @@ begin
   ClientHeight := NewHeight + toolbar.Height;
 end;
 
-procedure TfrmGraphicsFileViewer.LoadScreenFile(DiskImage: TDSKDisk;
+procedure TfrmZXScreenViewer.LoadScreenFile(DiskImage: TDSKDisk;
   DiskFile: TCPMFile; const DiskName: string);
 var
   FileData: TDiskByteArray;
@@ -203,12 +250,7 @@ begin
   SetZoom(2);
 end;
 
-procedure TfrmGraphicsFileViewer.tckZoomChange(Sender: TObject);
-begin
-  SetZoom(tckZoom.Position);
-end;
-
-procedure TfrmGraphicsFileViewer.tmrFlashTimer(Sender: TObject);
+procedure TfrmZXScreenViewer.tmrFlashTimer(Sender: TObject);
 begin
   // Toggle flash phase
   FFlashPhase := not FFlashPhase;
