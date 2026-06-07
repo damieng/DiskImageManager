@@ -14,7 +14,7 @@ unit AmstradScreen;
 interface
 
 uses
-  Graphics, Classes, SysUtils;
+  Graphics, Classes, SysUtils, Utils;
 
 const
   CPCScreenSize = 16384;       // Standard CPC screen RAM dump
@@ -31,6 +31,11 @@ type
   TAmstradScreen = class
   public
     class function IsValidScreenSize(Size: integer): boolean;
+    // True if Data begins with an "MJH" Advanced OCP Art Studio compressed block.
+    class function IsMJHCompressed(const Data: array of byte): boolean;
+    // Decompress concatenated "MJH" RLE blocks into raw screen bytes. Returns an
+    // empty array if Data is not a valid MJH stream.
+    class function DecompressMJH(const Data: array of byte): TDiskByteArray;
     // Guess the intended graphics mode by looking for the vertical-line/banding
     // artifacts that appear when screen data is decoded at too high a resolution.
     class function GuessMode(const Data: array of byte; Offset: integer = 0): TAmstradMode;
@@ -147,6 +152,65 @@ begin
   // Accept anything from a bare visible image up to a screen with a small
   // header/trailer (some .SCR files carry a few extra bytes and span 17 blocks)
   Result := (Size >= CPCVisibleBytes) and (Size <= CPCScreenMaxBytes);
+end;
+
+class function TAmstradScreen.IsMJHCompressed(const Data: array of byte): boolean;
+begin
+  Result := (Length(Data) >= 5) and (Data[0] = Ord('M')) and
+            (Data[1] = Ord('J')) and (Data[2] = Ord('H'));
+end;
+
+class function TAmstradScreen.DecompressMJH(const Data: array of byte): TDiskByteArray;
+const
+  MJHMarker = $01;
+var
+  Pos, Len, OutLen, Produced, Count, BlockLen, I: integer;
+  Value: byte;
+begin
+  Result := nil;
+  Len := Length(Data);
+  Pos := 0;
+  OutLen := 0;
+
+  // The file is one or more concatenated "MJH" blocks (each a quarter screen).
+  while (Pos + 5 <= Len) and (Data[Pos] = Ord('M')) and
+        (Data[Pos + 1] = Ord('J')) and (Data[Pos + 2] = Ord('H')) do
+  begin
+    BlockLen := Data[Pos + 3] or (Data[Pos + 4] shl 8);  // uncompressed length
+    Pos := Pos + 5;
+    SetLength(Result, OutLen + BlockLen);
+
+    Produced := 0;
+    while (Produced < BlockLen) and (Pos < Len) do
+    begin
+      if Data[Pos] = MJHMarker then
+      begin
+        if Pos + 2 >= Len then
+          Break;  // truncated run packet
+        Count := Data[Pos + 1];
+        Value := Data[Pos + 2];
+        Pos := Pos + 3;
+        if Count = 0 then
+          Count := 256;  // a count of zero means 256 repeats
+        if Count > BlockLen - Produced then
+          Count := BlockLen - Produced;  // never overrun the block (surplus ignored)
+        for I := 1 to Count do
+        begin
+          Result[OutLen + Produced] := Value;
+          Inc(Produced);
+        end;
+      end
+      else
+      begin
+        Result[OutLen + Produced] := Data[Pos];
+        Inc(Pos);
+        Inc(Produced);
+      end;
+    end;
+    OutLen := OutLen + Produced;
+  end;
+
+  SetLength(Result, OutLen);  // trim any over-allocation from a short final block
 end;
 
 const

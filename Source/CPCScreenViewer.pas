@@ -111,6 +111,11 @@ begin
 
   // Raw screen RAM, stripped of any AMSDOS header
   FileData := DiskFile.GetData(False);
+
+  // Advanced OCP Art Studio screens are MJH-RLE compressed; expand them first.
+  if TAmstradScreen.IsMJHCompressed(FileData) then
+    FileData := TAmstradScreen.DecompressMJH(FileData);
+
   DataSize := Length(FileData);
 
   if not TAmstradScreen.IsValidScreenSize(DataSize) then
