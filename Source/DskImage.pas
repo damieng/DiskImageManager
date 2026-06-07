@@ -20,6 +20,7 @@ const
   MaxSectorSize = 32768;
   Alt8KSize = 6144;
   FDCSectorSizes: array[0..8] of word = (128, 256, 512, 1024, 2048, 4096, 8192, 16384, MaxSectorSize);
+  MGTRawSize = 819200;  // Raw MGT/SAM image: 2 sides x 80 tracks x 10 sectors x 512 bytes
 
 type
   // Physical disk structure
@@ -46,6 +47,7 @@ type
     FIsChanged: boolean;
     procedure SetIsChanged(NewValue: boolean);
     function LoadFileDSK(DiskFile: TStream): boolean;
+    function LoadFileMGT(DiskFile: TStream): boolean;
     function RecoverExtTrackSize(DiskFile: TStream; ExpTrack, ExpSide: integer): integer;
     function SaveFileDSK(DiskFile: TFileStream; SaveFileFormat: TDSKImageFormat; Compress: boolean): boolean;
   public
@@ -460,6 +462,15 @@ begin
     LoadFileDSK(Stream);
     FIsChanged := False;
   end
+  else if SameText(ExtractFileExt(FileName), '.mgt') and (Stream.Size = MGTRawSize) then
+  begin
+    // Raw MGT/SAM image: a headerless sector dump, treated in memory as a
+    // standard disk so it can be browsed (and saved out as a DSK).
+    Stream.Seek(0, soFromBeginning);
+    FileFormat := diStandardDSK;
+    LoadFileMGT(Stream);
+    FIsChanged := False;
+  end
   else
   begin
     MessageDlg('Load failure', FileName + ' is unknown file type. Load aborted.', mtWarning, [mbOK], 0);
@@ -792,6 +803,64 @@ begin
         end;
     end;
   end;
+  Result := True;
+end;
+
+// Load a raw MGT/SAM image: a headerless dump of 2 sides x 80 tracks x 10
+// sectors x 512 bytes. Sides are stored successively (all of side 0, then all
+// of side 1); each track holds sectors 1..10 in order, 512 bytes each.
+function TDSKImage.LoadFileMGT(DiskFile: TStream): boolean;
+const
+  MGTSides = 2;
+  MGTTracks = 80;
+  MGTSectorsPerTrack = 10;
+  MGTSectorSize = 512;
+  MGTFirstSectorID = 1;
+  MGTFDCSize = 2;     // FDC size code for 512-byte sectors
+  MGTGapLength = $17; // standard MGT/+3 format gap
+var
+  SIdx, TIdx, EIdx: integer;
+begin
+  Result := False;
+
+  Disk.Sides := MGTSides;
+  for SIdx := 0 to MGTSides - 1 do
+  begin
+    Disk.Side[SIdx].Side := SIdx;
+    Disk.Side[SIdx].Tracks := MGTTracks;
+  end;
+
+  for SIdx := 0 to MGTSides - 1 do
+    for TIdx := 0 to MGTTracks - 1 do
+      with Disk.Side[SIdx].Track[TIdx] do
+      begin
+        Track := TIdx;
+        Side := SIdx;
+        // SAM/+D number side-1 tracks as physical track + 128, which is how the
+        // directory's start-track byte is encoded; mirror it so GetLogicalTrack
+        // resolves files on either side.
+        Logical := (SIdx * 128) + TIdx;
+        Sectors := MGTSectorsPerTrack;
+        SectorSize := MGTSectorSize;
+        Filler := 0;
+        GapLength := MGTGapLength;
+
+        for EIdx := 0 to MGTSectorsPerTrack - 1 do
+          with Sector[EIdx] do
+          begin
+            Sector := EIdx;
+            Track := TIdx;
+            Side := SIdx;
+            ID := MGTFirstSectorID + EIdx;
+            FDCSize := MGTFDCSize;
+            FDCStatus[1] := 0;
+            FDCStatus[2] := 0;
+            DataSize := MGTSectorSize;
+            AdvertisedSize := MGTSectorSize;
+            DiskFile.ReadBuffer(Data, MGTSectorSize);
+          end;
+      end;
+
   Result := True;
 end;
 
