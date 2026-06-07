@@ -13,6 +13,7 @@ These images are traditionally created with CPDRead under DOS but Simon Owen's m
 * Conversion between standard and extended image formats
 * Identification of tool that created the image
 * List all ASCII strings found on a disk image
+* Copy a disk image's full path to the clipboard
 
 ### Analysis
 
@@ -22,8 +23,16 @@ These images are traditionally created with CPDRead under DOS but Simon Owen's m
 * Save visual map to bitmap
 * Hex and ASCII display of sector data
 * Search sector data for ASCII data
-* Sinclair BASIC file viewer with syntax highlighting
-* Spectrum screen$ display
+* Recovery of Extended DSK images that are missing their track-size table
+
+### File viewers
+
+* Sinclair BASIC viewer with syntax highlighting
+* Amstrad (Locomotive) BASIC viewer with syntax highlighting
+* Spectrum SCREEN$ viewer with FLASH animation and zoom
+* Amstrad CPC screen viewer for modes 0, 1 and 2 with automatic mode detection and zoom
+* Advanced OCP Art Studio compressed screens (MJH run-length encoding) and window (.WIN) clips
+* Save any displayed Spectrum or CPC image to PNG or BMP at native resolution
 
 ### Disk format identification
 
@@ -68,8 +77,9 @@ Identification of copy-protection schemes both signed and somtimes unsigned:
 ### File system
 
 * Can list a CP/M file system such as used on +3, PCW and CPC & Tatung Einstein
-* Understands +3 DOS and CPC file headers
+* Understands +3 DOS and AMSDOS (CPC) file headers, decoding load/exec addresses and file type
 * Binary export/saving available for individual or all files with & without headers
+* Rename files in place
 
 ### Modification
 
@@ -126,10 +136,8 @@ To be able to build and visually edit the forms you will need to install the sup
 
 ## Future plans
 
-- Rename file
 - File property sheet to view/modify directory entry and headers
 - Optimize disk (+3, CPC) (defrag + interleave)
-- View image files (+3, CPC)
 - Add files to disk
 - Add/remove headers
 
