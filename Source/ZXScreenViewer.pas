@@ -22,6 +22,7 @@ type
   { TfrmZXScreenViewer }
 
   TfrmZXScreenViewer = class(TForm)
+    btnSave: TButton;
     btnZoom: TSpeedButton;
     imlToolbar: TImageList;
     imgScreen: TImage;
@@ -30,6 +31,7 @@ type
     tmrFlash: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure tmrFlashTimer(Sender: TObject);
+    procedure btnSaveClick(Sender: TObject);
   private
     FDiskName: string;
     FFileName: string;
@@ -260,6 +262,26 @@ begin
     imgScreen.Picture.Assign(FBitmapFlash)
   else
     imgScreen.Picture.Assign(FBitmapNormal);
+end;
+
+procedure TfrmZXScreenViewer.btnSaveClick(Sender: TObject);
+var
+  Bitmap: TBitmap;
+begin
+  if Length(FScreenData) = 0 then
+    Exit;
+
+  // Render at native resolution (zoom 1) in the currently shown flash phase.
+  Bitmap := TBitmap.Create;
+  try
+    Bitmap.Width := ScreenWidth;
+    Bitmap.Height := ScreenHeight;
+    Bitmap.PixelFormat := pf24bit;
+    TSpectrumScreen.RenderToBitmap(FScreenData, Bitmap, 1, FFlashPhase);
+    SaveBitmapWithDialog(Self, Bitmap, ChangeFileExt(ExtractFileName(FFileName), '.png'));
+  finally
+    Bitmap.Free;
+  end;
 end;
 
 end.

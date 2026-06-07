@@ -14,7 +14,7 @@ unit Utils;
 interface
 
 uses
-  Classes, Graphics, LCLIntf, SysUtils, ComCtrls, CommCtrl;
+  Classes, Graphics, LCLIntf, SysUtils, ComCtrls, CommCtrl, Dialogs;
 
 const
   BytesPerKB: integer = 1024;
@@ -51,6 +51,11 @@ function CompareByLength(List: TStringList; Index1, Index2: integer): integer;
 procedure DrawBorder(Canvas: TCanvas; var Rect: TRect; BorderStyle: TSpinBorderStyle);
 procedure AutoResizeListView(const ListView: TListView;
   const Mode: integer = LVSCW_AUTOSIZE_BESTFIT);
+
+// Prompt for a filename and save Bitmap as PNG or BMP (chosen by the file
+// extension, defaulting to PNG). SuggestedName seeds the dialog's filename.
+procedure SaveBitmapWithDialog(AOwner: TComponent; Bitmap: TBitmap;
+  const SuggestedName: string);
 
 implementation
 
@@ -338,6 +343,56 @@ var
 begin
   for i := 0 to ListView.Columns.Count - 1 do
     AutoResizeColumn(ListView.Columns[i], Mode);
+end;
+
+procedure SaveBitmapWithDialog(AOwner: TComponent; Bitmap: TBitmap;
+  const SuggestedName: string);
+var
+  Dialog: TSaveDialog;
+  FileName, Ext: string;
+  Png: TPortableNetworkGraphic;
+begin
+  if Bitmap = nil then
+    Exit;
+
+  Dialog := TSaveDialog.Create(AOwner);
+  try
+    Dialog.Title := 'Save image';
+    Dialog.Filter := 'PNG image|*.png|Windows bitmap|*.bmp';
+    Dialog.FilterIndex := 1;
+    Dialog.Options := Dialog.Options + [ofOverwritePrompt];
+    Dialog.FileName := SuggestedName;
+    if not Dialog.Execute then
+      Exit;
+
+    // Pick the format from the typed extension, falling back to the selected
+    // filter (PNG by default) when none was given.
+    FileName := Dialog.FileName;
+    Ext := LowerCase(ExtractFileExt(FileName));
+    if (Ext <> '.png') and (Ext <> '.bmp') then
+    begin
+      if Dialog.FilterIndex = 2 then
+        Ext := '.bmp'
+      else
+        Ext := '.png';
+      FileName := FileName + Ext;
+    end;
+
+    if Ext = '.bmp' then
+      Bitmap.SaveToFile(FileName)  // TBitmap is natively a Windows bitmap
+    else
+    begin
+      Png := TPortableNetworkGraphic.Create;
+      try
+        Png.Assign(Bitmap);
+        Png.SaveToFile(FileName);
+      finally
+        Png.Free;
+      end;
+    end;
+  finally
+    Dialog.Free;
+  end;
 end;
 
 end.

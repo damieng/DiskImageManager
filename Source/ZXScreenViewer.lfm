@@ -43,6 +43,15 @@ object frmZXScreenViewer: TfrmZXScreenViewer
       ImageIndex = 0
       PopupMenu = popZoom
     end
+    object btnSave: TButton
+      Left = 40
+      Height = 25
+      Top = 4
+      Width = 90
+      Caption = 'Save...'
+      TabOrder = 0
+      OnClick = btnSaveClick
+    end
   end
   object imlToolbar: TImageList
     Height = 24

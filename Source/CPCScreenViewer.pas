@@ -22,6 +22,7 @@ type
   { TfrmCPCScreenViewer }
 
   TfrmCPCScreenViewer = class(TForm)
+    btnSave: TButton;
     btnZoom: TSpeedButton;
     cmbMode: TComboBox;
     imlToolbar: TImageList;
@@ -31,6 +32,7 @@ type
     toolbar: TPanel;
     procedure FormCreate(Sender: TObject);
     procedure cmbModeChange(Sender: TObject);
+    procedure btnSaveClick(Sender: TObject);
   private
     FDiskName: string;
     FFileName: string;
@@ -170,6 +172,23 @@ begin
     2: FImage.Mode := amMode2;
   end;
   RenderScreen;
+end;
+
+procedure TfrmCPCScreenViewer.btnSaveClick(Sender: TObject);
+var
+  Bitmap: TBitmap;
+begin
+  if Length(FImage.Data) = 0 then
+    Exit;
+
+  // Render at native resolution (zoom 1) regardless of the on-screen zoom.
+  Bitmap := TBitmap.Create;
+  try
+    TAmstradScreen.RenderImage(FImage, Bitmap, 1);
+    SaveBitmapWithDialog(Self, Bitmap, ChangeFileExt(ExtractFileName(FFileName), '.png'));
+  finally
+    Bitmap.Free;
+  end;
 end;
 
 end.

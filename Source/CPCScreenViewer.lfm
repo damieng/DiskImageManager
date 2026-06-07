@@ -66,6 +66,15 @@ object frmCPCScreenViewer: TfrmCPCScreenViewer
       ImageIndex = 0
       PopupMenu = popZoom
     end
+    object btnSave: TButton
+      Left = 216
+      Height = 25
+      Top = 4
+      Width = 90
+      Caption = 'Save...'
+      TabOrder = 1
+      OnClick = btnSaveClick
+    end
   end
   object imlToolbar: TImageList
     Height = 24
