@@ -122,7 +122,9 @@ begin
   SetLength(FScreenData, DataSize);
   Move(FileData[0], FScreenData[0], DataSize);
 
-  FMode := amMode1;
+  // Auto-detect the intended mode from banding artifacts; the user can still
+  // override via the dropdown. Setting ItemIndex in code does not fire OnChange.
+  FMode := TAmstradScreen.GuessMode(FScreenData);
   cmbMode.ItemIndex := Ord(FMode);
 
   RenderScreen;

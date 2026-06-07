@@ -31,6 +31,9 @@ type
   TAmstradScreen = class
   public
     class function IsValidScreenSize(Size: integer): boolean;
+    // Guess the intended graphics mode by looking for the vertical-line/banding
+    // artifacts that appear when screen data is decoded at too high a resolution.
+    class function GuessMode(const Data: array of byte; Offset: integer = 0): TAmstradMode;
     class procedure RenderToBitmap(const Data: array of byte; Mode: TAmstradMode;
       Bitmap: TBitmap; Zoom: integer; Offset: integer = 0);
   end;
@@ -81,11 +84,190 @@ const
     1, 24, 20, 6, 26, 0, 2, 8, 10, 12, 14, 16, 18, 22, 1, 11
   );
 
+// Pixels across a line and pixels packed per byte for each mode.
+procedure ModeMetrics(Mode: TAmstradMode; out PixelsPerLine, PixelsPerByte: integer);
+begin
+  case Mode of
+    amMode0: begin PixelsPerLine := 160; PixelsPerByte := 2; end;
+    amMode1: begin PixelsPerLine := 320; PixelsPerByte := 4; end;
+  else
+    begin PixelsPerLine := 640; PixelsPerByte := 8; end;
+  end;
+end;
+
+// Byte offset of the first byte of scanline Y, accounting for the CPC screen
+// interleave: 8 scanlines per character row, the rows 2048 bytes apart.
+function ScreenLineBase(Y: integer): integer;
+begin
+  Result := (Y mod 8) * 2048 + (Y div 8) * CPCBytesPerLine;
+end;
+
+// Decode the logical pen (0..15) of pixel Pixel within byte AByte for the mode.
+function DecodePen(AByte: byte; Pixel: integer; Mode: TAmstradMode): integer;
+begin
+  case Mode of
+    amMode0:
+      if Pixel = 0 then
+        Result := ((AByte shr 7) and 1) or (((AByte shr 3) and 1) shl 1) or
+                  (((AByte shr 5) and 1) shl 2) or (((AByte shr 1) and 1) shl 3)
+      else
+        Result := ((AByte shr 6) and 1) or (((AByte shr 2) and 1) shl 1) or
+                  (((AByte shr 4) and 1) shl 2) or ((AByte and 1) shl 3);
+    amMode1:
+      Result := ((AByte shr (7 - Pixel)) and 1) or
+                (((AByte shr (3 - Pixel)) and 1) shl 1);
+  else // amMode2
+    Result := (AByte shr (7 - Pixel)) and 1;
+  end;
+end;
+
+// Decode one scanline into Row (length PixelsPerLine) for the given mode.
+procedure DecodeRow(const Data: array of byte; Mode: TAmstradMode;
+  Offset, Y, PixelsPerByte: integer; var Row: array of integer);
+var
+  Col, P, Idx, DataLen, LineBase: integer;
+  B: byte;
+begin
+  DataLen := Length(Data);
+  LineBase := ScreenLineBase(Y);
+  for Col := 0 to CPCBytesPerLine - 1 do
+  begin
+    Idx := Offset + LineBase + Col;
+    if (Idx >= 0) and (Idx < DataLen) then
+      B := Data[Idx]
+    else
+      B := 0;
+    for P := 0 to PixelsPerByte - 1 do
+      Row[Col * PixelsPerByte + P] := DecodePen(B, P, Mode);
+  end;
+end;
+
 class function TAmstradScreen.IsValidScreenSize(Size: integer): boolean;
 begin
   // Accept anything from a bare visible image up to a screen with a small
   // header/trailer (some .SCR files carry a few extra bytes and span 17 blocks)
   Result := (Size >= CPCVisibleBytes) and (Size <= CPCScreenMaxBytes);
+end;
+
+const
+  // A mode is judged "banded" when its busiest within-byte edge phase exceeds
+  // the average within-byte phase by these factors. Decoding data at too high a
+  // resolution piles edges onto the bit-interleave-aligned boundary, so the
+  // ratio towers; a coherent image spreads edges evenly and stays near 1.
+  //
+  // Two thresholds because the two decision points have different phase counts
+  // (mode 2 has 7 within-byte boundaries, mode 1 has 3) and so different scales.
+  // Calibrated against known mode-0/1 sample screens: mode-1 screens score
+  // <= 1.28 at mode 1 while mode-0 screens score >= 1.60, and every non-mode-2
+  // screen scores >= 1.44 at mode 2. The thresholds sit in those gaps.
+  Mode2BandingThreshold = 1.38;  // below this, mode 2 looks coherent -> mode 2
+  Mode1BandingThreshold = 1.44;  // at/above this, mode 1 still bands -> mode 0
+  // Screens with almost no horizontal detail give no banding signal at all;
+  // treat any overall edge fraction below this as "flat" and fall back to mode 1.
+  FlatEdgeFloor = 0.01;
+
+// Score how strongly a mode shows vertical-line banding. Returns the ratio of
+// the busiest within-byte edge phase to the mean within-byte phase (>= 1, higher
+// means more banding) and reports the overall edge fraction via OverallEdgeFrac.
+function ModeBandingScore(const Data: array of byte; Mode: TAmstradMode;
+  Offset: integer; out OverallEdgeFrac: Double): Double;
+var
+  PixelsPerLine, PixelsPerByte, Y, X, Phase, NumPhases: integer;
+  Row: array of integer;
+  PhaseEdges, PhaseBounds: array of int64;
+  TotalEdges, TotalBounds: int64;
+  EdgeFrac, MaxFrac, SumFrac, MeanFrac: double;
+begin
+  Result := 0;
+  OverallEdgeFrac := 0;
+  Row := nil;
+  PhaseEdges := nil;
+  PhaseBounds := nil;
+  ModeMetrics(Mode, PixelsPerLine, PixelsPerByte);
+  if PixelsPerByte < 2 then
+    Exit;  // need at least one within-byte boundary to measure
+
+  SetLength(Row, PixelsPerLine);
+  SetLength(PhaseEdges, PixelsPerByte);
+  SetLength(PhaseBounds, PixelsPerByte);
+  for X := 0 to PixelsPerByte - 1 do
+  begin
+    PhaseEdges[X] := 0;
+    PhaseBounds[X] := 0;
+  end;
+
+  for Y := 0 to CPCLines - 1 do
+  begin
+    DecodeRow(Data, Mode, Offset, Y, PixelsPerByte, Row);
+    for X := 0 to PixelsPerLine - 2 do
+    begin
+      Phase := X mod PixelsPerByte;  // 0..ppb-2 within a byte, ppb-1 crosses bytes
+      Inc(PhaseBounds[Phase]);
+      if Row[X] <> Row[X + 1] then
+        Inc(PhaseEdges[Phase]);
+    end;
+  end;
+
+  TotalEdges := 0;
+  TotalBounds := 0;
+  for X := 0 to PixelsPerByte - 1 do
+  begin
+    TotalEdges := TotalEdges + PhaseEdges[X];
+    TotalBounds := TotalBounds + PhaseBounds[X];
+  end;
+  if TotalBounds > 0 then
+    OverallEdgeFrac := TotalEdges / TotalBounds;
+
+  // Compare only the within-byte boundaries (phases 0..ppb-2); the cross-byte
+  // boundary reflects genuine adjacent content and is excluded.
+  MaxFrac := 0;
+  SumFrac := 0;
+  NumPhases := 0;
+  for Phase := 0 to PixelsPerByte - 2 do
+    if PhaseBounds[Phase] > 0 then
+    begin
+      EdgeFrac := PhaseEdges[Phase] / PhaseBounds[Phase];
+      SumFrac := SumFrac + EdgeFrac;
+      Inc(NumPhases);
+      if EdgeFrac > MaxFrac then
+        MaxFrac := EdgeFrac;
+    end;
+  if NumPhases = 0 then
+    Exit;
+  MeanFrac := SumFrac / NumPhases;
+  if MeanFrac > 0 then
+    Result := MaxFrac / MeanFrac;
+end;
+
+class function TAmstradScreen.GuessMode(const Data: array of byte;
+  Offset: integer): TAmstradMode;
+var
+  Score2, Score1, Overall2, Overall1: double;
+begin
+  // Start at the highest resolution and step down: a coherent image stays put,
+  // banding means the data was authored for a lower-resolution mode.
+  Score2 := ModeBandingScore(Data, amMode2, Offset, Overall2);
+
+  // No horizontal detail at all - nothing to analyse, keep the historical default.
+  if Overall2 < FlatEdgeFloor then
+  begin
+    Result := amMode1;
+    Exit;
+  end;
+
+  // Mode 2 looks coherent -> the screen was meant for mode 2.
+  if Score2 < Mode2BandingThreshold then
+  begin
+    Result := amMode2;
+    Exit;
+  end;
+
+  // Mode 2 banded; retry at mode 1. Coherent -> mode 1, still banded -> mode 0.
+  Score1 := ModeBandingScore(Data, amMode1, Offset, Overall1);
+  if Score1 < Mode1BandingThreshold then
+    Result := amMode1
+  else
+    Result := amMode0;
 end;
 
 class procedure TAmstradScreen.RenderToBitmap(const Data: array of byte;
@@ -97,34 +279,11 @@ var
   B: byte;
   DataLen: integer;
 
-  function ModePen(AByte: byte; Pixel: integer): integer;
-  begin
-    case Mode of
-      amMode0:
-        if Pixel = 0 then
-          Result := ((AByte shr 7) and 1) or (((AByte shr 3) and 1) shl 1) or
-                    (((AByte shr 5) and 1) shl 2) or (((AByte shr 1) and 1) shl 3)
-        else
-          Result := ((AByte shr 6) and 1) or (((AByte shr 2) and 1) shl 1) or
-                    (((AByte shr 4) and 1) shl 2) or ((AByte and 1) shl 3);
-      amMode1:
-        Result := ((AByte shr (7 - Pixel)) and 1) or
-                  (((AByte shr (3 - Pixel)) and 1) shl 1);
-    else // amMode2
-      Result := (AByte shr (7 - Pixel)) and 1;
-    end;
-  end;
-
 begin
   if Zoom < 1 then
     Zoom := 1;
 
-  case Mode of
-    amMode0: begin PixelsPerLine := 160; PixelsPerByte := 2; end;
-    amMode1: begin PixelsPerLine := 320; PixelsPerByte := 4; end;
-  else
-    begin PixelsPerLine := 640; PixelsPerByte := 8; end;
-  end;
+  ModeMetrics(Mode, PixelsPerLine, PixelsPerByte);
   PixelWidth := CPCDisplayWidth div PixelsPerLine;  // 4, 2 or 1
 
   for P := 0 to 15 do
@@ -141,8 +300,7 @@ begin
 
   for Y := 0 to CPCLines - 1 do
   begin
-    // CPC screen interleave: 8 scanlines per character row, 2048 bytes apart
-    LineBase := (Y mod 8) * 2048 + (Y div 8) * CPCBytesPerLine;
+    LineBase := ScreenLineBase(Y);
     Top := Y * BlockH;
 
     for Col := 0 to CPCBytesPerLine - 1 do
@@ -156,7 +314,7 @@ begin
       begin
         LX := Col * PixelsPerByte + P;
         Left := LX * BlockW;
-        Bitmap.Canvas.Brush.Color := PenColor[ModePen(B, P)];
+        Bitmap.Canvas.Brush.Color := PenColor[DecodePen(B, P, Mode)];
         Bitmap.Canvas.FillRect(Left, Top, Left + BlockW, Top + BlockH);
       end;
     end;
