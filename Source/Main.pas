@@ -17,6 +17,7 @@ uses
   DiskMap, DskImage, Utils, About, Options, SectorProperties,
   TrackProperties, Settings, FileSystem, MGTFileSystem, ListViewPresenter,
   Comparers, FileViewer, SinclairBasic, GraphicsFileViewer, SpectrumScreen,
+  CPCScreenViewer, AmstradScreen,
   Classes, Graphics, SysUtils, Forms, Dialogs, Menus,
   ComCtrls, ExtCtrls, Controls,
   Clipbrd, StdCtrls, FileUtil, StrUtils, LazFileUtils, LConvEncoding, CommCtrl;
@@ -1446,6 +1447,16 @@ begin
   if (DiskFile.HeaderType = 'AMSDOS') and (DiskFile.Meta = 'BASIC') then
   begin
     ShowBasicViewer(DiskImage.Disk, DiskFile, DiskName);
+    Exit;
+  end;
+
+  // Amstrad CPC screen dumps: roughly 16K files (raw screen RAM carries no
+  // header, and some carry a few extra bytes spilling into a 17th block).
+  // PLUS3DOS files are handled by the Spectrum viewers below.
+  if (DiskFile.HeaderType <> 'PLUS3DOS') and
+     TAmstradScreen.IsValidScreenSize(DiskFile.Size) then
+  begin
+    ShowCPCScreenViewer(DiskImage.Disk, DiskFile, DiskName);
     Exit;
   end;
 

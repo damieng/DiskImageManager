@@ -6,11 +6,14 @@ Development Build Notes
 - Rewrote copy protection detection as a staged fingerprinting flow (T0 signature scan, T0 geometry classification, Track 1 family checks, high-track probes, and a mid-disk odd-sector sweep) instead of independent whole-disk scans
 ### New
 - Amstrad (Locomotive) BASIC file viewer with syntax highlighting for AMSDOS tokenized BASIC files
+- Amstrad CPC screen viewer for ~16K files with a Mode 0/1/2 selector (raw screen dumps carry no mode), an adjustable start offset for files with a few extra header/trailer bytes, and the firmware default palette
 - Detect unsigned Alkatraz +3 (uniform 8x512 data tracks) and locate the 18-sector protection track wherever it sits
 - Detect unsigned Speedlock data sides (uniform 5x1024 tracks)
 - Distinguish Hexagon from Speedlock 1989 on CPC/+3 disks using the Track 0 sector count and deleted-data marks
 - Detect the Speedlock 9x512 high-ID-filler variant
 ### Fixes
+- Show AMSDOS binary load/execution addresses in hex and flag 16K binaries loading at &C000 as screens (real screens are saved as plain binary, not the rarely-used SCREEN type)
+- Fix AMSDOS unknown file type label reporting the wrong header byte
 - Recover Extended DSK images with a blank track-size table (e.g. some CPDRead output) by scanning for the real track data, with a warning instead of showing every track as unformatted
 - Fix boot sector detection checking wrong sector (was checking T0S1 instead of T0S0)
 - Always show boot sector status in disk info (shows "Unknown" if not detected)

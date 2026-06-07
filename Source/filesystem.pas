@@ -271,15 +271,21 @@ begin
   case Data[18] of
     0: DiskFile.Meta := 'BASIC';
     1: DiskFile.Meta := 'BASIC (protected)';
-    2: DiskFile.Meta := Format('BINARY %d EXEC %d', [LoadAddr, ExecAddr]);
-    3: DiskFile.Meta := Format('BINARY (protected) %d EXEC %d', [LoadAddr, ExecAddr]);
+    2: DiskFile.Meta := Format('BINARY &%s EXEC &%s', [IntToHex(LoadAddr, 4), IntToHex(ExecAddr, 4)]);
+    3: DiskFile.Meta := Format('BINARY (protected) &%s EXEC &%s', [IntToHex(LoadAddr, 4), IntToHex(ExecAddr, 4)]);
     4: DiskFile.Meta := 'SCREEN';
     5: DiskFile.Meta := 'SCREEN (protected)';
     6: DiskFile.Meta := 'ASCII';
     7: DiskFile.Meta := 'ASCII (protected)';
     else
-      DiskFile.Meta := Format('Custom 0x%x', [Data[15]]);
+      DiskFile.Meta := Format('Custom 0x%x', [Data[18]]);
   end;
+
+  // Screens are normally saved as a plain binary loading at &C000, not as the
+  // (rarely used) SCREEN type, so flag the likely ones for the file list.
+  if ((Data[18] = 2) or (Data[18] = 3)) and (LoadAddr = $C000) and
+     (DiskFile.Size = 16384) then
+    DiskFile.Meta := DiskFile.Meta + ' (screen)';
 
 end;
 
