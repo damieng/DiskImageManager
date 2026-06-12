@@ -167,6 +167,8 @@ type
     procedure popFileSystemPopup(Sender: TObject);
     procedure popListItemPopup(Sender: TObject);
     procedure tvwMainChange(Sender: TObject; Node: TTreeNode);
+    procedure DiskMapSectorClick(Sender: TObject; Sector: TDSKSector);
+    procedure DiskMapTrackClick(Sender: TObject; Track: TDSKTrack);
     procedure itmAboutClick(Sender: TObject);
     procedure itmCloseClick(Sender: TObject);
     procedure itmExitClick(Sender: TObject);
@@ -256,6 +258,8 @@ begin
   Caption := Application.Title;
   itmAbout.Caption := 'About ' + Application.Title;
   itmDarkUnusedSectors.Checked := DiskMap.DarkBlankSectors;
+  DiskMap.OnSectorClick := DiskMapSectorClick;
+  DiskMap.OnTrackClick := DiskMapTrackClick;
   Application.AddOnDropFilesHandler(OnApplicationDropFiles);
 
   FileNames := TStringList.Create();
@@ -821,6 +825,36 @@ end;
 procedure TfrmMain.tvwMainChange(Sender: TObject; Node: TTreeNode);
 begin
   UpdateMenus;
+end;
+
+// Jump the treeview to the sector clicked on the disk map
+procedure TfrmMain.DiskMapSectorClick(Sender: TObject; Sector: TDSKSector);
+var
+  Node: TTreeNode;
+begin
+  for Node in tvwMain.Items do
+    if Node.Data = Pointer(Sector) then
+    begin
+      Node.Selected := True;
+      Node.MakeVisible;
+      tvwMain.SetFocus;
+      Exit;
+    end;
+end;
+
+// Jump the treeview to the (unformatted) track clicked on the disk map
+procedure TfrmMain.DiskMapTrackClick(Sender: TObject; Track: TDSKTrack);
+var
+  Node: TTreeNode;
+begin
+  for Node in tvwMain.Items do
+    if Node.Data = Pointer(Track) then
+    begin
+      Node.Selected := True;
+      Node.MakeVisible;
+      tvwMain.SetFocus;
+      Exit;
+    end;
 end;
 
 procedure TfrmMain.UpdateMenus;
