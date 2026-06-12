@@ -59,8 +59,7 @@ Identification of copy-protection schemes both signed and somtimes unsigned:
 * Frontier
 * Hexagon
 * Paul Owens
-* Speedlock +3 1987/1988
-* Speedlock 1985/1986//1987/1987v2.1/1988/1989/1990
+* Speedlock +3/CPC
 * Three Inch Loader type 1/2/3
 * Laser Load
 * W.R.M Disc Protection (Martech)
