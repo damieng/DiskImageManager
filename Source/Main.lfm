@@ -49,6 +49,7 @@ object frmMain: TfrmMain
       Options = [tvoAutoItemHeight, tvoKeepCollapsedNodes, tvoReadOnly, tvoRowSelect, tvoShowButtons, tvoShowRoot, tvoToolTips, tvoThemedDraw]
       OnChange = tvwMainChange
       OnDblClick = tvwMainDblClick
+      OnMouseDown = tvwMainMouseDown
     end
     object pnlTreeLabel: TPanel
       Left = 0

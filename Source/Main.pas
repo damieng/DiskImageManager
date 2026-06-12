@@ -193,6 +193,8 @@ type
     procedure dlgFindFind(Sender: TObject);
     procedure itmFindNextClick(Sender: TObject);
     procedure tvwMainDblClick(Sender: TObject);
+    procedure tvwMainMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: integer);
   private
     NextNewFile: integer;
     FPresenter: TListViewPresenter;
@@ -1471,6 +1473,21 @@ end;
 procedure TfrmMain.tvwMainDblClick(Sender: TObject);
 begin
   itmSectorPropertiesClick(Sender);
+end;
+
+// Select the node under the cursor on right-click so context-menu actions
+// operate on the clicked node rather than the previously selected one
+procedure TfrmMain.tvwMainMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: integer);
+var
+  Node: TTreeNode;
+begin
+  if Button = mbRight then
+  begin
+    Node := tvwMain.GetNodeAt(X, Y);
+    if Node <> nil then
+      Node.Selected := True;
+  end;
 end;
 
 procedure TfrmMain.ShowFile(Sender: TObject);
