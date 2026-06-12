@@ -1,18 +1,27 @@
 # Disk Image Manager
 Development Build Notes
 
-## 2.11.0 (12 June 2026)
+## 2.12.0 (12 June 2026)
 ### Changes
-- Rewrote copy protection detection as a staged fingerprinting flow (T0 signature scan, T0 geometry classification, Track 1 family checks, high-track probes, and a mid-disk odd-sector sweep) instead of independent whole-disk scans
 - Auto-detect the CPC screen graphics mode from banding artifacts instead of always defaulting to one mode
 - Open the CPC screen viewer only for full screens, routing Advanced OCP Art Studio files appropriately on double-click
 ### New
-- Amstrad (Locomotive) BASIC file viewer with syntax highlighting for AMSDOS tokenized BASIC files
-- Amstrad CPC screen viewer for ~16K files with a Mode 0/1/2 selector (raw screen dumps carry no mode), an adjustable start offset for files with a few extra header/trailer bytes, and the firmware default palette
+- MGT disk image support: read 80-track double-sided MGT images and save disks as MGT
 - View Advanced OCP Art Studio CPC screens, decompressing MJH-packed data and .WIN window files
 - Save button in the CPC and Spectrum screen viewers to export the displayed screen as an image
-- MGT disk image support: read 80-track double-sided MGT images and save disks as MGT
 - Interactive disk map: hover a sector for a floating panel (side, track, sector, ID, status, size, index offset and decoded FDC flags) or an unformatted track for its details, and click a sector or track to jump straight to it in the tree
+### Fixes
+- Fix the New disk dialog: working filler byte, DPB preview, memory leaks and options
+- Fix mode-0 CPC screens being misdetected as mode 1
+- Fix truncation when extracting files without headers
+- Fix tree context-menu actions operating on the selected node instead of the right-clicked one
+
+## 2.11.0 (05 June 2026)
+### Changes
+- Rewrote copy protection detection as a staged fingerprinting flow (T0 signature scan, T0 geometry classification, Track 1 family checks, high-track probes, and a mid-disk odd-sector sweep) instead of independent whole-disk scans
+### New
+- Amstrad (Locomotive) BASIC file viewer with syntax highlighting for AMSDOS tokenized BASIC files
+- Amstrad CPC screen viewer for ~16K files with a Mode 0/1/2 selector (raw screen dumps carry no mode), an adjustable start offset for files with a few extra header/trailer bytes, and the firmware default palette
 - Detect unsigned Alkatraz +3 (uniform 8x512 data tracks) and locate the 18-sector protection track wherever it sits
 - Detect unsigned Speedlock data sides (uniform 5x1024 tracks)
 - Distinguish Hexagon from Speedlock 1989 on CPC/+3 disks using the Track 0 sector count and deleted-data marks
@@ -27,9 +36,6 @@ Development Build Notes
 - Handle SAMdisk v5 multi-copy (weak) sectors correctly, fixing file extraction, CP/M block counts, and per-sector checksum/fill that previously ran over concatenated copies
 - Keep later sectors aligned when a record's stored length exceeds the maximum sector size
 - Fix PCW 720K directory blocks to 2 and CPC System reserved tracks to 2
-- Fix mode-0 CPC screens being misdetected as mode 1
-- Fix truncation when extracting files without headers
-- Fix tree context-menu actions operating on the selected node instead of the right-clicked one
 
 ## 2.10.0 (03 April 2026)
 ### New
